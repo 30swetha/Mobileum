@@ -1,0 +1,1994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mobileum — Global Telecom Intelligence Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg-deep:#060b18;--bg-card:#0d1628;--bg-card2:#111e35;--bg-card3:#162040;
+  --border:#1e3054;--border2:#243760;
+  --blue:#2563eb;--blue-light:#3b82f6;--blue-glow:#1d4ed8;
+  --teal:#06b6d4;--green:#10b981;--yellow:#f59e0b;--red:#ef4444;--purple:#8b5cf6;--orange:#f97316;
+  --text-primary:#f0f4ff;--text-secondary:#8ba3c7;--text-muted:#4a6080;
+  --sidebar-w:520px;
+}
+html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:var(--bg-deep);color:var(--text-primary)}
+#app{display:flex;height:100vh;width:100vw}
+
+/* ── TOP BAR ── */
+#topbar{
+  position:fixed;top:0;left:0;right:0;height:52px;z-index:1000;
+  background:rgba(6,11,24,0.95);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 16px;gap:16px
+}
+#topbar .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:15px;letter-spacing:-.3px;color:#fff;white-space:nowrap}
+#topbar .logo-dot{width:8px;height:8px;background:var(--blue-light);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.8)}}
+#topbar .subtitle{font-size:11px;color:var(--text-muted);font-weight:400;display:none}
+@media(min-width:900px){#topbar .subtitle{display:block}}
+.spacer{flex:1}
+#topbar .stats-bar{display:flex;gap:20px}
+.stat-pill{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-secondary)}
+.stat-pill span{color:var(--blue-light);font-weight:600}
+#search-box{
+  background:var(--bg-card2);border:1px solid var(--border);border-radius:8px;
+  padding:6px 12px;font-size:12px;color:var(--text-primary);width:200px;outline:none;
+  font-family:inherit
+}
+#search-box::placeholder{color:var(--text-muted)}
+#search-box:focus{border-color:var(--blue)}
+#search-results{
+  position:absolute;top:50px;right:0;width:220px;background:var(--bg-card);
+  border:1px solid var(--border);border-radius:8px;z-index:2000;
+  max-height:300px;overflow-y:auto;display:none
+}
+.search-item{padding:8px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border)}
+.search-item:hover{background:var(--bg-card2);color:var(--blue-light)}
+
+/* ── FILTER BAR ── */
+#filterbar{
+  position:fixed;top:52px;left:0;right:0;height:44px;z-index:999;
+  background:rgba(13,22,40,0.97);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 16px;gap:10px;overflow-x:auto
+}
+.filter-btn{
+  padding:5px 12px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;
+  border:1px solid var(--border);background:transparent;color:var(--text-secondary);
+  white-space:nowrap;transition:all .2s;font-family:inherit
+}
+.filter-btn:hover,.filter-btn.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.filter-sep{width:1px;height:20px;background:var(--border);margin:0 4px;flex-shrink:0}
+.lens-label{font-size:10px;color:var(--text-muted);white-space:nowrap;font-weight:500}
+
+/* ── MAP ── */
+#map-container{flex:1;margin-top:96px;position:relative;overflow:hidden}
+#map{height:100%;width:100%}
+.leaflet-container{background:#060b18!important}
+.custom-tooltip{
+  background:rgba(6,11,24,0.95)!important;border:1px solid var(--border)!important;
+  color:var(--text-primary)!important;font-family:'Inter',sans-serif!important;
+  font-size:12px!important;padding:8px 12px!important;border-radius:8px!important;
+  box-shadow:0 4px 20px rgba(0,0,0,.5)!important
+}
+
+/* ── LEGEND ── */
+#legend{
+  position:absolute;bottom:24px;left:16px;z-index:900;
+  background:rgba(13,22,40,0.92);backdrop-filter:blur(8px);
+  border:1px solid var(--border);border-radius:12px;padding:12px 14px;min-width:180px
+}
+#legend h4{font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.legend-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:11px;color:var(--text-secondary)}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+/* ── MAP INFO BOX ── */
+#map-hover-box{
+  position:absolute;top:16px;left:50%;transform:translateX(-50%);z-index:900;
+  background:rgba(13,22,40,0.92);border:1px solid var(--border);border-radius:10px;
+  padding:8px 16px;font-size:12px;color:var(--text-secondary);pointer-events:none;
+  display:none
+}
+
+/* ── SIDE PANEL ── */
+#panel{
+  width:0;min-height:0;margin-top:96px;
+  background:var(--bg-card);border-left:1px solid var(--border);
+  overflow:hidden;transition:width .35s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;position:relative
+}
+#panel.open{width:var(--sidebar-w)}
+#panel-inner{
+  width:var(--sidebar-w);height:100%;overflow-y:auto;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent
+}
+#panel-inner::-webkit-scrollbar{width:4px}
+#panel-inner::-webkit-scrollbar-track{background:transparent}
+#panel-inner::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
+/* ── PANEL HEADER ── */
+#panel-header{
+  padding:16px 20px 12px;border-bottom:1px solid var(--border);
+  position:sticky;top:0;background:var(--bg-card);z-index:10
+}
+#panel-title{font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px}
+#panel-subtitle{font-size:11px;color:var(--text-muted);margin-top:3px}
+#close-panel{
+  position:absolute;top:16px;right:16px;background:var(--bg-card2);border:1px solid var(--border);
+  border-radius:6px;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;font-size:14px;color:var(--text-secondary);transition:all .2s
+}
+#close-panel:hover{background:var(--bg-card3);color:var(--text-primary)}
+
+/* ── PANEL TABS ── */
+#panel-tabs{
+  display:flex;border-bottom:1px solid var(--border);padding:0 20px;
+  position:sticky;top:62px;background:var(--bg-card);z-index:9;overflow-x:auto
+}
+.tab-btn{
+  padding:10px 14px;font-size:11px;font-weight:600;cursor:pointer;border:none;
+  background:transparent;color:var(--text-muted);border-bottom:2px solid transparent;
+  white-space:nowrap;transition:all .2s;font-family:inherit;letter-spacing:.3px
+}
+.tab-btn.active{color:var(--blue-light);border-bottom-color:var(--blue-light)}
+.tab-btn:hover{color:var(--text-secondary)}
+
+/* ── TAB CONTENT ── */
+.tab-content{display:none;padding:16px 20px}
+.tab-content.active{display:block}
+
+/* ── KPI CARDS ── */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.kpi-card{
+  background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;
+  padding:12px 14px;position:relative;overflow:hidden
+}
+.kpi-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:10px 10px 0 0
+}
+.kpi-card.blue::before{background:var(--blue-light)}
+.kpi-card.teal::before{background:var(--teal)}
+.kpi-card.green::before{background:var(--green)}
+.kpi-card.yellow::before{background:var(--yellow)}
+.kpi-card.red::before{background:var(--red)}
+.kpi-card.purple::before{background:var(--purple)}
+.kpi-label{font-size:9px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.7px}
+.kpi-value{font-size:20px;font-weight:700;color:var(--text-primary);margin:4px 0 2px;line-height:1}
+.kpi-sub{font-size:10px;color:var(--text-secondary)}
+.kpi-badge{
+  display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:600;
+  padding:2px 6px;border-radius:4px;margin-top:4px
+}
+.badge-up{background:rgba(16,185,129,.15);color:var(--green)}
+.badge-down{background:rgba(239,68,68,.15);color:var(--red)}
+.badge-neutral{background:rgba(139,163,199,.1);color:var(--text-secondary)}
+
+/* ── SECTION ── */
+.section{margin-bottom:20px}
+.section-title{
+  font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;
+  letter-spacing:.8px;margin-bottom:10px;display:flex;align-items:center;gap:6px
+}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── CHART CONTAINERS ── */
+.chart-wrap{
+  background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;
+  padding:14px;margin-bottom:12px;position:relative
+}
+.chart-title{font-size:10px;font-weight:600;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
+.chart-canvas-wrap{position:relative}
+
+/* ── OPERATOR TABLE ── */
+.op-table{width:100%;border-collapse:collapse;font-size:11px}
+.op-table th{
+  font-size:9px;font-weight:600;color:var(--text-muted);text-transform:uppercase;
+  letter-spacing:.5px;padding:6px 8px;border-bottom:1px solid var(--border);text-align:left
+}
+.op-table td{padding:8px 8px;border-bottom:1px solid rgba(30,48,84,.5);vertical-align:middle}
+.op-table tr:last-child td{border-bottom:none}
+.op-table tr:hover td{background:rgba(255,255,255,.02)}
+.op-name{font-weight:600;color:var(--text-primary)}
+.op-sub{font-size:9px;color:var(--text-muted);margin-top:1px}
+.health-bar{height:4px;background:var(--border);border-radius:4px;width:60px;overflow:hidden}
+.health-fill{height:100%;border-radius:4px;transition:width .6s}
+
+/* ── SCORE BADGE ── */
+.score-circle{
+  width:36px;height:36px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:11px;font-weight:700;border:2px solid;flex-shrink:0
+}
+
+/* ── PRODUCT CARDS ── */
+.product-card{
+  background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;
+  padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:all .2s
+}
+.product-card:hover{border-color:var(--blue);background:var(--bg-card3)}
+.product-card.top{border-color:var(--yellow);background:rgba(245,158,11,.05)}
+.product-top-badge{
+  display:inline-flex;align-items:center;gap:4px;background:rgba(245,158,11,.2);
+  color:var(--yellow);font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:6px
+}
+.product-name{font-size:13px;font-weight:600;color:var(--text-primary)}
+.product-cat{font-size:10px;color:var(--text-muted);margin:2px 0}
+.product-kpi{font-size:10px;color:var(--green);margin-top:4px}
+.product-reason{font-size:10px;color:var(--text-secondary);margin-top:4px;line-height:1.5}
+.score-bar-wrap{display:flex;align-items:center;gap:8px;margin-top:6px}
+.score-bar-bg{flex:1;height:3px;background:var(--border);border-radius:3px;overflow:hidden}
+.score-bar-fill{height:100%;border-radius:3px;transition:width .8s}
+.score-num{font-size:10px;font-weight:600;color:var(--text-secondary);white-space:nowrap}
+
+/* ── PERCENTILE GAUGES ── */
+.percentile-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.perc-label{font-size:10px;color:var(--text-secondary);width:120px;flex-shrink:0}
+.perc-bar{flex:1;height:6px;background:var(--border);border-radius:6px;overflow:hidden;position:relative}
+.perc-fill{height:100%;border-radius:6px}
+.perc-value{font-size:10px;font-weight:600;color:var(--text-primary);width:32px;text-align:right}
+.perc-rank{font-size:9px;color:var(--text-muted);width:28px;text-align:right}
+
+/* ── WATERFALL ── */
+.wf-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.wf-label{font-size:10px;color:var(--text-secondary);width:140px;flex-shrink:0}
+.wf-bar-area{flex:1;position:relative;height:16px}
+.wf-bar{height:12px;border-radius:3px;position:absolute;top:2px;display:flex;align-items:center;padding:0 4px}
+.wf-val{font-size:10px;font-weight:600;white-space:nowrap}
+
+/* ── SEASONAL CALENDAR ── */
+.cal-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:3px}
+.cal-month{
+  text-align:center;padding:6px 2px;border-radius:5px;font-size:8px;
+  font-weight:500;cursor:default;transition:all .2s
+}
+.cal-label{font-size:8px;color:var(--text-muted);text-align:center;margin-top:3px}
+
+/* ── ANOMALY BOX ── */
+.anomaly-box{
+  background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);
+  border-radius:8px;padding:10px 12px;font-size:11px;color:var(--yellow);margin-bottom:12px;
+  display:flex;gap:8px;align-items:flex-start
+}
+.anomaly-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+
+/* ── NARRATIVE ── */
+.narrative-block{
+  background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;
+  padding:14px;margin-bottom:10px
+}
+.narrative-block h4{font-size:11px;font-weight:700;color:var(--blue-light);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.narrative-block p{font-size:11px;color:var(--text-secondary);line-height:1.7}
+.narrative-block strong{color:var(--text-primary);font-weight:600}
+
+/* ── HEATMAP ── */
+.heatmap-wrap{overflow-x:auto}
+.heatmap-table{border-collapse:collapse;font-size:9px;min-width:460px}
+.heatmap-table th{padding:4px 6px;color:var(--text-muted);font-weight:500;text-align:center;border:1px solid var(--border);white-space:nowrap}
+.heatmap-table td{padding:4px 6px;text-align:center;border:1px solid var(--border);white-space:nowrap;cursor:default}
+.hm-op-name{text-align:left!important;font-weight:600;color:var(--text-primary);padding:4px 8px!important}
+
+/* ── COMPARISON ── */
+#compare-bar{
+  position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:1000;
+  background:rgba(13,22,40,0.97);border:1px solid var(--border);border-radius:12px;
+  padding:10px 16px;display:none;gap:12px;align-items:center;
+  backdrop-filter:blur(12px);font-size:12px
+}
+#compare-bar.visible{display:flex}
+.compare-pill{
+  background:var(--bg-card3);border:1px solid var(--border);border-radius:20px;
+  padding:4px 10px;font-size:11px;display:flex;align-items:center;gap:6px
+}
+.compare-remove{cursor:pointer;color:var(--text-muted);font-size:12px}
+.compare-remove:hover{color:var(--red)}
+#compare-go{
+  background:var(--blue);color:#fff;border:none;border-radius:8px;
+  padding:6px 14px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit
+}
+
+/* ── MODAL ── */
+#modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:2000;
+  display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)
+}
+#modal-overlay.open{display:flex}
+#modal{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:16px;
+  width:90vw;max-width:900px;max-height:85vh;overflow:hidden;display:flex;flex-direction:column
+}
+#modal-header{
+  padding:16px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between
+}
+#modal-title{font-size:15px;font-weight:700}
+#modal-close{
+  background:var(--bg-card2);border:1px solid var(--border);border-radius:6px;
+  width:28px;height:28px;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;color:var(--text-secondary);font-size:14px
+}
+#modal-body{padding:20px;overflow-y:auto;flex:1}
+
+/* ── EXPORT BTN ── */
+#export-btn{
+  position:fixed;bottom:20px;right:20px;z-index:999;
+  background:var(--blue);color:#fff;border:none;border-radius:10px;
+  padding:10px 16px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;
+  display:flex;align-items:center;gap:6px;box-shadow:0 4px 20px rgba(37,99,235,.4);
+  transition:all .2s
+}
+#export-btn:hover{background:var(--blue-glow);transform:translateY(-1px)}
+
+/* ── LOADING SKELETON ── */
+.skeleton{
+  background:linear-gradient(90deg,var(--bg-card2) 25%,var(--bg-card3) 50%,var(--bg-card2) 75%);
+  background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:6px
+}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ── CLUSTER TAG ── */
+.cluster-tag{
+  display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:600;
+  padding:2px 8px;border-radius:20px;margin-top:2px
+}
+
+/* ── DATA SOURCE TOOLTIP ── */
+[data-source]{position:relative;cursor:help}
+[data-source]::after{
+  content:attr(data-source);position:absolute;bottom:calc(100% + 4px);left:50%;
+  transform:translateX(-50%);background:rgba(0,0,0,.9);color:#aaa;
+  font-size:9px;padding:3px 8px;border-radius:4px;white-space:nowrap;
+  pointer-events:none;opacity:0;transition:opacity .2s;z-index:100
+}
+[data-source]:hover::after{opacity:1}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  :root{--sidebar-w:100vw}
+  #panel.open{width:100vw}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    MOBILEUM
+    <span class="subtitle">GLOBAL TELECOM INTELLIGENCE PLATFORM</span>
+  </div>
+  <div class="spacer"></div>
+  <div class="stats-bar">
+    <div class="stat-pill">Countries <span id="stat-countries">137</span></div>
+    <div class="stat-pill">Operators <span id="stat-ops">529</span></div>
+    <div class="stat-pill">Regions <span id="stat-regions">5</span></div>
+  </div>
+  <div style="position:relative">
+    <input type="text" id="search-box" placeholder="🔍  Search country..." autocomplete="off">
+    <div id="search-results"></div>
+  </div>
+</div>
+
+<!-- FILTER BAR -->
+<div id="filterbar">
+  <span class="lens-label">MAP LENS:</span>
+  <button class="filter-btn active" data-lens="cluster" onclick="setLens(this,'cluster')">Market Cluster</button>
+  <button class="filter-btn" data-lens="fraud" onclick="setLens(this,'fraud')">Fraud Risk</button>
+  <button class="filter-btn" data-lens="fiveG" onclick="setLens(this,'fiveG')">5G Readiness</button>
+  <button class="filter-btn" data-lens="roaming" onclick="setLens(this,'roaming')">Roaming Intensity</button>
+  <button class="filter-btn" data-lens="arpu" onclick="setLens(this,'arpu')">ARPU Pressure</button>
+  <div class="filter-sep"></div>
+  <span class="lens-label">REGION:</span>
+  <button class="filter-btn" data-region="all" onclick="filterRegion(this,'all')">All</button>
+  <button class="filter-btn" data-region="MECA" onclick="filterRegion(this,'MECA')">MECA</button>
+  <button class="filter-btn" data-region="Europe" onclick="filterRegion(this,'Europe')">Europe</button>
+  <button class="filter-btn" data-region="APAC" onclick="filterRegion(this,'APAC')">APAC</button>
+  <button class="filter-btn" data-region="LATAM" onclick="filterRegion(this,'LATAM')">LATAM</button>
+  <div class="filter-sep"></div>
+  <button class="filter-btn" onclick="openCompareModal()">⊕ Compare Countries</button>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <!-- MAP -->
+  <div id="map-container">
+    <div id="map"></div>
+    <div id="map-hover-box">Click any country to open detailed analysis</div>
+    <div id="legend">
+      <h4 id="legend-title">Market Cluster</h4>
+      <div id="legend-items"></div>
+    </div>
+  </div>
+
+  <!-- SIDE PANEL -->
+  <div id="panel">
+    <div id="panel-inner">
+      <div id="panel-header">
+        <div id="panel-title">—</div>
+        <div id="panel-subtitle">—</div>
+        <button id="close-panel" onclick="closePanel()">✕</button>
+      </div>
+      <div id="panel-tabs">
+        <button class="tab-btn active" onclick="showTab('overview')">Overview</button>
+        <button class="tab-btn" onclick="showTab('operators')">Operators</button>
+        <button class="tab-btn" onclick="showTab('impact')">Impact Analysis</button>
+        <button class="tab-btn" onclick="showTab('products')">Mobileum Fit</button>
+        <button class="tab-btn" onclick="showTab('stats')">Statistics</button>
+        <button class="tab-btn" onclick="showTab('narrative')">Intelligence</button>
+      </div>
+
+      <!-- TAB: OVERVIEW -->
+      <div id="tab-overview" class="tab-content active">
+        <div id="overview-content"></div>
+      </div>
+
+      <!-- TAB: OPERATORS -->
+      <div id="tab-operators" class="tab-content">
+        <div id="operators-content"></div>
+      </div>
+
+      <!-- TAB: IMPACT ANALYSIS -->
+      <div id="tab-impact" class="tab-content">
+        <div id="impact-content"></div>
+      </div>
+
+      <!-- TAB: MOBILEUM FIT -->
+      <div id="tab-products" class="tab-content">
+        <div id="products-content"></div>
+      </div>
+
+      <!-- TAB: STATISTICS -->
+      <div id="tab-stats" class="tab-content">
+        <div id="stats-content"></div>
+      </div>
+
+      <!-- TAB: INTELLIGENCE NARRATIVE -->
+      <div id="tab-narrative" class="tab-content">
+        <div id="narrative-content"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- COMPARE BAR -->
+<div id="compare-bar">
+  <span style="font-size:11px;color:var(--text-muted);font-weight:600">COMPARING:</span>
+  <div id="compare-pills"></div>
+  <button id="compare-go" onclick="runComparison()">Compare Now →</button>
+  <button style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px" onclick="clearCompare()">✕</button>
+</div>
+
+<!-- EXPORT BTN -->
+<button id="export-btn" onclick="exportReport()">
+  ↓ Export Report
+</button>
+
+<!-- COMPARISON MODAL -->
+<div id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div id="modal">
+    <div id="modal-header">
+      <div id="modal-title">Country Comparison</div>
+      <button id="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// EMBED DATA
+// ═══════════════════════════════════════════════════════════════════
+const TELECOM_DATA = /*DATA_PLACEHOLDER*/
+
+// ═══════════════════════════════════════════════════════════════════
+// GLOBALS
+// ═══════════════════════════════════════════════════════════════════
+const C = TELECOM_DATA.countries;
+const META = TELECOM_DATA.metadata;
+let map, geojsonLayer, currentCountry = null, currentLens = 'cluster';
+let activeRegion = 'all', compareList = [], chartInstances = {};
+
+// ═══════════════════════════════════════════════════════════════════
+// COLOUR HELPERS
+// ═══════════════════════════════════════════════════════════════════
+const CLUSTER_COLORS = {
+  'Ultra-Premium Roaming Hub': '#9B59B6',
+  'Mature Mid-Tier': '#4A90D9',
+  'High Growth Corridor': '#F39C12',
+  'Emerging Mid-Tier': '#1ABC9C',
+  'Small Wealthy Market': '#2ECC71',
+  'Frontier Market': '#E74C3C',
+  'Regulatory Transition': '#7F8C8D',
+};
+
+function scoreToColor(score, palette) {
+  if (score === null || score === undefined) return '#1e3054';
+  const s = Math.max(0, Math.min(100, score));
+  if (palette === 'fraud') {
+    if (s < 20) return '#1ABC9C';
+    if (s < 40) return '#F39C12';
+    if (s < 60) return '#E67E22';
+    if (s < 80) return '#E74C3C';
+    return '#C0392B';
+  }
+  if (palette === 'heat') {
+    if (s < 20) return '#1e3054';
+    if (s < 40) return '#1A5276';
+    if (s < 60) return '#2471A3';
+    if (s < 80) return '#2980B9';
+    return '#1ABC9C';
+  }
+  if (palette === 'arpu') {
+    if (s < 25) return '#27AE60';
+    if (s < 50) return '#F39C12';
+    if (s < 75) return '#E67E22';
+    return '#E74C3C';
+  }
+  return '#4A90D9';
+}
+
+function getCountryColor(countryName, lens) {
+  const v = C[countryName];
+  if (!v) return '#1e3054';
+  switch(lens) {
+    case 'cluster': return CLUSTER_COLORS[v.cluster_name] || '#4A90D9';
+    case 'fraud': {
+      const s = (v.stats.fraud_score || 3);
+      const pct = ((s - 1) / 4) * 100;
+      return scoreToColor(pct, 'fraud');
+    }
+    case 'fiveG': {
+      const f = v.stats.avg_5g || 0;
+      return scoreToColor(f, 'heat');
+    }
+    case 'roaming': {
+      const r = ((v.stats.roaming_intensity || 3) - 1) / 4 * 100;
+      return scoreToColor(r, 'heat');
+    }
+    case 'arpu': {
+      // Higher arpu_pressure = more red
+      const ap = v.radar?.arpu_pressure || 3;
+      const pct = ((5 - ap) / 4) * 100;
+      return scoreToColor(pct, 'arpu');
+    }
+    default: return CLUSTER_COLORS[v.cluster_name] || '#4A90D9';
+  }
+}
+
+function getLegendItems(lens) {
+  if (lens === 'cluster') {
+    return Object.entries(CLUSTER_COLORS).map(([name, color]) => ({label: name, color}));
+  }
+  const scales = {
+    fraud: [{label:'Very Low',color:'#1ABC9C'},{label:'Low',color:'#F39C12'},{label:'Medium',color:'#E67E22'},{label:'High',color:'#E74C3C'},{label:'Critical',color:'#C0392B'}],
+    fiveG: [{label:'<20%',color:'#1e3054'},{label:'20-40%',color:'#1A5276'},{label:'40-60%',color:'#2471A3'},{label:'60-80%',color:'#2980B9'},{label:'>80%',color:'#1ABC9C'}],
+    roaming: [{label:'Minimal',color:'#1e3054'},{label:'Low',color:'#1A5276'},{label:'Moderate',color:'#2471A3'},{label:'High',color:'#2980B9'},{label:'Very High',color:'#1ABC9C'}],
+    arpu: [{label:'Growing',color:'#27AE60'},{label:'Stable',color:'#F39C12'},{label:'Pressure',color:'#E67E22'},{label:'Critical',color:'#E74C3C'}],
+  };
+  return scales[lens] || [];
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MAP INIT
+// ═══════════════════════════════════════════════════════════════════
+function initMap() {
+  map = L.map('map', {
+    center: [20, 10], zoom: 2.5,
+    zoomControl: true, attributionControl: false,
+    minZoom: 1.5, maxZoom: 8,
+    preferCanvas: true
+  });
+
+  // Dark tile layer
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+    subdomains: 'abcd', maxZoom: 19
+  }).addTo(map);
+
+  // Load GeoJSON world
+  fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson')
+    .then(r => r.json())
+    .then(geo => {
+      geojsonLayer = L.geoJSON(geo, {
+        style: feature => styleFeature(feature),
+        onEachFeature: onEachFeature,
+      }).addTo(map);
+      updateLegend();
+      document.getElementById('map-hover-box').style.display = 'block';
+    })
+    .catch(() => {
+      // Fallback: create circle markers from our data
+      createCircleMarkers();
+    });
+}
+
+function styleFeature(feature) {
+  const name = findCountryName(feature.properties);
+  const color = name ? getCountryColor(name, currentLens) : '#1e2d4a';
+  const hasData = !!name && !!C[name];
+  return {
+    fillColor: color,
+    fillOpacity: hasData ? 0.75 : 0.25,
+    color: hasData ? '#ffffff22' : '#1e3054',
+    weight: 0.5,
+    opacity: 1
+  };
+}
+
+function findCountryName(props) {
+  const candidates = [props.NAME, props.ADMIN, props.NAME_LONG, props.SOVEREIGNT];
+  for (const c of candidates) {
+    if (!c) continue;
+    // Direct match
+    if (C[c]) return c;
+    // Case-insensitive
+    const upper = c.toUpperCase();
+    if (C[upper]) return upper;
+    // Partial match
+    for (const key of Object.keys(C)) {
+      if (key.toUpperCase() === c.toUpperCase()) return key;
+    }
+  }
+  return null;
+}
+
+function onEachFeature(feature, layer) {
+  const name = findCountryName(feature.properties);
+  const v = name ? C[name] : null;
+
+  layer.on({
+    mouseover(e) {
+      const l = e.target;
+      if (C[name]) {
+        l.setStyle({fillOpacity: 0.95, weight: 1.5, color: '#ffffff44'});
+        l.bringToFront();
+      }
+      const label = name || feature.properties.NAME || '?';
+      let tip = `<strong>${label}</strong>`;
+      if (v) {
+        tip += `<br><span style="color:var(--text-muted)">${v.region}</span>`;
+        tip += `<br>Operators: ${v.num_operators} · Cluster: ${v.cluster_name}`;
+        if (v.stats?.avg_5g) tip += `<br>5G: ${v.stats.avg_5g?.toFixed(0)}%`;
+      }
+      l.bindTooltip(tip, {className:'custom-tooltip', sticky:true}).openTooltip();
+    },
+    mouseout(e) {
+      geojsonLayer.resetStyle(e.target);
+    },
+    click() {
+      if (v) openCountry(name);
+    }
+  });
+}
+
+function createCircleMarkers() {
+  // Fallback for GeoJSON load failure
+  Object.entries(C).forEach(([name, v]) => {
+    if (!v.lat || !v.lng) return;
+    const color = getCountryColor(name, currentLens);
+    const radius = Math.max(4, Math.min(12, (v.num_operators || 1) * 2));
+    const marker = L.circleMarker([v.lat, v.lng], {
+      radius, fillColor: color, fillOpacity: 0.8,
+      color: '#ffffff22', weight: 0.5
+    }).addTo(map);
+    marker.on('click', () => openCountry(name));
+    marker.bindTooltip(`<strong>${name}</strong><br>${v.region} · ${v.num_operators} operators`,
+      {className:'custom-tooltip'});
+  });
+}
+
+function setLens(btn, lens) {
+  document.querySelectorAll('[data-lens]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentLens = lens;
+  if (geojsonLayer) {
+    geojsonLayer.setStyle(f => styleFeature(f));
+  }
+  updateLegend();
+}
+
+function filterRegion(btn, region) {
+  document.querySelectorAll('[data-region]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeRegion = region;
+  if (!geojsonLayer) return;
+  if (region === 'all') {
+    geojsonLayer.setStyle(f => styleFeature(f));
+    map.setView([20, 10], 2.5);
+    return;
+  }
+  // Dim non-region countries
+  geojsonLayer.eachLayer(l => {
+    const name = findCountryName(l.feature?.properties || {});
+    const v = name ? C[name] : null;
+    if (!v) { l.setStyle({fillOpacity: 0.1}); return; }
+    if (v.region !== region && !v.region.startsWith(region)) {
+      l.setStyle({fillOpacity: 0.12, color: '#1e3054'});
+    } else {
+      const color = getCountryColor(name, currentLens);
+      l.setStyle({fillColor: color, fillOpacity: 0.85, color: '#ffffff22', weight: 0.5});
+    }
+  });
+  // Zoom to region
+  const regionBounds = {
+    'MECA': [[10,-10],[50,80]], 'Europe': [[35,-10],[72,40]],
+    'APAC': [[-45,60],[55,180]], 'LATAM': [[-60,-90],[30,-30]]
+  };
+  if (regionBounds[region]) map.fitBounds(regionBounds[region]);
+}
+
+function updateLegend() {
+  const items = getLegendItems(currentLens);
+  const titles = {cluster:'Market Cluster',fraud:'Fraud Risk',fiveG:'5G Readiness',roaming:'Roaming Intensity',arpu:'ARPU Pressure'};
+  document.getElementById('legend-title').textContent = titles[currentLens] || 'Legend';
+  const html = items.map(item =>
+    `<div class="legend-row"><div class="legend-dot" style="background:${item.color}"></div>${item.label}</div>`
+  ).join('');
+  document.getElementById('legend-items').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PANEL
+// ═══════════════════════════════════════════════════════════════════
+function openCountry(name) {
+  currentCountry = name;
+  const v = C[name];
+  if (!v) return;
+
+  // Header
+  const flag = getFlagEmoji(v.iso);
+  document.getElementById('panel-title').innerHTML = `${flag} ${name}`;
+  document.getElementById('panel-subtitle').textContent =
+    `${v.region}${v.sub_region ? ' · ' + v.sub_region : ''} · ${v.num_operators} Operator${v.num_operators>1?'s':''}`;
+
+  // Open panel
+  document.getElementById('panel').classList.add('open');
+
+  // Render first tab
+  showTab('overview');
+}
+
+function closePanel() {
+  document.getElementById('panel').classList.remove('open');
+  currentCountry = null;
+}
+
+function showTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    const tabs = ['overview','operators','impact','products','stats','narrative'];
+    b.classList.toggle('active', tabs[i] === tab);
+  });
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById(`tab-${tab}`).classList.add('active');
+
+  if (!currentCountry) return;
+  const v = C[currentCountry];
+
+  // Destroy old charts in this tab
+  destroyTabCharts(tab);
+
+  switch(tab) {
+    case 'overview': renderOverview(v, currentCountry); break;
+    case 'operators': renderOperators(v, currentCountry); break;
+    case 'impact': renderImpact(v, currentCountry); break;
+    case 'products': renderProducts(v, currentCountry); break;
+    case 'stats': renderStats(v, currentCountry); break;
+    case 'narrative': renderNarrative(v, currentCountry); break;
+  }
+}
+
+function destroyTabCharts(tab) {
+  const prefix = tab + '_';
+  Object.keys(chartInstances).forEach(k => {
+    if (k.startsWith(prefix)) {
+      chartInstances[k].destroy();
+      delete chartInstances[k];
+    }
+  });
+}
+
+function destroyChart(id) {
+  if (chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TAB: OVERVIEW
+// ═══════════════════════════════════════════════════════════════════
+function renderOverview(v, name) {
+  const pen = v.mobile_penetration_pct;
+  const fiveG = v.stats?.avg_5g;
+  const top = v.top_product;
+  const anomaly = v.anomaly_text;
+
+  let html = '';
+
+  // Cluster tag
+  const clr = v.cluster_color || '#4A90D9';
+  html += `<div style="padding:10px 0 6px">
+    <span class="cluster-tag" style="background:${clr}22;color:${clr};border:1px solid ${clr}44">
+      ◈ ${v.cluster_name}
+    </span>
+    <span style="font-size:10px;color:var(--text-muted);margin-left:8px">${v.cluster_play || ''}</span>
+  </div>`;
+
+  // Anomaly alert
+  if (anomaly) {
+    html += `<div class="anomaly-box"><div class="anomaly-icon">⚠</div><div>${anomaly}</div></div>`;
+  }
+
+  // KPI grid
+  html += `<div class="kpi-grid">
+    <div class="kpi-card blue" data-source="MNO Verified · World Bank">
+      <div class="kpi-label">Population</div>
+      <div class="kpi-value">${fmt(v.population_mln, 'M', 1)}</div>
+      <div class="kpi-sub">Total population (millions)</div>
+    </div>
+    <div class="kpi-card teal" data-source="MNO Verified · ITU 2024">
+      <div class="kpi-label">Mobile Users</div>
+      <div class="kpi-value">${fmt(v.mobile_users_mln, 'M', 1)}</div>
+      <div class="kpi-sub">Active subscribers</div>
+    </div>
+    <div class="kpi-card green" data-source="ITU / GSMA 2024">
+      <div class="kpi-label">Penetration</div>
+      <div class="kpi-value">${fmt(pen, '%')}</div>
+      <div class="kpi-sub">${pen > 100 ? 'Multi-SIM market' : 'Single-SIM dominant'}</div>
+    </div>
+    <div class="kpi-card yellow" data-source="World Bank GDP Data 2024">
+      <div class="kpi-label">GDP Growth</div>
+      <div class="kpi-value">${fmt(v.gdp_growth_pct, '%')}</div>
+      <div class="kpi-sub">${v.gdp_growth_pct > 3 ? '▲ Above global avg' : v.gdp_growth_pct < 0 ? '▼ Contraction' : '→ Moderate growth'}</div>
+    </div>
+    <div class="kpi-card purple" data-source="World Bank 2024">
+      <div class="kpi-label">GDP per Capita</div>
+      <div class="kpi-value">$${fmtNum(v.gdp_per_capita_usd)}</div>
+      <div class="kpi-sub">USD · ${v.gdp_per_capita_usd > 20000 ? 'High income' : v.gdp_per_capita_usd > 5000 ? 'Upper-middle' : 'Emerging'}</div>
+    </div>
+    <div class="kpi-card teal" data-source="UN World Population Prospects">
+      <div class="kpi-label">Avg Age</div>
+      <div class="kpi-value">${fmt(v.avg_age, ' yrs')}</div>
+      <div class="kpi-sub">${v.avg_age < 28 ? 'Very young' : v.avg_age < 35 ? 'Young-middle' : v.avg_age < 42 ? 'Middle-aged' : 'Aging'} population</div>
+    </div>
+    <div class="kpi-card blue" data-source="ITU 2024">
+      <div class="kpi-label">Internet Users</div>
+      <div class="kpi-value">${fmt(v.internet_users_pct, '%')}</div>
+      <div class="kpi-sub">Digital penetration</div>
+    </div>
+    <div class="kpi-card ${fiveG > 60 ? 'green' : fiveG > 30 ? 'yellow' : 'red'}" data-source="GSMA Intelligence 2024">
+      <div class="kpi-label">Avg 5G Penetration</div>
+      <div class="kpi-value">${fiveG ? fiveG.toFixed(0) + '%' : 'N/A'}</div>
+      <div class="kpi-sub">${fiveG > 60 ? 'Advanced 5G' : fiveG > 30 ? 'Deploying' : '5G gap identified'}</div>
+    </div>
+  </div>`;
+
+  // Top product highlight
+  if (top) {
+    const sc = top.score;
+    const barClr = sc > 75 ? '#10b981' : sc > 50 ? '#f59e0b' : '#3b82f6';
+    html += `<div class="section">
+      <div class="section-title">Top Mobileum Recommendation</div>
+      <div class="product-card top">
+        <div class="product-top-badge">★ #1 RECOMMENDED</div>
+        <div class="product-name">${top.product}</div>
+        <div class="score-bar-wrap">
+          <div class="score-bar-bg"><div class="score-bar-fill" style="width:${sc}%;background:${barClr}"></div></div>
+          <div class="score-num">${sc}/100</div>
+        </div>
+        <div class="product-reason">${top.reason}</div>
+      </div>
+    </div>`;
+  }
+
+  // Mini radar (small overview)
+  html += `<div class="chart-wrap">
+    <div class="chart-title">Impact Dimensions Overview</div>
+    <div class="chart-canvas-wrap" style="height:220px">
+      <canvas id="overview_radar"></canvas>
+    </div>
+  </div>`;
+
+  document.getElementById('overview-content').innerHTML = html;
+
+  // Draw radar
+  setTimeout(() => {
+    const r = v.radar;
+    if (!r) return;
+    createRadar('overview_radar', {
+      labels: ['Roaming Opp.','Fraud Risk','5G Upsell','ARPU Pressure','Sub Growth','Regulatory'],
+      values: [r.roaming_opportunity, r.fraud_risk, r.fiveG_upsell, r.arpu_pressure, r.subscriber_growth, r.regulatory_risk],
+      regional: v.regional_averages ? [
+        (C[Object.keys(C).find(k => C[k].region === v.region)]?.radar?.roaming_opportunity) || 3,
+        3, 3, 3, 3, 3
+      ] : null
+    });
+  }, 50);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TAB: OPERATORS
+// ═══════════════════════════════════════════════════════════════════
+function renderOperators(v, name) {
+  let html = '';
+
+  // Market share doughnut + operator scatter
+  html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+    <div class="chart-wrap">
+      <div class="chart-title">Market Share</div>
+      <div style="height:180px"><canvas id="operators_doughnut"></canvas></div>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-title">Revenue vs Share</div>
+      <div style="height:180px"><canvas id="operators_scatter"></canvas></div>
+    </div>
+  </div>`;
+
+  // Operator health heatmap
+  html += `<div class="section"><div class="section-title">Operator Health Matrix</div>`;
+  html += `<div class="heatmap-wrap"><table class="heatmap-table">
+    <tr>
+      <th style="text-align:left">Operator</th>
+      <th>Subs (M)</th><th>5G %</th><th>Sub Growth</th>
+      <th>ARPU</th><th>Revenue</th><th>Profitability</th>
+      <th>Outbound</th><th>Inbound</th>
+    </tr>`;
+
+  v.operators.forEach(op => {
+    const cells = [
+      {val: op.sub_base_mln, fmt: v => v ? v+'M' : '—', score: null},
+      {val: op.fiveG_pct, fmt: v => v != null ? v+'%' : '—', score: op.fiveG_pct},
+      {val: op.subscriber_growth_pct, fmt: v => v != null ? v+'%' : '—', score: (op.subscriber_growth_pct||0)+5},
+      {val: op.arpu_growth_score, fmt: v => op.arpu_growth||'—', score: op.arpu_growth_score * 20},
+      {val: op.revenue_growth_score, fmt: v => op.revenue_growth||'—', score: op.revenue_growth_score * 20},
+      {val: op.profitability_score, fmt: v => op.profitability||'—', score: op.profitability_score * 20},
+      {val: op.outbound_roaming_score, fmt: v => op.outbound_roaming||'—', score: op.outbound_roaming_score * 20},
+      {val: op.inbound_roaming_score, fmt: v => op.inbound_roaming||'—', score: op.inbound_roaming_score * 20},
+    ];
+
+    html += `<tr>
+      <td class="hm-op-name">
+        <div class="op-name">${op.operator}</div>
+        <div class="op-sub">${op.prepaid_postpaid || ''}</div>
+      </td>`;
+
+    cells.forEach(cell => {
+      const sc = cell.score;
+      const bg = sc === null ? '' : `background:${hmColor(sc)}`;
+      const textClr = sc !== null && sc < 35 ? 'color:#fff' : sc > 65 ? 'color:#0a2010' : '';
+      html += `<td style="${bg};${textClr}">${cell.fmt(cell.val)}</td>`;
+    });
+    html += `</tr>`;
+  });
+
+  html += `</table></div></div>`;
+
+  // Operator detail cards
+  html += `<div class="section"><div class="section-title">Operator Detail</div>`;
+  v.operators.forEach(op => {
+    const capexText = op.capex_investment !== 'nan' ? op.capex_investment : '—';
+    html += `<div class="product-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div class="product-name">${op.operator}</div>
+          <div class="product-cat">${op.sub_base_mln ? op.sub_base_mln + 'M subscribers · ' : ''}${op.market_share_pct || '?'}% market share</div>
+        </div>
+        <div class="score-circle" style="border-color:${hmColor(op.profitability_score*20)};color:${hmColor(op.profitability_score*20)};font-size:9px;width:44px;height:44px;flex-direction:column;gap:1px">
+          <div>${op.profitability_score}/5</div><div style="font-size:8px">HLTH</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;font-size:10px;color:var(--text-secondary)">
+        <div>📶 5G: <strong style="color:var(--text-primary)">${op.fiveG_pct != null ? op.fiveG_pct+'%' : '—'}</strong></div>
+        <div>📈 ARPU: <strong style="color:var(--text-primary)">${op.arpu_growth || '—'}</strong></div>
+        <div>🔄 Sub Growth: <strong style="color:var(--text-primary)">${op.subscriber_growth_pct != null ? op.subscriber_growth_pct+'%' : '—'}</strong></div>
+        <div>💰 Capex: <strong style="color:var(--text-primary)">${capexText.length > 30 ? capexText.substring(0,28)+'…' : capexText}</strong></div>
+        <div>🌍 Outbound: <strong style="color:var(--text-primary)">${op.outbound_roaming.substring(0,20)||'—'}</strong></div>
+        <div>✈️ Top Routes: <strong style="color:var(--text-primary)">${op.top_roaming_countries.substring(0,25)||'—'}</strong></div>
+      </div>
+      ${op.financial_comments && op.financial_comments !== 'nan' ?
+        `<div style="margin-top:6px;font-size:9px;color:var(--text-muted);font-style:italic">${op.financial_comments.substring(0,120)}</div>` : ''}
+    </div>`;
+  });
+  html += `</div>`;
+
+  document.getElementById('operators-content').innerHTML = html;
+
+  // Charts
+  setTimeout(() => {
+    // Doughnut: market share
+    const ops = v.operators.filter(o => o.market_share_pct);
+    if (ops.length) {
+      const ctx = document.getElementById('operators_doughnut')?.getContext('2d');
+      if (ctx) {
+        destroyChart('operators_doughnut');
+        chartInstances['operators_doughnut'] = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: ops.map(o => o.operator),
+            datasets: [{
+              data: ops.map(o => parseFloat(o.market_share_pct) || 0),
+              backgroundColor: ['#3b82f6','#06b6d4','#10b981','#f59e0b','#ef4444','#8b5cf6'],
+              borderColor: '#060b18', borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+              legend: {labels: {color: '#8ba3c7', font: {size: 9}, boxWidth: 8}},
+              tooltip: tooltipStyle()
+            }
+          }
+        });
+      }
+    }
+
+    // Scatter: revenue growth vs sub base (bubble = sub base)
+    const sOps = v.operators.filter(o => o.revenue_growth_score && o.sub_base_mln);
+    if (sOps.length) {
+      const ctx2 = document.getElementById('operators_scatter')?.getContext('2d');
+      if (ctx2) {
+        destroyChart('operators_scatter');
+        chartInstances['operators_scatter'] = new Chart(ctx2, {
+          type: 'bubble',
+          data: {
+            datasets: sOps.map((o, i) => ({
+              label: o.operator,
+              data: [{
+                x: parseFloat(o.market_share_pct) || 0,
+                y: o.revenue_growth_score,
+                r: Math.max(5, Math.min(20, (o.sub_base_mln || 1) / 30))
+              }],
+              backgroundColor: ['#3b82f6','#06b6d4','#10b981','#f59e0b','#ef4444'][i % 5] + '99',
+              borderColor: ['#3b82f6','#06b6d4','#10b981','#f59e0b','#ef4444'][i % 5],
+            }))
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {legend: {display: false}, tooltip: tooltipStyle()},
+            scales: {
+              x: {title: {display: true, text: 'Market Share %', color: '#4a6080', font:{size:9}}, ...axisStyle()},
+              y: {title: {display: true, text: 'Rev Growth Score', color: '#4a6080', font:{size:9}}, min: 0, max: 6, ...axisStyle()}
+            }
+          }
+        });
+      }
+    }
+  }, 50);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TAB: IMPACT ANALYSIS
+// ═══════════════════════════════════════════════════════════════════
+function renderImpact(v, name) {
+  let html = '';
+  const r = v.radar;
+
+  // Dual-layer radar
+  html += `<div class="chart-wrap">
+    <div class="chart-title">Impact Radar — Country vs Regional Average</div>
+    <div class="chart-canvas-wrap" style="height:250px"><canvas id="impact_radar"></canvas></div>
+    <div style="display:flex;gap:16px;justify-content:center;margin-top:8px">
+      <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:var(--text-muted)">
+        <div style="width:12px;height:3px;background:#3b82f6;border-radius:2px"></div> ${name}
+      </div>
+      <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:var(--text-muted)">
+        <div style="width:12px;height:3px;background:#10b981;border-radius:2px;opacity:.6"></div> Regional Avg
+      </div>
+    </div>
+  </div>`;
+
+  // Waterfall chart
+  html += `<div class="chart-wrap">
+    <div class="chart-title">Revenue Opportunity Waterfall — Mobileum Impact</div>
+    <div class="chart-canvas-wrap" style="height:200px"><canvas id="impact_waterfall"></canvas></div>
+  </div>`;
+
+  // Seasonal roaming calendar
+  const seasonal = v.seasonal_roaming || {};
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  html += `<div class="section"><div class="section-title">Seasonal Roaming Calendar</div>
+    <div class="cal-grid">`;
+  months.forEach((m, i) => {
+    const intensity = seasonal[i+1] || 1;
+    const colors = ['#1e3054','#1e3054','#1e4080','#1a5276','#1abc9c'];
+    const textColors = ['#4a6080','#4a6080','#7fb3d3','#fff','#000'];
+    html += `<div class="cal-month" style="background:${colors[intensity-1] || colors[0]};color:${textColors[intensity-1]||textColors[0]}"
+      title="${m}: ${['No data','Minimal','Low','Moderate','High','Peak'][intensity]||'Normal'} roaming">
+      ${m}</div>`;
+  });
+  html += `</div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
+      ${['No data','Minimal','Moderate','High','Peak'].map((l,i) => {
+        const c = ['#1e3054','#1e3054','#1e4080','#1a5276','#1abc9c'][i];
+        return `<div style="display:flex;align-items:center;gap:3px;font-size:9px;color:var(--text-muted)">
+          <div style="width:8px;height:8px;background:${c};border-radius:2px"></div>${l}</div>`;
+      }).join('')}
+    </div>
+  </div>`;
+
+  // IA dimension scores
+  html += `<div class="section"><div class="section-title">Impact Analysis Dimensions</div>`;
+  const dims = [
+    {label:'Outbound Roaming Impact', key:'ia_outbound_impact', src:'Impact Analysis'},
+    {label:'Inbound Roaming Impact', key:'ia_inbound_impact', src:'Impact Analysis'},
+    {label:'ARPU Impact', key:'ia_arpu_impact', src:'Impact Analysis'},
+    {label:'App/OTT Substitution', key:'ia_apps', src:'Impact Analysis'},
+    {label:'Revenue Growth Outlook', key:'ia_rev_growth', src:'Impact Analysis'},
+    {label:'Profitability Outlook', key:'ia_profitability', src:'Impact Analysis'},
+    {label:'MS Financial Need', key:'ia_need_ms_financial', src:'Impact Analysis'},
+    {label:'MS Technical Need', key:'ia_need_ms_technical', src:'Impact Analysis'},
+  ];
+
+  // Use first operator's IA data (country-level)
+  const op0 = v.operators[0] || {};
+  dims.forEach(d => {
+    const val = op0[d.key] || '—';
+    const score = trendToScore(val);
+    const barClr = ['#ef4444','#f59e0b','#3b82f6','#10b981','#10b981'][score-1] || '#3b82f6';
+    if (val === '—' || val === 'nan' || val === '') return;
+    html += `<div class="percentile-row" data-source="${d.src}">
+      <div class="perc-label">${d.label}</div>
+      <div class="perc-bar">
+        <div class="perc-fill" style="width:${score/5*100}%;background:${barClr}"></div>
+      </div>
+      <div class="perc-value" style="color:${barClr}">${score}/5</div>
+    </div>
+    <div style="font-size:9px;color:var(--text-muted);margin:-4px 0 6px 128px">${val.substring(0,60)}</div>`;
+  });
+  html += `</div>`;
+
+  // Per-operator IA summary
+  if (v.operators.length > 1) {
+    html += `<div class="section"><div class="section-title">Operator-Level IA Summary</div>`;
+    v.operators.forEach(op => {
+      const bizModel = op.ia_recommended_biz_model;
+      const fin = op.ia_financials;
+      if (!bizModel && !fin) return;
+      html += `<div style="background:var(--bg-card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px">
+        <div style="font-size:11px;font-weight:600;color:var(--text-primary);margin-bottom:4px">${op.operator}</div>
+        ${fin && fin !== 'nan' ? `<div style="font-size:10px;color:var(--text-secondary);margin-bottom:3px">💰 ${fin.substring(0,80)}</div>` : ''}
+        ${bizModel && bizModel !== 'nan' ? `<div style="font-size:10px;color:var(--blue-light)">🎯 ${bizModel.substring(0,80)}</div>` : ''}
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  document.getElementById('impact-content').innerHTML = html;
+
+  // Draw charts
+  setTimeout(() => {
+    // Radar — country vs regional avg
+    const regAvg = v.regional_averages;
+    createRadar('impact_radar', {
+      labels: ['Roaming Opp.','Fraud Risk','5G Upsell','ARPU Pressure','Sub Growth','Reg. Risk'],
+      values: [r.roaming_opportunity, r.fraud_risk, r.fiveG_upsell, r.arpu_pressure, r.subscriber_growth, r.regulatory_risk],
+      regional: [3, 2.6, (regAvg?.avg_5g || 31)/20, 3, 2, 2.5]
+    });
+
+    // Waterfall bar chart
+    const wf = v.waterfall;
+    if (wf) {
+      const ctx = document.getElementById('impact_waterfall')?.getContext('2d');
+      if (ctx) {
+        destroyChart('impact_waterfall');
+        const labels = ['Baseline','OTT Loss','ARPU Comp.','Churn Drag','Roaming Up','5G Upside','Net'];
+        const rawVals = [wf.base, wf.ott_substitution, wf.arpu_compression, wf.churn_pressure, wf.roaming_upside, wf.fiveG_upside, wf.net];
+        const colors = rawVals.map((v, i) => {
+          if (i === 0 || i === labels.length-1) return '#3b82f6';
+          return v >= 0 ? '#10b981' : '#ef4444';
+        });
+        chartInstances['impact_waterfall'] = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [{
+              data: rawVals.map(v => Math.abs(v)),
+              backgroundColor: colors,
+              borderRadius: 4,
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+              legend: {display: false},
+              tooltip: {
+                ...tooltipStyle(),
+                callbacks: {
+                  label: ctx2 => {
+                    const val = rawVals[ctx2.dataIndex];
+                    return ` ${val >= 0 ? '+' : ''}${val}%`;
+                  }
+                }
+              }
+            },
+            scales: {
+              x: axisStyle(),
+              y: {
+                ...axisStyle(),
+                title: {display: true, text: 'Revenue Index', color:'#4a6080', font:{size:9}}
+              }
+            }
+          }
+        });
+      }
+    }
+  }, 50);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TAB: MOBILEUM FIT
+// ═══════════════════════════════════════════════════════════════════
+function renderProducts(v, name) {
+  let html = '';
+  const products = v.product_ranking || [];
+
+  // Score bar chart top 6
+  html += `<div class="chart-wrap">
+    <div class="chart-title">Product Fit Score — All Mobileum Solutions</div>
+    <div class="chart-canvas-wrap" style="height:220px"><canvas id="products_bar"></canvas></div>
+  </div>`;
+
+  // Top 3 detailed
+  html += `<div class="section"><div class="section-title">Priority Recommendations</div>`;
+  products.slice(0, 3).forEach((p, i) => {
+    const isTop = i === 0;
+    const barClr = p.score > 75 ? '#10b981' : p.score > 50 ? '#f59e0b' : '#3b82f6';
+    html += `<div class="product-card ${isTop ? 'top' : ''}">
+      ${isTop ? '<div class="product-top-badge">★ #1 BEST FIT</div>' : `<div style="font-size:9px;color:var(--text-muted);margin-bottom:4px">#${i+1} RECOMMENDED</div>`}
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div class="product-name">${p.product}</div>
+        <div class="score-circle" style="border-color:${barClr};color:${barClr}">
+          ${p.score}
+        </div>
+      </div>
+      <div class="score-bar-wrap">
+        <div class="score-bar-bg"><div class="score-bar-fill" style="width:${p.score}%;background:${barClr}"></div></div>
+        <div class="score-num">${p.score}/100</div>
+      </div>
+      <div class="product-reason">${p.reason}</div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // All products ranked table
+  html += `<div class="section"><div class="section-title">Full Product Ranking</div>
+    <table class="op-table">
+      <tr><th>#</th><th>Product</th><th style="width:80px">Score</th><th>Rationale</th></tr>`;
+  products.forEach((p, i) => {
+    const barClr = p.score > 75 ? 'var(--green)' : p.score > 50 ? 'var(--yellow)' : 'var(--blue-light)';
+    html += `<tr>
+      <td style="color:var(--text-muted);font-size:10px">${i+1}</td>
+      <td class="op-name" style="font-size:11px">${p.product}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:4px">
+          <div class="score-bar-bg"><div class="score-bar-fill" style="width:${p.score}%;background:${barClr}"></div></div>
+          <span style="font-size:10px;font-weight:600;color:${barClr};white-space:nowrap">${p.score}</span>
+        </div>
+      </td>
+      <td style="font-size:9px;color:var(--text-muted)">${(p.reason||'').substring(0,60)}</td>
+    </tr>`;
+  });
+  html += `</table></div>`;
+
+  // Parsed Mobileum services from IA
+  const parsedServices = v.operators[0]?.mobileum_services_parsed || [];
+  if (parsedServices.length > 0) {
+    html += `<div class="section"><div class="section-title">Mobileum IA Service Detail (Operator Level)</div>`;
+    parsedServices.forEach(svc => {
+      html += `<div class="narrative-block">
+        <h4>${svc.name}</h4>
+        <p><strong>Category:</strong> ${svc.category}</p>
+        <p style="margin-top:4px">${svc.rationale}</p>
+        ${svc.kpi ? `<p style="margin-top:4px;color:var(--green)">📊 KPI: ${svc.kpi}</p>` : ''}
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  document.getElementById('products-content').innerHTML = html;
+
+  // Chart
+  setTimeout(() => {
+    const ctx = document.getElementById('products_bar')?.getContext('2d');
+    if (ctx && products.length) {
+      destroyChart('products_bar');
+      chartInstances['products_bar'] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: products.map(p => p.product.replace('–', '-').substring(0, 22)),
+          datasets: [{
+            data: products.map(p => p.score),
+            backgroundColor: products.map(p =>
+              p.score > 75 ? '#10b98166' : p.score > 50 ? '#f59e0b66' : '#3b82f666'),
+            borderColor: products.map(p =>
+              p.score > 75 ? '#10b981' : p.score > 50 ? '#f59e0b' : '#3b82f6'),
+            borderWidth: 1, borderRadius: 4
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true, maintainAspectRatio: false,
+          plugins: {legend:{display:false}, tooltip: tooltipStyle()},
+          scales: {
+            x: {...axisStyle(), min: 0, max: 100, title:{display:true,text:'Fit Score',color:'#4a6080',font:{size:9}}},
+            y: {
+              ...axisStyle(),
+              ticks: {...axisStyle().ticks, font:{size:9}}
+            }
+          }
+        }
+      });
+    }
+  }, 50);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TAB: STATISTICS
+// ═══════════════════════════════════════════════════════════════════
+function renderStats(v, name) {
+  let html = '';
+  const p = v.percentiles || {};
+  const ga = META.global_averages || {};
+  const ra = v.regional_averages || {};
+
+  // Anomaly callout
+  if (v.anomaly_text) {
+    html += `<div class="anomaly-box"><div class="anomaly-icon">⚠</div><div>${v.anomaly_text}<br><span style="font-size:9px;color:var(--text-muted)">Source: Regression on ${META.total_countries} countries (GDP per capita vs mobile penetration)</span></div></div>`;
+  }
+
+  // Percentile gauges
+  html += `<div class="section"><div class="section-title">Global Percentile Rankings</div>`;
+  const percMetrics = [
+    {label:'Mobile Penetration', key:'mobile_penetration', val: v.mobile_penetration_pct, unit:'%', src:'ITU 2024'},
+    {label:'GDP Growth', key:'gdp_growth', val: v.gdp_growth_pct, unit:'%', src:'World Bank 2024'},
+    {label:'Internet Users', key:'internet_users', val: v.internet_users_pct, unit:'%', src:'ITU 2024'},
+    {label:'GDP per Capita', key:'gdp_per_capita', val: v.gdp_per_capita_usd, unit:'USD', src:'World Bank 2024'},
+    {label:'5G Penetration (avg)', key:'avg_5g', val: v.stats?.avg_5g, unit:'%', src:'GSMA 2024'},
+    {label:'Avg Age', key:'avg_age', val: v.avg_age, unit:'yrs', src:'UN 2024'},
+  ];
+
+  percMetrics.forEach(m => {
+    const perc = p[m.key];
+    if (perc === null || perc === undefined) return;
+    const barClr = perc > 75 ? '#10b981' : perc > 50 ? '#3b82f6' : perc > 25 ? '#f59e0b' : '#ef4444';
+    html += `<div style="margin-bottom:12px" data-source="${m.src}">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span style="font-size:10px;color:var(--text-secondary)">${m.label}</span>
+        <span style="font-size:10px;color:var(--text-primary);font-weight:600">${m.val != null ? m.val.toFixed(m.unit==='USD'?0:1) + (m.unit==='USD'?' USD':m.unit==='yrs'?' yrs':'%') : '—'}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="perc-bar" style="flex:1">
+          <div class="perc-fill" style="width:${perc}%;background:${barClr}"></div>
+        </div>
+        <span style="font-size:10px;font-weight:600;color:${barClr};width:40px;text-align:right">${perc}th</span>
+      </div>
+      <div style="font-size:9px;color:var(--text-muted);margin-top:2px">
+        Global avg: ${ga[m.key] != null ? ga[m.key].toFixed(1) : '—'} · Region avg: ${ra[m.key.replace('avg_5g','avg_5g')] != null ? (ra[m.key]||0).toFixed(1) : '—'}
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // 4-metric bubble context chart
+  html += `<div class="chart-wrap">
+    <div class="chart-title">Position vs Region Peers — 4 Dimensions</div>
+    <div style="height:220px"><canvas id="stats_bubble"></canvas></div>
+    <div style="font-size:9px;color:var(--text-muted);margin-top:6px">X: Mobile Penetration · Y: GDP Growth · Size: Population · Color: 5G Level</div>
+  </div>`;
+
+  // Cluster peer comparison
+  const peers = Object.entries(C)
+    .filter(([k, cv]) => cv.cluster_name === v.cluster_name && k !== name)
+    .slice(0, 5);
+
+  if (peers.length) {
+    html += `<div class="section"><div class="section-title">Cluster Peers — ${v.cluster_name}</div>
+      <table class="op-table">
+        <tr><th>Country</th><th>Pen%</th><th>5G%</th><th>GDP Gr%</th><th>Operators</th></tr>`;
+    peers.forEach(([pName, pv]) => {
+      html += `<tr style="cursor:pointer" onclick="openCountry('${pName.replace(/'/g,"\\'")}')">
+        <td class="op-name">${getFlagEmoji(pv.iso)} ${pName}</td>
+        <td>${pv.mobile_penetration_pct?.toFixed(0)||'—'}%</td>
+        <td>${pv.stats?.avg_5g?.toFixed(0)||'—'}%</td>
+        <td>${pv.gdp_growth_pct?.toFixed(1)||'—'}%</td>
+        <td>${pv.num_operators}</td>
+      </tr>`;
+    });
+    html += `</table></div>`;
+  }
+
+  // Fraud decomposition
+  html += `<div class="section"><div class="section-title">Fraud Risk Decomposition</div>`;
+  const op0 = v.operators[0] || {};
+  const fraudDims = [
+    {label:'OTT/App Substitution', score: op0.ott_score || 3, detail: op0.ott_intl_calls},
+    {label:'Outbound Roaming Exposure', score: op0.outbound_roaming_score || 3, detail: op0.outbound_roaming},
+    {label:'Inbound Attack Surface', score: op0.inbound_roaming_score || 3, detail: op0.inbound_roaming},
+    {label:'Digital-Native Risk (Age)', score: v.avg_age < 28 ? 5 : v.avg_age < 33 ? 4 : 3, detail: `Avg age ${v.avg_age} yrs`},
+    {label:'Regulatory Gap', score: op0.regulatory_risk || 3, detail: op0.regulation_impact},
+  ];
+
+  const totalFraud = fraudDims.reduce((a, d) => a + d.score, 0);
+  const maxFraud = fraudDims.length * 5;
+  const fraudPct = Math.round(totalFraud / maxFraud * 100);
+
+  html += `<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+    <div style="text-align:center">
+      <div style="font-size:28px;font-weight:800;color:${fraudPct > 70 ? 'var(--red)' : fraudPct > 50 ? 'var(--yellow)' : 'var(--green)'}">${fraudPct}</div>
+      <div style="font-size:9px;color:var(--text-muted)">FRAUD RISK SCORE / 100</div>
+    </div>
+    <div style="flex:1">
+      ${fraudDims.map(d => {
+        const w = d.score / 5 * 100;
+        const c = d.score >= 4 ? 'var(--red)' : d.score >= 3 ? 'var(--yellow)' : 'var(--green)';
+        return `<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
+          <span style="font-size:9px;color:var(--text-muted);width:140px;flex-shrink:0">${d.label}</span>
+          <div class="perc-bar" style="flex:1"><div class="perc-fill" style="width:${w}%;background:${c}"></div></div>
+          <span style="font-size:10px;font-weight:600;color:${c};width:20px;text-align:right">${d.score}</span>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+  html += `</div>`;
+
+  document.getElementById('stats-content').innerHTML = html;
+
+  // Bubble chart: region peers
+  setTimeout(() => {
+    const regionPeers = Object.entries(C).filter(([k, cv]) => cv.region === v.region).slice(0, 20);
+    const ctx = document.getElementById('stats_bubble')?.getContext('2d');
+    if (ctx) {
+      destroyChart('stats_bubble');
+      chartInstances['stats_bubble'] = new Chart(ctx, {
+        type: 'bubble',
+        data: {
+          datasets: regionPeers.map(([cn, cv]) => ({
+            label: cn,
+            data: [{
+              x: cv.mobile_penetration_pct || 0,
+              y: cv.gdp_growth_pct || 0,
+              r: Math.max(4, Math.min(18, (cv.population_mln || 1) / 50))
+            }],
+            backgroundColor: cn === name
+              ? '#f59e0bcc'
+              : (CLUSTER_COLORS[cv.cluster_name] || '#3b82f6') + '55',
+            borderColor: cn === name ? '#f59e0b' : 'transparent',
+            borderWidth: cn === name ? 2 : 0,
+          }))
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: {display: false},
+            tooltip: {
+              ...tooltipStyle(),
+              callbacks: {
+                label: ctx2 => {
+                  const d = ctx2.raw;
+                  return ` ${ctx2.dataset.label}: Pen=${d.x}% GDP=${d.y}%`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {...axisStyle(), title:{display:true,text:'Mobile Penetration %',color:'#4a6080',font:{size:9}}},
+            y: {...axisStyle(), title:{display:true,text:'GDP Growth %',color:'#4a6080',font:{size:9}}}
+          }
+        }
+      });
+    }
+  }, 50);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TAB: INTELLIGENCE NARRATIVE
+// ═══════════════════════════════════════════════════════════════════
+function renderNarrative(v, name) {
+  const op0 = v.operators[0] || {};
+  const isYoung = v.avg_age < 30;
+  const isAging = v.avg_age > 42;
+  const isHighGDP = v.gdp_per_capita_usd > 20000;
+  const is5GLeader = (v.stats?.avg_5g || 0) > 60;
+  const is5GLagging = (v.stats?.avg_5g || 0) < 15;
+  const isRoamingHub = v.cluster_name.includes('Roaming Hub');
+  const isFrontier = v.cluster_name === 'Frontier Market';
+  const highFraud = v.stats?.fraud_score > 3.5;
+  const operators_str = v.operators.map(o => o.operator).join(', ');
+  const topOp = v.operators.reduce((a, b) => (a.sub_base_mln || 0) > (b.sub_base_mln || 0) ? a : b, {operator: '—'});
+  const fiveGAvg = v.stats?.avg_5g?.toFixed(0) || '—';
+
+  let html = `
+  <div class="narrative-block">
+    <h4>Market Overview</h4>
+    <p>
+      <strong>${name}</strong> is a ${
+        isHighGDP ? 'high-income' : v.gdp_per_capita_usd > 5000 ? 'upper-middle income' : 'emerging market'
+      } country in the <strong>${v.region}</strong> region${v.sub_region ? ` (${v.sub_region})` : ''}.
+      With a population of <strong>${v.population_mln ? v.population_mln.toFixed(0) + 'M' : '—'}</strong>
+      and ${v.mobile_users_mln ? v.mobile_users_mln.toFixed(0) + 'M' : '—'} active mobile subscribers
+      (<strong>${v.mobile_penetration_pct ? v.mobile_penetration_pct.toFixed(0) + '%' : '—'} penetration</strong>),
+      the market is served by <strong>${v.num_operators} operator${v.num_operators > 1 ? 's' : ''}</strong>
+      (${operators_str}).
+      The dominant player is <strong>${topOp.operator}</strong>
+      ${topOp.sub_base_mln ? `with ${topOp.sub_base_mln}M subscribers` : ''}.
+    </p>
+    <p style="margin-top:8px">
+      GDP growth stands at <strong>${v.gdp_growth_pct != null ? v.gdp_growth_pct + '%' : '—'}</strong>
+      ${v.gdp_growth_pct > 5 ? '— one of the fastest-growing economies globally' :
+        v.gdp_growth_pct > 2 ? '— moderate growth trajectory' :
+        v.gdp_growth_pct < 0 ? '— currently in economic contraction' : ''}.
+      The country belongs to the <strong>${v.cluster_name}</strong> market cluster,
+      suggesting a strategic focus on <em>${v.cluster_play || 'core Mobileum solutions'}</em>.
+    </p>
+  </div>
+
+  <div class="narrative-block">
+    <h4>Demographic & Digital Behaviour</h4>
+    <p>
+      The average age of <strong>${v.avg_age ? v.avg_age + ' years' : '—'}</strong>
+      ${isYoung ? 'indicates a highly digital-native, mobile-first population with strong OTT and app usage. This demographic is the primary driver of data demand and creates elevated bypass fraud risk via WhatsApp voice and video calls.' :
+        isAging ? 'reflects an aging population where mobile usage tends toward voice and traditional services. Churn risk is lower but ARPU uplift through data migration is the key opportunity.' :
+        'places this market in the middle-age bracket — a blend of digital-native and traditional mobile users.'}
+      Internet penetration of <strong>${v.internet_users_pct ? v.internet_users_pct + '%' : '—'}</strong>
+      ${v.internet_users_pct > 90 ? 'confirms a fully digitised market where advanced SaaS and eSIM solutions are viable immediately.' :
+        v.internet_users_pct > 60 ? 'shows a maturing digital market with room for smart device and 5G upsell.' :
+        'highlights a digital gap — managed services and infrastructure solutions are likely more relevant than SaaS.'}
+    </p>
+  </div>
+
+  <div class="narrative-block">
+    <h4>5G & Technology Landscape</h4>
+    <p>
+      Average 5G penetration across operators is <strong>${fiveGAvg}%</strong>.
+      ${is5GLeader ? `This is a 5G-advanced market where the eSIM, Steering of Roaming, and Roaming DNA products operate at full capability. Active testing investment protects the 5G QoE advantage.` :
+        is5GLagging ? `5G deployment is in early stages. This creates a strong opportunity for Mobileum's 5G Active Testing and Managed Services, helping operators accelerate their rollout with validated network performance.` :
+        `5G deployment is progressing. The focus should be on 5G testing, performance assurance, and subscriber migration management.`}
+    </p>
+  </div>
+
+  <div class="narrative-block">
+    <h4>Roaming Behaviour</h4>
+    <p>
+      ${isRoamingHub ?
+        `${name} is identified as a <strong>Roaming Hub</strong> — with exceptional inbound and outbound volumes driven by ${
+          name.includes('UAE') || name.includes('Qatar') || name.includes('Bahrain') ? 'a large expatriate population and business/tourism traffic' :
+          name.includes('Singapore') || name.includes('Hong Kong') ? 'its role as a regional business and transit hub' :
+          'high business travel and diaspora connectivity'
+        }. This makes Steering of Roaming, Roaming DNA, and Roaming Campaign Management the primary value drivers.` :
+        `Outbound roaming trend: <strong>${op0.outbound_roaming || '—'}</strong>.
+        Inbound trend: <strong>${op0.inbound_roaming || '—'}</strong>.
+        ${op0.top_roaming_countries && op0.top_roaming_countries !== 'nan' ? `Top roaming corridors: <strong>${op0.top_roaming_countries}</strong>.` : ''}
+        ${op0.biz_travellers && op0.biz_travellers !== 'nan' ? `Business traveller profile: <strong>${op0.biz_travellers}</strong>.` : ''}`
+      }
+    </p>
+    ${op0.roaming_comments && op0.roaming_comments !== 'nan' ?
+      `<p style="margin-top:6px;font-style:italic;color:var(--text-muted)">${op0.roaming_comments.substring(0,200)}</p>` : ''}
+  </div>
+
+  <div class="narrative-block">
+    <h4>Regulatory Environment</h4>
+    <p>
+      ${op0.regulation_comments && op0.regulation_comments !== 'nan' ?
+        op0.regulation_comments.substring(0, 300) :
+        `Regulatory environment in ${name} is ${op0.regulation_impact?.toLowerCase() || 'under standard national telecom authority oversight'}.`}
+    </p>
+    ${op0.regulations && op0.regulations !== 'nan' ?
+      `<p style="margin-top:6px;font-size:10px;color:var(--text-muted)">${op0.regulations.substring(0,250)}</p>` : ''}
+  </div>
+
+  <div class="narrative-block">
+    <h4>Mobileum Strategic Opportunity</h4>
+    <p>
+      ${highFraud ? `<strong>Fraud exposure is elevated</strong> — OTT substitution, IDD bypass risk, and the ${isYoung ? 'young, digitally-active' : 'mobile-heavy'} subscriber base create conditions for SIM-box fraud, flash calls, and IRSF. RAID 9 with AI-adaptive rules is the priority recommendation. ` : ''}
+      ${is5GLagging ? `<strong>5G infrastructure gap</strong> — Active testing and performance assurance tools are critical to support operators' network expansion plans. ` : ''}
+      ${isRoamingHub ? `<strong>Roaming hub dynamics</strong> — The Steering of Roaming and Roaming DNA products can directly protect and grow the high-value roaming revenue stream. ` : ''}
+      ${isFrontier ? `<strong>Frontier market profile</strong> — Managed Services provides the operational foundation that allows operators in this market to deploy enterprise-grade telecom capabilities without heavy upfront capex. ` : ''}
+      The recommended business model is: <strong>${op0.ia_recommended_biz_model && op0.ia_recommended_biz_model !== 'nan' ? op0.ia_recommended_biz_model : 'Evaluate based on operator financial capacity'}</strong>.
+    </p>
+  </div>
+
+  ${op0.key_events && op0.key_events !== 'nan' ? `
+  <div class="narrative-block">
+    <h4>Key Market Events</h4>
+    <p style="font-size:10px;color:var(--text-secondary)">${op0.key_events.substring(0, 400)}</p>
+  </div>` : ''}
+
+  <div style="margin-top:16px;padding:10px;background:var(--bg-card2);border:1px solid var(--border);border-radius:8px">
+    <div style="font-size:9px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Data Sources</div>
+    ${META.data_sources.map(s => `<div style="font-size:9px;color:var(--text-muted);margin-bottom:2px">• ${s}</div>`).join('')}
+  </div>`;
+
+  document.getElementById('narrative-content').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CHART HELPERS
+// ═══════════════════════════════════════════════════════════════════
+function createRadar(id, {labels, values, regional}) {
+  const ctx = document.getElementById(id)?.getContext('2d');
+  if (!ctx) return;
+  destroyChart(id);
+  const datasets = [{
+    label: currentCountry || 'Country',
+    data: values,
+    backgroundColor: 'rgba(59,130,246,0.2)',
+    borderColor: '#3b82f6',
+    borderWidth: 2,
+    pointBackgroundColor: '#3b82f6',
+    pointRadius: 3,
+  }];
+  if (regional) {
+    datasets.push({
+      label: 'Regional Avg',
+      data: regional,
+      backgroundColor: 'rgba(16,185,129,0.1)',
+      borderColor: '#10b98177',
+      borderWidth: 1.5,
+      pointBackgroundColor: '#10b981',
+      pointRadius: 2,
+      borderDash: [4, 3],
+    });
+  }
+  chartInstances[id] = new Chart(ctx, {
+    type: 'radar',
+    data: {labels, datasets},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {legend:{labels:{color:'#8ba3c7',font:{size:9},boxWidth:8}}, tooltip: tooltipStyle()},
+      scales: {
+        r: {
+          min: 0, max: 5,
+          grid: {color:'#1e3054'},
+          ticks: {display:false, stepSize:1},
+          pointLabels: {color:'#8ba3c7', font:{size:9}},
+          angleLines: {color:'#1e3054'},
+        }
+      }
+    }
+  });
+}
+
+function tooltipStyle() {
+  return {
+    backgroundColor: 'rgba(13,22,40,0.95)',
+    borderColor: '#1e3054',
+    borderWidth: 1,
+    titleColor: '#f0f4ff',
+    bodyColor: '#8ba3c7',
+    cornerRadius: 6,
+    padding: 8,
+    titleFont: {size:11, family:'Inter'},
+    bodyFont: {size:10, family:'Inter'},
+  };
+}
+
+function axisStyle() {
+  return {
+    grid: {color:'#1e3054'},
+    ticks: {color:'#8ba3c7', font:{size:9}},
+    border: {color:'#1e3054'},
+  };
+}
+
+function hmColor(score) {
+  // score 0-100
+  const s = Math.max(0, Math.min(100, score || 0));
+  if (s < 20) return '#ef4444';
+  if (s < 40) return '#f59e0b';
+  if (s < 60) return '#3b82f6';
+  if (s < 80) return '#10b981';
+  return '#06d6a0';
+}
+
+function trendToScore(val) {
+  if (!val || val === 'nan') return 3;
+  const v = val.toLowerCase();
+  if (v.includes('very high') || v.includes('major') || v.includes('strongly')) return 5;
+  if (v.includes('high') || v.includes('growing') || v.includes('up') || v.includes('increasing')) return 4;
+  if (v.includes('moderate') || v.includes('stable') || v.includes('flat') || v.includes('marginal')) return 3;
+  if (v.includes('low') || v.includes('declining') || v.includes('down') || v.includes('decreasing')) return 2;
+  if (v.includes('very low') || v.includes('none') || v.includes('minimal')) return 1;
+  return 3;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// COMPARISON MODAL
+// ═══════════════════════════════════════════════════════════════════
+function openCompareModal() {
+  if (currentCountry && compareList.length < 3 && !compareList.includes(currentCountry)) {
+    compareList.push(currentCountry);
+  }
+  if (compareList.length >= 2) {
+    runComparison();
+  } else {
+    // Show picker
+    const countryList = Object.keys(C).sort();
+    let html = `<div style="margin-bottom:12px;font-size:12px;color:var(--text-secondary)">
+      Select 2-3 countries to compare side by side. Click a country to add it.
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;max-height:200px;overflow-y:auto">`;
+    countryList.forEach(c => {
+      const selected = compareList.includes(c);
+      html += `<button onclick="toggleCompare('${c.replace(/'/g,"\\'")}',this)"
+        style="padding:4px 10px;border-radius:16px;font-size:11px;cursor:pointer;font-family:inherit;border:1px solid var(--border);
+        background:${selected ? 'var(--blue)' : 'transparent'};color:${selected ? '#fff' : 'var(--text-secondary)'}">
+        ${getFlagEmoji(C[c].iso)} ${c}
+      </button>`;
+    });
+    html += `</div><div style="margin-top:12px;display:flex;gap:8px">
+      <button onclick="runComparison()" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Compare Selected</button>
+      <button onclick="clearCompare()" style="background:transparent;border:1px solid var(--border);color:var(--text-secondary);border-radius:8px;padding:8px 16px;font-size:12px;cursor:pointer;font-family:inherit">Clear</button>
+    </div>`;
+    document.getElementById('modal-title').textContent = 'Select Countries to Compare';
+    document.getElementById('modal-body').innerHTML = html;
+    document.getElementById('modal-overlay').classList.add('open');
+  }
+}
+
+function toggleCompare(name, btn) {
+  if (compareList.includes(name)) {
+    compareList = compareList.filter(c => c !== name);
+    btn.style.background = 'transparent'; btn.style.color = 'var(--text-secondary)';
+  } else if (compareList.length < 3) {
+    compareList.push(name);
+    btn.style.background = 'var(--blue)'; btn.style.color = '#fff';
+  }
+  updateCompareBar();
+}
+
+function updateCompareBar() {
+  const bar = document.getElementById('compare-bar');
+  if (compareList.length === 0) { bar.classList.remove('visible'); return; }
+  bar.classList.add('visible');
+  document.getElementById('compare-pills').innerHTML = compareList.map(c =>
+    `<div class="compare-pill">${getFlagEmoji(C[c]?.iso||'')} ${c}
+      <span class="compare-remove" onclick="removeCompare('${c.replace(/'/g,"\\'")}')">✕</span>
+    </div>`
+  ).join('');
+}
+
+function removeCompare(name) {
+  compareList = compareList.filter(c => c !== name);
+  updateCompareBar();
+}
+
+function clearCompare() {
+  compareList = [];
+  updateCompareBar();
+  closeModal();
+}
+
+function runComparison() {
+  if (compareList.length < 2) { openCompareModal(); return; }
+  const countries = compareList.map(c => ({name: c, data: C[c]})).filter(x => x.data);
+  const metrics = [
+    {label:'Population (M)', key: v => v.population_mln?.toFixed(0) || '—'},
+    {label:'Mobile Users (M)', key: v => v.mobile_users_mln?.toFixed(0) || '—'},
+    {label:'Penetration %', key: v => v.mobile_penetration_pct?.toFixed(0) || '—'},
+    {label:'GDP Growth %', key: v => v.gdp_growth_pct?.toFixed(1) || '—'},
+    {label:'GDP per Capita', key: v => '$' + fmtNum(v.gdp_per_capita_usd)},
+    {label:'Avg Age', key: v => v.avg_age?.toFixed(1) || '—'},
+    {label:'Internet %', key: v => v.internet_users_pct?.toFixed(0) || '—'},
+    {label:'5G Avg %', key: v => v.stats?.avg_5g?.toFixed(0) || '—'},
+    {label:'Roaming Intensity', key: v => (v.stats?.roaming_intensity || 0).toFixed(1) + '/5'},
+    {label:'Fraud Score', key: v => (v.stats?.fraud_score || 0).toFixed(1) + '/5'},
+    {label:'# Operators', key: v => v.num_operators},
+    {label:'Cluster', key: v => v.cluster_name},
+    {label:'Top Mobileum Product', key: v => v.top_product?.product || '—'},
+    {label:'Top Product Score', key: v => v.top_product?.score + '/100' || '—'},
+  ];
+
+  const colW = `${Math.floor(80 / countries.length)}%`;
+  let html = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11px">
+    <tr>
+      <th style="text-align:left;padding:8px 10px;color:var(--text-muted);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border);width:20%">Metric</th>
+      ${countries.map(c => `<th style="text-align:center;padding:8px 10px;font-size:13px;font-weight:700;border-bottom:1px solid var(--border);width:${colW}">
+        ${getFlagEmoji(c.data.iso)} ${c.name}
+        <div style="font-size:9px;font-weight:400;color:var(--text-muted)">${c.data.region}</div>
+      </th>`).join('')}
+    </tr>`;
+
+  metrics.forEach(m => {
+    html += `<tr>
+      <td style="padding:7px 10px;color:var(--text-secondary);font-size:10px;border-bottom:1px solid rgba(30,48,84,.3)">${m.label}</td>
+      ${countries.map(c => `<td style="padding:7px 10px;text-align:center;border-bottom:1px solid rgba(30,48,84,.3);font-weight:500">${m.key(c.data)}</td>`).join('')}
+    </tr>`;
+  });
+  html += `</table></div>`;
+
+  // Comparison radar
+  html += `<div style="margin-top:20px">
+    <div style="font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Impact Dimensions Comparison</div>
+    <div style="height:250px"><canvas id="compare_radar"></canvas></div>
+  </div>`;
+
+  document.getElementById('modal-title').textContent = `Comparing: ${compareList.join(' vs ')}`;
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal-overlay').classList.add('open');
+
+  setTimeout(() => {
+    const ctx = document.getElementById('compare_radar')?.getContext('2d');
+    if (ctx) {
+      const dims = ['roaming_opportunity','fraud_risk','fiveG_upsell','arpu_pressure','subscriber_growth','regulatory_risk'];
+      const clrs = ['#3b82f6','#10b981','#f59e0b','#ef4444'];
+      const cacheKey = 'compare_radar';
+      if (chartInstances[cacheKey]) { chartInstances[cacheKey].destroy(); }
+      chartInstances[cacheKey] = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: ['Roaming','Fraud','5G','ARPU Pres.','Sub Growth','Regulatory'],
+          datasets: countries.map((c, i) => ({
+            label: c.name,
+            data: dims.map(d => c.data.radar?.[d] || 3),
+            backgroundColor: clrs[i] + '22',
+            borderColor: clrs[i],
+            borderWidth: 2,
+            pointRadius: 3,
+          }))
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {legend:{labels:{color:'#8ba3c7',font:{size:10},boxWidth:8}}, tooltip: tooltipStyle()},
+          scales: {r: {min:0, max:5, grid:{color:'#1e3054'}, ticks:{display:false}, pointLabels:{color:'#8ba3c7',font:{size:9}}, angleLines:{color:'#1e3054'}}}
+        }
+      });
+    }
+  }, 100);
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SEARCH
+// ═══════════════════════════════════════════════════════════════════
+document.getElementById('search-box').addEventListener('input', function() {
+  const q = this.value.toLowerCase().trim();
+  const res = document.getElementById('search-results');
+  if (!q) { res.style.display = 'none'; return; }
+  const matches = Object.keys(C).filter(c => c.toLowerCase().includes(q)).slice(0, 10);
+  if (!matches.length) { res.style.display = 'none'; return; }
+  res.innerHTML = matches.map(c =>
+    `<div class="search-item" onclick="openCountry('${c.replace(/'/g,"\\'")}');this.parentElement.style.display='none';document.getElementById('search-box').value='${c}'">
+      ${getFlagEmoji(C[c].iso)} ${c} <span style="color:var(--text-muted);font-size:10px">${C[c].region}</span>
+    </div>`
+  ).join('');
+  res.style.display = 'block';
+});
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#search-box') && !e.target.closest('#search-results')) {
+    document.getElementById('search-results').style.display = 'none';
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// EXPORT
+// ═══════════════════════════════════════════════════════════════════
+function exportReport() {
+  if (!currentCountry) {
+    alert('Please select a country first to export its report.');
+    return;
+  }
+  const v = C[currentCountry];
+  const date = new Date().toLocaleDateString('en-US', {year:'numeric', month:'long', day:'numeric'});
+
+  const printWin = window.open('', '_blank');
+  printWin.document.write(`<!DOCTYPE html><html><head>
+    <title>Mobileum Intelligence Report — ${currentCountry}</title>
+    <style>
+      body{font-family:Arial,sans-serif;margin:30px;color:#111;line-height:1.5}
+      h1{color:#1d4ed8;font-size:20px}h2{color:#2563eb;font-size:14px;margin-top:20px;border-bottom:1px solid #ddd;padding-bottom:4px}
+      table{width:100%;border-collapse:collapse;margin-top:10px;font-size:12px}
+      th{background:#1d4ed8;color:#fff;padding:6px 10px;text-align:left}
+      td{padding:6px 10px;border-bottom:1px solid #eee}
+      .kpi{display:inline-block;background:#f0f6ff;border:1px solid #ddd;border-radius:6px;padding:8px 12px;margin:4px;min-width:120px}
+      .kpi-label{font-size:9px;color:#666;text-transform:uppercase}
+      .kpi-value{font-size:18px;font-weight:700;color:#1d4ed8}
+      .top-badge{background:#fef3c7;border:1px solid #f59e0b;border-radius:6px;padding:8px 12px;margin-top:10px}
+      .footer{margin-top:30px;font-size:10px;color:#999;border-top:1px solid #ddd;padding-top:10px}
+    </style></head><body>
+    <h1>🌐 Mobileum Global Telecom Intelligence Report</h1>
+    <p style="color:#666;font-size:12px">Generated: ${date} | Confidential</p>
+    <h2>${getFlagEmoji(v.iso)} ${currentCountry} — ${v.region}${v.sub_region ? ' / ' + v.sub_region : ''}</h2>
+    <div>
+      <div class="kpi"><div class="kpi-label">Population</div><div class="kpi-value">${v.population_mln?.toFixed(0)||'—'}M</div></div>
+      <div class="kpi"><div class="kpi-label">Mobile Users</div><div class="kpi-value">${v.mobile_users_mln?.toFixed(0)||'—'}M</div></div>
+      <div class="kpi"><div class="kpi-label">Penetration</div><div class="kpi-value">${v.mobile_penetration_pct?.toFixed(0)||'—'}%</div></div>
+      <div class="kpi"><div class="kpi-label">GDP Growth</div><div class="kpi-value">${v.gdp_growth_pct||'—'}%</div></div>
+      <div class="kpi"><div class="kpi-label">5G Avg</div><div class="kpi-value">${v.stats?.avg_5g?.toFixed(0)||'—'}%</div></div>
+      <div class="kpi"><div class="kpi-label">Avg Age</div><div class="kpi-value">${v.avg_age||'—'} yrs</div></div>
+    </div>
+    <h2>Operators (${v.num_operators})</h2>
+    <table><tr><th>Operator</th><th>Subs (M)</th><th>Market Share</th><th>5G %</th><th>Revenue Trend</th><th>Profitability</th></tr>
+    ${v.operators.map(op => `<tr><td>${op.operator}</td><td>${op.sub_base_mln||'—'}</td><td>${op.market_share_pct||'—'}%</td><td>${op.fiveG_pct||'—'}%</td><td>${op.revenue_growth||'—'}</td><td>${op.profitability||'—'}</td></tr>`).join('')}
+    </table>
+    <h2>Top Mobileum Recommendations</h2>
+    ${v.product_ranking?.slice(0,5).map((p,i) => `
+      <div class="top-badge" style="${i===0?'':'background:#f9fafb;border-color:#ddd;'}">
+        <strong>#${i+1} ${p.product}</strong> — Score: ${p.score}/100<br>
+        <span style="font-size:11px;color:#555">${p.reason}</span>
+      </div>`).join('')}
+    <h2>Market Cluster</h2>
+    <p><strong>${v.cluster_name}</strong><br>${v.cluster_play || ''}</p>
+    ${v.anomaly_text ? `<h2>Statistical Anomaly</h2><p style="background:#fffbeb;padding:8px;border-left:3px solid #f59e0b">${v.anomaly_text}</p>` : ''}
+    <div class="footer">
+      <strong>Data Sources:</strong> ${META.data_sources.join(' | ')}<br>
+      Mobileum Global Telecom Intelligence Platform · ${date}
+    </div>
+    </body></html>`);
+  printWin.document.close();
+  printWin.print();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════════════
+function fmt(val, unit, decimals = 0) {
+  if (val === null || val === undefined) return '—';
+  const n = typeof val === 'number' ? val : parseFloat(val);
+  if (isNaN(n)) return '—';
+  return n.toFixed(decimals) + unit;
+}
+
+function fmtNum(val) {
+  if (!val) return '—';
+  if (val >= 1000) return (val / 1000).toFixed(0) + 'K';
+  return val.toFixed(0);
+}
+
+function getFlagEmoji(iso) {
+  if (!iso || iso === 'UNK') return '🌐';
+  const flags = {
+    'SAU':'🇸🇦','ARE':'🇦🇪','QAT':'🇶🇦','KWT':'🇰🇼','BHR':'🇧🇭','OMN':'🇴🇲',
+    'JOR':'🇯🇴','LBN':'🇱🇧','SYR':'🇸🇾','IRQ':'🇮🇶','IRN':'🇮🇷','YEM':'🇾🇪',
+    'PSE':'🇵🇸','EGY':'🇪🇬','LBY':'🇱🇾','TUN':'🇹🇳','DZA':'🇩🇿','MAR':'🇲🇦',
+    'SDN':'🇸🇩','TUR':'🇹🇷','PAK':'🇵🇰','AFG':'🇦🇫','KAZ':'🇰🇿','UZB':'🇺🇿',
+    'TKM':'🇹🇲','KGZ':'🇰🇬','TJK':'🇹🇯','ARM':'🇦🇲','AZE':'🇦🇿','GEO':'🇬🇪',
+    'DEU':'🇩🇪','FRA':'🇫🇷','GBR':'🇬🇧','ITA':'🇮🇹','ESP':'🇪🇸','NLD':'🇳🇱',
+    'BEL':'🇧🇪','CHE':'🇨🇭','AUT':'🇦🇹','SWE':'🇸🇪','NOR':'🇳🇴','DNK':'🇩🇰',
+    'FIN':'🇫🇮','POL':'🇵🇱','CZE':'🇨🇿','HUN':'🇭🇺','ROU':'🇷🇴','BGR':'🇧🇬',
+    'GRC':'🇬🇷','PRT':'🇵🇹','IRL':'🇮🇪','HRV':'🇭🇷','SRB':'🇷🇸','SVK':'🇸🇰',
+    'UKR':'🇺🇦','RUS':'🇷🇺','BLR':'🇧🇾','LTU':'🇱🇹','LVA':'🇱🇻','EST':'🇪🇪',
+    'SVN':'🇸🇮','BIH':'🇧🇦','MKD':'🇲🇰','ALB':'🇦🇱','MNE':'🇲🇪','MDA':'🇲🇩',
+    'LUX':'🇱🇺','MLT':'🇲🇹','CYP':'🇨🇾','ISL':'🇮🇸','ISR':'🇮🇱',
+    'CHN':'🇨🇳','JPN':'🇯🇵','KOR':'🇰🇷','PRK':'🇰🇵','IND':'🇮🇳','IDN':'🇮🇩',
+    'AUS':'🇦🇺','NZL':'🇳🇿','SGP':'🇸🇬','MYS':'🇲🇾','THA':'🇹🇭','PHL':'🇵🇭',
+    'VNM':'🇻🇳','BGD':'🇧🇩','LKA':'🇱🇰','MMR':'🇲🇲','KHM':'🇰🇭','LAO':'🇱🇦',
+    'NPL':'🇳🇵','MNG':'🇲🇳','TWN':'🇹🇼','HKG':'🇭🇰','MAC':'🇲🇴','PNG':'🇵🇬',
+    'FJI':'🇫🇯','BRN':'🇧🇳','MDV':'🇲🇻','BTN':'🇧🇹','TLS':'🇹🇱','SLB':'🇸🇧',
+    'VUT':'🇻🇺','WSM':'🇼🇸','TON':'🇹🇴','KIR':'🇰🇮','FSM':'🇫🇲','PLW':'🇵🇼',
+    'MHL':'🇲🇭','NRU':'🇳🇷','TUV':'🇹🇻',
+    'BRA':'🇧🇷','MEX':'🇲🇽','ARG':'🇦🇷','COL':'🇨🇴','CHL':'🇨🇱','PER':'🇵🇪',
+    'VEN':'🇻🇪','ECU':'🇪🇨','BOL':'🇧🇴','PRY':'🇵🇾','URY':'🇺🇾','GUY':'🇬🇾',
+    'SUR':'🇸🇷','CRI':'🇨🇷','PAN':'🇵🇦','GTM':'🇬🇹','HND':'🇭🇳','SLV':'🇸🇻',
+    'NIC':'🇳🇮','BLZ':'🇧🇿','CUB':'🇨🇺','DOM':'🇩🇴','JAM':'🇯🇲','TTO':'🇹🇹',
+    'PRI':'🇵🇷','XKX':'🇽🇰',
+  };
+  return flags[iso] || '🌐';
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  // Update stats bar
+  document.getElementById('stat-countries').textContent = META.total_countries;
+  document.getElementById('stat-ops').textContent = META.total_operators;
+  document.getElementById('stat-regions').textContent = META.regions.length;
+
+  initMap();
+});
+
+</script>
+</body>
+</html>

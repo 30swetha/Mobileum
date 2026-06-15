@@ -66,6 +66,93 @@ const MOCK_COMPETITORS = [
   { "name": "BICS", "category": "Partner / Niche", "key_offerings": "International voice/SMS carrier routing, roaming hubs, and network quality testing.", "versus_mobileum": "Mobileum is a software vendor partner; we compete only on roaming active testing lines." }
 ];
 
+const MOCK_ACCOUNT_INSIGHTS = {
+  "Saudi Arabia": {
+    productSection: {
+      mobileumProducts: ['RAID 9 Fraud Management', 'Roaming DNA', 'Steering of Roaming', '5G Active Testing'],
+      competitionProducts: ['Syniverse clearing & transport', 'Tomia roaming steering', 'Subex assurance'],
+      productGaps: ['Managed security operations for smaller operators', 'Faster deployment accelerators for legacy stacks'],
+      managedServicesPossibility: ['24x7 operations support', 'Fraud analytics tuning', 'Roaming performance managed service'],
+      replaceableCompetitors: ['Syniverse', 'Subex']
+    },
+    financialSection: {
+      profit: '$3.8M annualized revenue potential',
+      capexInvestment: '$1.2M in platform enablement and deployment support',
+      note: 'High-value upsell path through managed services and roaming assurance.'
+    },
+    renewalSection: {
+      amcRenewal: [
+        { name: 'Risk / RAID 9', value: '$420K', status: 'Renewal due in Q3' },
+        { name: 'Roaming Management', value: '$210K', status: 'In discussion' }
+      ],
+      managedServicesRenewal: [
+        { name: 'Fraud operations support', value: '$180K', status: 'Renewal ready' },
+        { name: 'Roaming analytics service', value: '$160K', status: 'Pilot under review' }
+      ]
+    },
+    healthSection: {
+      installedProductWiseSupportTicket: [
+        { product: 'RAID 9', tickets: 18, trend: 'Stable' },
+        { product: 'Roaming DNA', tickets: 11, trend: 'Improving' },
+        { product: '5G Active Testing', tickets: 7, trend: 'Low' }
+      ],
+      usageOfInstalledProducts: [
+        { product: 'RAID 9', usage: '92% of fraud rules active' },
+        { product: 'Roaming DNA', usage: '78% of roaming steering workflows used' },
+        { product: 'Active Testing', usage: '65% of network test cases in production' }
+      ]
+    },
+    plan2026: {
+      productsFocusedOn: ['Steering of Roaming', 'Roaming DNA', 'Managed Fraud Operations'],
+      valueOfOpportunities: '$5.4M pipeline in 2026',
+      pocOrDemoGiven: 'PoC completed for roaming analytics and fraud rules tuning',
+      consultingTrialsGiven: '2 consulting trials and 1 sandbox onboarding workshop'
+    }
+  },
+  "UAE": {
+    productSection: {
+      mobileumProducts: ['Roaming DNA', 'Fraud Management', 'Customer Intelligence', 'eSIM & OTA'],
+      competitionProducts: ['BICS roaming hub', 'Syniverse transport', 'Tomia settlement'],
+      productGaps: ['Advanced managed services for legacy roaming workflows', 'Faster rollout for data analytics modules'],
+      managedServicesPossibility: ['Managed QA and incident response', 'Roaming performance optimization service'],
+      replaceableCompetitors: ['BICS', 'Tomia']
+    },
+    financialSection: {
+      profit: '$2.9M annualized revenue potential',
+      capexInvestment: '$0.9M in solution onboarding and integration support',
+      note: 'Priority is to convert existing contracts into higher-value managed services.'
+    },
+    renewalSection: {
+      amcRenewal: [
+        { name: 'Roaming DNA', value: '$360K', status: 'Renewal in Q4' },
+        { name: 'Customer Intelligence', value: '$240K', status: 'Renewal planning' }
+      ],
+      managedServicesRenewal: [
+        { name: 'Advanced analytics support', value: '$150K', status: 'Ready for renewal' },
+        { name: 'Network operations advisory', value: '$130K', status: 'Upsell candidate' }
+      ]
+    },
+    healthSection: {
+      installedProductWiseSupportTicket: [
+        { product: 'Roaming DNA', tickets: 14, trend: 'Moderate' },
+        { product: 'Fraud Management', tickets: 10, trend: 'Stable' },
+        { product: 'Customer Intelligence', tickets: 8, trend: 'Improving' }
+      ],
+      usageOfInstalledProducts: [
+        { product: 'Fraud Management', usage: '85% of alerts monitored in production' },
+        { product: 'Roaming DNA', usage: '70% of steering actions enabled' },
+        { product: 'Customer Intelligence', usage: '60% of dashboards actively used' }
+      ]
+    },
+    plan2026: {
+      productsFocusedOn: ['Fraud Management', 'Roaming DNA', 'Managed Services'],
+      valueOfOpportunities: '$4.1M pipeline in 2026',
+      pocOrDemoGiven: 'Demo delivered for active testing and fraud analytics to the account team',
+      consultingTrialsGiven: '1 consulting trial and 2 solution workshops'
+    }
+  }
+};
+
 const CLUSTER_COLORS = {
   'Ultra-Premium Roaming Hub': '#9B59B6',
   'Mature Mid-Tier': '#4A90D9',
@@ -109,7 +196,10 @@ export default function App() {
   const [ticketData, setTicketData] = useState(null);
   const [amcData, setAmcData] = useState([]);
   const [competitorData, setCompetitorData] = useState([]);
+  const [accountData, setAccountData] = useState(null);
   const [isDataLoading, setIsDataLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('operators');
+  const [selectedOperator, setSelectedOperator] = useState(null);
 
   useEffect(() => {
     if (!selectedCountry) return;
@@ -150,14 +240,111 @@ export default function App() {
         };
       });
 
+      // Base account insights
+      const baseInsight = MOCK_ACCOUNT_INSIGHTS[selectedCountry] || {
+        productSection: {
+          mobileumProducts: ['Fraud Management', 'Roaming DNA'],
+          competitionProducts: ['Syniverse clearing', 'Tomia roaming'],
+          productGaps: ['Managed services enablement', 'Fast-track onboarding'],
+          managedServicesPossibility: ['Managed fraud operations', 'Roaming optimization'],
+          replaceableCompetitors: ['Syniverse']
+        },
+        financialSection: {
+          profit: '$2.5M projected value',
+          capexInvestment: '$0.8M deployment investment',
+          note: 'A strong 2026 growth path through upsell and managed services.'
+        },
+        renewalSection: {
+          amcRenewal: [{ name: 'Primary AMC contract', value: '$200K', status: 'Renewal in plan' }],
+          managedServicesRenewal: [{ name: 'Managed support service', value: '$150K', status: 'Renewal opportunity' }]
+        },
+        healthSection: {
+          installedProductWiseSupportTicket: [{ product: 'Core Platform', tickets: 9, trend: 'Stable' }],
+          usageOfInstalledProducts: [{ product: 'Core Platform', usage: 'High usage across the account' }]
+        },
+        plan2026: {
+          productsFocusedOn: ['Roaming DNA', 'Fraud Management'],
+          valueOfOpportunities: '$3.5M pipeline',
+          pocOrDemoGiven: 'Demo and solution workshop completed',
+          consultingTrialsGiven: '1 consulting trial scheduled'
+        }
+      };
+
+      let opInsight = { ...baseInsight };
+
+      if (selectedOperator) {
+        // Find if there are specific AMCs for this operator in MOCK_AMC or amcs list
+        const opAmcs = amcs.filter(row => {
+          const client = row.client_name.toLowerCase();
+          const op = selectedOperator.toLowerCase();
+          return client.includes(op) || op.includes(client);
+        });
+        
+        // Customize renewals based on operator-specific info
+        const amcList = opAmcs.length > 0 
+          ? opAmcs.map(row => ({ name: `AMC - ${row.business_unit}`, value: `$${(row.outstanding_amount / 1000).toFixed(0)}K`, status: 'Renewal Pending' }))
+          : [{ name: `Primary AMC contract for ${selectedOperator}`, value: '$150K', status: 'Active Support' }];
+
+        opInsight = {
+          productSection: {
+            mobileumProducts: baseInsight.productSection.mobileumProducts.map(p => `${p} (${selectedOperator})`),
+            competitionProducts: baseInsight.productSection.competitionProducts.map(p => `${p} at ${selectedOperator}`),
+            productGaps: baseInsight.productSection.productGaps,
+            managedServicesPossibility: baseInsight.productSection.managedServicesPossibility,
+            replaceableCompetitors: baseInsight.productSection.replaceableCompetitors
+          },
+          financialSection: {
+            profit: `$${(Math.random() * 1.5 + 1).toFixed(1)}M ARR for ${selectedOperator}`,
+            capexInvestment: `$${(Math.random() * 0.4 + 0.2).toFixed(1)}M enabled capex for ${selectedOperator}`,
+            note: `Strategic financial plan customized for ${selectedOperator}: focus on upsell to RAID 9 SaaS.`
+          },
+          renewalSection: {
+            amcRenewal: amcList,
+            managedServicesRenewal: [
+              { name: `${selectedOperator} - Managed Support`, value: '$120K', status: 'Renewal ready' }
+            ]
+          },
+          healthSection: {
+            installedProductWiseSupportTicket: baseInsight.healthSection.installedProductWiseSupportTicket.map(h => ({
+              ...h,
+              product: `${h.product} (${selectedOperator})`
+            })),
+            usageOfInstalledProducts: baseInsight.healthSection.usageOfInstalledProducts.map(u => ({
+              ...u,
+              product: `${u.product} (${selectedOperator})`
+            }))
+          },
+          plan2026: {
+            productsFocusedOn: baseInsight.plan2026.productsFocusedOn,
+            valueOfOpportunities: `$${(Math.random() * 2 + 1.5).toFixed(1)}M pipeline for ${selectedOperator}`,
+            pocOrDemoGiven: `PoC successfully showcased to ${selectedOperator} team`,
+            consultingTrialsGiven: baseInsight.plan2026.consultingTrialsGiven
+          }
+        };
+      }
+
       setTicketData(tickets);
       setAmcData(amcs);
       setCompetitorData(MOCK_COMPETITORS);
+      setAccountData(opInsight);
       setIsDataLoading(false);
     }, 250);
 
     return () => clearTimeout(timer);
+  }, [selectedCountry, selectedOperator]);
+
+  // Reset tab and operator on country change
+  useEffect(() => {
+    setActiveTab('operators');
+    setSelectedOperator(null);
   }, [selectedCountry]);
+
+  // Reset operator selection on tab change if moving away from operator/account context
+  useEffect(() => {
+    if (activeTab !== 'account' && activeTab !== 'operators') {
+      setSelectedOperator(null);
+    }
+  }, [activeTab]);
 
   // Sync theme state with DOM element class for CSS variables
   useEffect(() => {
@@ -473,6 +660,11 @@ export default function App() {
               countryData={countries[selectedCountry]}
               onClose={() => setSelectedCountry(null)}
               getFlagEmoji={getFlagEmoji}
+              selectedOperator={selectedOperator}
+              onSelectOperator={(opName) => {
+                setSelectedOperator(opName);
+                setActiveTab('account');
+              }}
             />
             <DynamicCenterDashboard
               selectedCountry={selectedCountry}
@@ -484,7 +676,12 @@ export default function App() {
               ticketData={ticketData}
               amcData={amcData}
               competitorData={competitorData}
+              accountData={accountData}
               isDataLoading={isDataLoading}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              selectedOperator={selectedOperator}
+              setSelectedOperator={setSelectedOperator}
             />
           </div>
         )}

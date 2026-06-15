@@ -4,7 +4,9 @@ export default function StaticCountrySidebar({
   selectedCountry,
   countryData,
   onClose,
-  getFlagEmoji
+  getFlagEmoji,
+  selectedOperator,
+  onSelectOperator
 }) {
   if (!selectedCountry || !countryData) return null;
 
@@ -69,9 +71,39 @@ export default function StaticCountrySidebar({
         </div>
 
         <div className="sidebar-metric-card" style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 12px' }}>
-          <div style={{ fontSize: '9px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Operators ({countryData.num_operators})</div>
-          <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--blue)', marginTop: '2px', wordBreak: 'break-word' }}>
-            {countryData.operators?.map(o => o.operator).join(', ') || '—'}
+          <div style={{ fontSize: '9px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>Operators ({countryData.num_operators})</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            {countryData.operators?.map(o => {
+              const isSelected = selectedOperator === o.operator;
+              return (
+                <button
+                  key={o.operator}
+                  onClick={() => {
+                    onSelectOperator(o.operator);
+                  }}
+                  style={{
+                    background: isSelected ? 'var(--blue)' : 'var(--bg-card)',
+                    color: isSelected ? '#fff' : 'var(--text-primary)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    padding: '4px 8px',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                    textAlign: 'left'
+                  }}
+                  onMouseOver={(e) => {
+                    if (!isSelected) e.currentTarget.style.background = 'var(--bg-card3)';
+                  }}
+                  onMouseOut={(e) => {
+                    if (!isSelected) e.currentTarget.style.background = 'var(--bg-card)';
+                  }}
+                >
+                  {o.operator}
+                </button>
+              );
+            }) || '—'}
           </div>
         </div>
 

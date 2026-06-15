@@ -29,10 +29,13 @@ export default function DynamicCenterDashboard({
   ticketData,
   amcData,
   competitorData,
-  isDataLoading
+  accountData,
+  isDataLoading,
+  activeTab,
+  setActiveTab,
+  selectedOperator,
+  setSelectedOperator
 }) {
-  const [activeTab, setActiveTab] = useState('operators');
-  const [selectedOperator, setSelectedOperator] = useState(null);
   const chartRefs = useRef({});
 
   // Refs for the chart canvases
@@ -46,17 +49,6 @@ export default function DynamicCenterDashboard({
 
   // Panel ref for scroll reset
   const panelRef = useRef(null);
-
-  // Reset tab on country change
-  useEffect(() => {
-    setActiveTab('operators');
-    setSelectedOperator(null);
-  }, [selectedCountry]);
-
-  // Reset operator selection on tab change
-  useEffect(() => {
-    setSelectedOperator(null);
-  }, [activeTab]);
 
   // Reset scroll position of the panel when active tab or country changes
   useEffect(() => {
@@ -458,10 +450,12 @@ export default function DynamicCenterDashboard({
         {[
           { key: 'operators', label: 'Operator Details' },
           { key: 'overview', label: 'Market Overview' },
+          { key: 'account', label: 'Account Section' },
           { key: 'impact', label: 'Impact Analysis' },
           { key: 'products', label: 'Product Fit' },
           { key: 'support_finance', label: 'Support & AMC' },
           { key: 'competitors', label: 'Competitors' },
+          { key: 'plan2026', label: 'Plan for 2026' },
           { key: 'stats', label: 'Stats Profile' },
           { key: 'narrative', label: 'Narrative Report' }
         ].map(tab => (
@@ -584,7 +578,10 @@ export default function DynamicCenterDashboard({
                       <tr 
                         key={idx} 
                         style={{ cursor: 'pointer', background: isSelected ? 'rgba(37, 99, 235, 0.15)' : '' }}
-                        onClick={() => setSelectedOperator(op.operator)}
+                        onClick={() => {
+                          setSelectedOperator(op.operator);
+                          setActiveTab('account');
+                        }}
                       >
                         <td className="hm-op-name" style={{ borderLeft: isSelected ? '4px solid var(--blue)' : '' }}>
                           <div className="op-name" style={{ fontSize: '11px' }}>{op.operator}</div>
@@ -782,7 +779,10 @@ export default function DynamicCenterDashboard({
                       borderWidth: isSelected ? '2px' : '1px',
                       background: isSelected ? 'rgba(37, 99, 235, 0.05)' : ''
                     }}
-                    onClick={() => setSelectedOperator(op.operator)}
+                    onClick={() => {
+                      setSelectedOperator(op.operator);
+                      setActiveTab('account');
+                    }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <div>
@@ -1007,6 +1007,364 @@ export default function DynamicCenterDashboard({
               </table>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ── TAB: ACCOUNT SECTION ── */}
+      {activeTab === 'account' && (
+        <div className="tab-content active" style={{ padding: '12px 0 0 0', display: 'block' }}>
+          {accountData ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              
+              {selectedOperator && (
+                <div style={{ 
+                  background: 'rgba(37, 99, 235, 0.08)', 
+                  border: '1px solid var(--blue)', 
+                  borderRadius: '10px', 
+                  padding: '12px 16px', 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center', 
+                  animation: 'fadeIn 0.25s ease-out'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '16px' }}>💼</span>
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-primary)' }}>
+                        Operator Specific View: <span style={{ color: 'var(--blue)' }}>{selectedOperator}</span>
+                      </div>
+                      <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                        Showing custom financial performance, renewals, and product fits for this operator.
+                      </div>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setSelectedOperator(null)}
+                    style={{
+                      background: 'var(--bg-card)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '6px',
+                      color: 'var(--text-secondary)',
+                      cursor: 'pointer',
+                      padding: '4px 10px',
+                      fontSize: '11px',
+                      fontWeight: '600'
+                    }}
+                  >
+                    Clear Filter
+                  </button>
+                </div>
+              )}
+
+              {/* Product Section */}
+              <div className="section" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', margin: '0 0 4px 0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--blue)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  📦 Product Section
+                </div>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {/* 1. Mobileum products */}
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                      1. Mobileum Products
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                      {(accountData.productSection?.mobileumProducts || []).map(item => (
+                        <span key={item} style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--blue)', border: '1px solid rgba(37, 99, 235, 0.2)', borderRadius: '6px', padding: '4px 8px', fontSize: '11px', fontWeight: '600' }}>
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 2. Competition products */}
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>
+                      2. Competition Products
+                    </div>
+                    <ul style={{ margin: '0', paddingLeft: '18px', color: 'var(--text-secondary)', fontSize: '11px', lineHeight: '1.6' }}>
+                      {(accountData.productSection?.competitionProducts || []).map(item => <li key={item}>{item}</li>)}
+                    </ul>
+                  </div>
+
+                  {/* 3. Product gaps */}
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>
+                      3. Product Gaps
+                    </div>
+                    <ul style={{ margin: '0', paddingLeft: '18px', color: 'var(--text-secondary)', fontSize: '11px', lineHeight: '1.6' }}>
+                      {(accountData.productSection?.productGaps || []).map(item => <li key={item}>{item}</li>)}
+                    </ul>
+                  </div>
+
+                  {/* 4. Managed services possibility */}
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>
+                      4. Managed Services Possibility
+                    </div>
+                    <ul style={{ margin: '0', paddingLeft: '18px', color: 'var(--text-secondary)', fontSize: '11px', lineHeight: '1.6' }}>
+                      {(accountData.productSection?.managedServicesPossibility || []).map(item => <li key={item}>{item}</li>)}
+                    </ul>
+                  </div>
+
+                  {/* 5. Plan for 2026 */}
+                  {accountData.plan2026 && (
+                    <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                          5. Plan for 2026 (Quick View)
+                        </span>
+                        <button 
+                          onClick={() => setActiveTab('plan2026')}
+                          style={{ background: 'var(--blue)', border: 'none', color: '#fff', borderRadius: '4px', padding: '3px 8px', fontSize: '9px', fontWeight: '600', cursor: 'pointer' }}
+                        >
+                          View full plan →
+                        </button>
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-primary)' }}>
+                        <strong>Pipeline Value:</strong> {accountData.plan2026.valueOfOpportunities}
+                      </div>
+                      <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                        <strong>Focus:</strong> {(accountData.plan2026.productsFocusedOn || []).join(', ')}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 6. Competition which can be replaced */}
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                      6. Competitors to Replace
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                      {(accountData.productSection?.replaceableCompetitors || []).map(item => (
+                        <span key={item} style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--red)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '999px', padding: '2px 8px', fontSize: '10px', fontWeight: '600' }}>
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Financial Section */}
+              <div className="section" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', margin: '0 0 4px 0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--teal)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  💰 Financial Section
+                </div>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+                  <div className="product-card" style={{ padding: '12px', margin: 0, cursor: 'default' }}>
+                    <div style={{ fontSize: '9px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>1. Profit / Revenue Potential</div>
+                    <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--green)', marginTop: '4px' }}>
+                      {accountData.financialSection?.profit || '—'}
+                    </div>
+                  </div>
+                  
+                  <div className="product-card" style={{ padding: '12px', margin: 0, cursor: 'default' }}>
+                    <div style={{ fontSize: '9px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>2. Capex Investment</div>
+                    <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--blue)', marginTop: '4px' }}>
+                      {accountData.financialSection?.capexInvestment || '—'}
+                    </div>
+                  </div>
+                  
+                  <div className="product-card" style={{ padding: '12px', margin: 0, cursor: 'default', gridColumn: '1 / -1' }}>
+                    <div style={{ fontSize: '9px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>3. Strategic Notes & Outlook (xxxx)</div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: '1.5' }}>
+                      {accountData.financialSection?.note || '—'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Renewal Section */}
+              <div className="section" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', margin: '0 0 4px 0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--purple)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  🔄 Renewal Section
+                </div>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
+                      1. AMC Renewal List
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {(accountData.renewalSection?.amcRenewal || []).map((item, idx) => (
+                        <div key={idx} style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-primary)' }}>{item.name}</span>
+                            <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--green)' }}>{item.value}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
+                            <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Status:</span>
+                            <span style={{ 
+                              fontSize: '9px', 
+                              fontWeight: '700', 
+                              background: item.status.toLowerCase().includes('due') ? 'rgba(245, 158, 11, 0.15)' : 'rgba(16, 185, 129, 0.15)', 
+                              color: item.status.toLowerCase().includes('due') ? 'var(--yellow)' : 'var(--green)',
+                              padding: '1px 6px',
+                              borderRadius: '4px'
+                            }}>
+                              {item.status}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                      {(!accountData.renewalSection?.amcRenewal || accountData.renewalSection.amcRenewal.length === 0) && (
+                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic' }}>No AMC renewals listed.</div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
+                      2. Managed Services Renewal
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {(accountData.renewalSection?.managedServicesRenewal || []).map((item, idx) => (
+                        <div key={idx} style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-primary)' }}>{item.name}</span>
+                            <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--green)' }}>{item.value}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
+                            <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Status:</span>
+                            <span style={{ 
+                              fontSize: '9px', 
+                              fontWeight: '700', 
+                              background: item.status.toLowerCase().includes('ready') ? 'rgba(16, 185, 129, 0.15)' : 'rgba(37, 99, 235, 0.15)', 
+                              color: item.status.toLowerCase().includes('ready') ? 'var(--green)' : 'var(--blue)',
+                              padding: '1px 6px',
+                              borderRadius: '4px'
+                            }}>
+                              {item.status}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                      {(!accountData.renewalSection?.managedServicesRenewal || accountData.renewalSection.managedServicesRenewal.length === 0) && (
+                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic' }}>No managed services renewals listed.</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Health of Solution Section */}
+              <div className="section" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', margin: '0 0 4px 0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--red)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  🏥 Health of Solution Section
+                </div>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
+                      1. Installed Product-wise Support Tickets
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {(accountData.healthSection?.installedProductWiseSupportTicket || []).map((item, idx) => (
+                        <div key={idx} style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-primary)' }}>{item.product}</span>
+                            <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--red)' }}>{item.tickets} Tickets</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
+                            <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Trend:</span>
+                            <span style={{ 
+                              fontSize: '9px', 
+                              fontWeight: '700', 
+                              color: item.trend.toLowerCase().includes('improving') ? 'var(--green)' : item.trend.toLowerCase().includes('stable') ? 'var(--blue)' : 'var(--yellow)' 
+                            }}>
+                              {item.trend}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
+                      2. Usage of Installed Products
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {(accountData.healthSection?.usageOfInstalledProducts || []).map((item, idx) => (
+                        <div key={idx} style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px' }}>
+                          <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-primary)' }}>{item.product}</div>
+                          <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: '1.4' }}>
+                            {item.usage}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          ) : (
+            <div className="section"><div className="section-title">Account insights</div><div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>No account insight is available for this market yet.</div></div>
+          )}
+        </div>
+      )}
+
+      {/* ── TAB: PLAN FOR 2026 ── */}
+      {activeTab === 'plan2026' && (
+        <div className="tab-content active" style={{ padding: '12px 0 0 0', display: 'block' }}>
+          {accountData?.plan2026 ? (
+            <div className="section" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+              <div style={{ fontSize: '15px', fontWeight: '800', color: 'var(--blue)', marginBottom: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                🚀 Mobileum 2026 Strategic Plan
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {/* 1. Products focused on */}
+                <div>
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                    1. Products Focused On
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {(accountData.plan2026.productsFocusedOn || []).map(item => (
+                      <span key={item} style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--blue)', border: '1px solid rgba(37, 99, 235, 0.2)', borderRadius: '6px', padding: '4px 8px', fontSize: '11px', fontWeight: '600' }}>
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 2. Value of opportunities */}
+                <div>
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                    2. Value of Opportunities
+                  </div>
+                  <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px', display: 'inline-block' }}>
+                    <strong style={{ fontSize: '14px', color: 'var(--green)' }}>{accountData.plan2026.valueOfOpportunities}</strong>
+                  </div>
+                </div>
+
+                {/* 3. PoC or demo given */}
+                <div>
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                    3. PoC or Demo Delivered
+                  </div>
+                  <div className="product-card" style={{ padding: '12px', margin: 0, cursor: 'default', fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                    {accountData.plan2026.pocOrDemoGiven}
+                  </div>
+                </div>
+
+                {/* 4. Consulting trials given */}
+                <div>
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                    4. Consulting Trials Given
+                  </div>
+                  <div className="product-card" style={{ padding: '12px', margin: 0, cursor: 'default', fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                    {accountData.plan2026.consultingTrialsGiven}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="section"><div className="section-title">2026 plan</div><div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>No 2026 plan details are available for this account yet.</div></div>
+          )}
         </div>
       )}
 

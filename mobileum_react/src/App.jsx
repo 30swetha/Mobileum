@@ -73,7 +73,12 @@ const MOCK_ACCOUNT_INSIGHTS = {
       competitionProducts: ['Syniverse clearing & transport', 'Tomia roaming steering', 'Subex assurance'],
       productGaps: ['Managed security operations for smaller operators', 'Faster deployment accelerators for legacy stacks'],
       managedServicesPossibility: ['24x7 operations support', 'Fraud analytics tuning', 'Roaming performance managed service'],
-      replaceableCompetitors: ['Syniverse', 'Subex']
+      replaceableCompetitors: ['Syniverse', 'Subex'],
+      finalStrategies: [
+        'Displace Syniverse clearing footprint at STC and Mobily via Roaming DNA integration',
+        'Pitch RAID 9 Fraud Management to Zain KSA to replace legacy Subex assurance stack',
+        'Deploy Roaming DNA active steering trials to capture high-value outbound business routes'
+      ]
     },
     financialSection: {
       profit: '$3.8M annualized revenue potential',
@@ -115,7 +120,12 @@ const MOCK_ACCOUNT_INSIGHTS = {
       competitionProducts: ['BICS roaming hub', 'Syniverse transport', 'Tomia settlement'],
       productGaps: ['Advanced managed services for legacy roaming workflows', 'Faster rollout for data analytics modules'],
       managedServicesPossibility: ['Managed QA and incident response', 'Roaming performance optimization service'],
-      replaceableCompetitors: ['BICS', 'Tomia']
+      replaceableCompetitors: ['BICS', 'Tomia'],
+      finalStrategies: [
+        'Replace BICS roaming hub at e& UAE with Mobileum eSIM solutions and steering systems',
+        'Position modern signaling firewall trials at du to address OTT bypass substitution',
+        'Initiate eSIM & OTA platform sandbox onboarding workshop to capture digital nomads'
+      ]
     },
     financialSection: {
       profit: '$2.9M annualized revenue potential',
@@ -176,12 +186,14 @@ export default function App() {
   Object.entries(rawCountries).forEach(([name, c]) => {
     countries[name] = {
       ...c,
-      region: c.region === 'MECA' ? 'MENA' : c.region
+      region: c.region ? c.region.replace(/MECA/g, 'MENA') : c.region,
+      sub_region: c.sub_region ? c.sub_region.replace(/MECA/g, 'MENA') : c.sub_region,
+      cluster_name: c.cluster_name ? c.cluster_name.replace(/MECA/g, 'MENA') : c.cluster_name
     };
   });
   const metadata = {
     ...rawMetadata,
-    regions: rawMetadata.regions.map(r => r === 'MECA' ? 'MENA' : r)
+    regions: [...new Set(rawMetadata.regions.map(r => r === 'MECA' ? 'MENA' : r))]
   };
 
   const [theme, setTheme] = useState('light');
@@ -192,6 +204,7 @@ export default function App() {
   const [searchResults, setSearchResults] = useState([]);
   const [compareList, setCompareList] = useState([]);
   const [isCompareOpen, setIsCompareOpen] = useState(false);
+  const [showGlobalOverview, setShowGlobalOverview] = useState(false);
 
   const [ticketData, setTicketData] = useState(null);
   const [amcData, setAmcData] = useState([]);
@@ -201,11 +214,321 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('operators');
   const [selectedOperator, setSelectedOperator] = useState(null);
 
-  useEffect(() => {
-    if (!selectedCountry) return;
+  const aggregateRegionData = (regionName) => {
+    const activeCountriesList = Object.entries(countries).filter(([name, c]) => {
+      if (regionName === 'all') return true;
+      return c.region === regionName;
+    });
 
+    if (activeCountriesList.length === 0) return null;
+
+    const num_operators = activeCountriesList.reduce((sum, [_, c]) => sum + (c.num_operators || 0), 0);
+    
+    const statsKeys = ['mobile_penetration', 'gdp_growth', 'avg_age', 'avg_5g', 'avg_sub_growth', 'avg_market_health', 'fraud_score', 'roaming_intensity', 'internet_users', 'gdp_per_capita', 'population', 'mobile_users'];
+    const stats = {};
+    statsKeys.forEach(k => {
+      const vals = activeCountriesList.map(([_, c]) => c.stats?.[k]).filter(v => v !== undefined && v !== null && !isNaN(v));
+      stats[k] = vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+    });
+
+    const radarKeys = ['roaming_opportunity', 'fraud_risk', 'fiveG_upsell', 'arpu_pressure', 'subscriber_growth', 'regulatory_risk'];
+    const radar = {};
+    radarKeys.forEach(k => {
+      const vals = activeCountriesList.map(([_, c]) => c.radar?.[k]).filter(v => v !== undefined && v !== null && !isNaN(v));
+      radar[k] = vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : 3.0;
+    });
+
+    const waterfallKeys = ['base', 'ott_substitution', 'arpu_compression', 'churn_pressure', 'roaming_upside', 'fiveG_upside', 'net'];
+    const waterfall = {};
+    waterfallKeys.forEach(k => {
+      const vals = activeCountriesList.map(([_, c]) => c.waterfall?.[k]).filter(v => v !== undefined && v !== null && !isNaN(v));
+      waterfall[k] = vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : 0.0;
+    });
+
+    const seasonal_roaming = {};
+    for (let m = 1; m <= 12; m++) {
+      const vals = activeCountriesList.map(([_, c]) => c.seasonal_roaming?.[m]).filter(v => v !== undefined && v !== null);
+      seasonal_roaming[m] = vals.length > 0 ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 1;
+    }
+
+    const productScores = {};
+    activeCountriesList.forEach(([_, c]) => {
+      if (c.product_ranking) {
+        c.product_ranking.forEach(pr => {
+          if (!productScores[pr.product]) {
+            productScores[pr.product] = { scores: [], reasons: [] };
+          }
+          productScores[pr.product].scores.push(pr.score);
+          productScores[pr.product].reasons.push(pr.reason);
+        });
+      }
+    });
+
+    const product_ranking = Object.entries(productScores).map(([prod, data]) => {
+      const score = Math.round(data.scores.reduce((a, b) => a + b, 0) / data.scores.length);
+      return {
+        product: prod,
+        score: score,
+        reason: `Aggregated fit for ${regionName === 'all' ? 'global' : regionName} region: average match score is ${score}%.`
+      };
+    }).sort((a, b) => b.score - a.score);
+
+    const top_product = product_ranking.length > 0 ? product_ranking[0] : null;
+
+    const operators = activeCountriesList.flatMap(([name, c]) => 
+      (c.operators || []).map(op => ({ ...op, countryName: name }))
+    );
+
+    return {
+      country: regionName === 'all' ? 'Global Overview' : `${regionName} Region`,
+      region: regionName === 'all' ? 'Global' : regionName,
+      sub_region: 'Aggregated Region Analysis',
+      iso: 'WLD',
+      num_operators,
+      operators,
+      stats,
+      percentiles: stats,
+      regional_averages: stats,
+      radar,
+      waterfall,
+      seasonal_roaming,
+      product_ranking,
+      cluster_name: regionName === 'all' ? 'Global Markets' : `${regionName} Markets`,
+      anomaly_text: null,
+      top_product,
+      anomaly_z_score: 0
+    };
+  };
+
+  const getAggregatedTickets = (regionName) => {
+    let total = 0;
+    const buTickets = {};
+    const monthlyTrend = Array.from({ length: 12 }, (_, i) => {
+      const months = ["Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May"];
+      return { month: months[i], count: 0 };
+    });
+
+    Object.entries(MOCK_TICKETS).forEach(([country, data]) => {
+      const cv = countries[country];
+      if (cv && (regionName === 'all' || cv.region === regionName)) {
+        total += data.total_tickets;
+        data.trend_12_months.forEach((t, idx) => {
+          monthlyTrend[idx].count += t.count;
+        });
+        data.business_units.forEach(bu => {
+          if (!buTickets[bu.unit]) {
+            buTickets[bu.unit] = { tickets: 0, color: bu.color };
+          }
+          buTickets[bu.unit].tickets += bu.tickets;
+        });
+      }
+    });
+
+    if (total === 0) {
+      return {
+        total_tickets: 4200,
+        trend_12_months: monthlyTrend.map(m => ({ ...m, count: Math.floor(Math.random() * 200) + 150 })),
+        business_units: [
+          { unit: "Risk", tickets: 1200, color: "#7c3aed" },
+          { unit: "Fraud", tickets: 1500, color: "#ef4444" },
+          { unit: "Roaming Management", tickets: 800, color: "#10b981" },
+          { unit: "Network Security", tickets: 400, color: "#3b82f6" },
+          { unit: "Customer Intelligence", tickets: 300, color: "#ea580c" }
+        ]
+      };
+    }
+
+    return {
+      total_tickets: total,
+      trend_12_months: monthlyTrend,
+      business_units: Object.entries(buTickets).map(([unit, info]) => ({
+        unit,
+        tickets: info.tickets,
+        color: info.color
+      }))
+    };
+  };
+
+  const getAggregatedAMC = (regionName) => {
+    const list = [];
+    Object.entries(MOCK_AMC).forEach(([country, amcs]) => {
+      const cv = countries[country];
+      if (cv && (regionName === 'all' || cv.region === regionName)) {
+        list.push(...amcs);
+      }
+    });
+    
+    if (list.length === 0) {
+      const activeCountriesList = Object.entries(countries).filter(([_, c]) => regionName === 'all' || c.region === regionName);
+      activeCountriesList.slice(0, 5).forEach(([cName, cv]) => {
+        const ops = cv.operators || [];
+        ops.slice(0, 1).forEach((op) => {
+          list.push({
+            "contract_id": `AMC-2026-REG-${op.operator.substring(0,3).toUpperCase()}`,
+            "business_unit": "Risk (RAID 9)",
+            "client_name": `${op.operator} (${cName})`,
+            "outstanding_amount": 250000.00,
+            "due_date": "2026-09-30"
+          });
+        });
+      });
+    }
+
+    return list;
+  };
+
+  const getAggregatedAccountData = (regionName) => {
+    const activeCountries = Object.keys(MOCK_ACCOUNT_INSIGHTS).filter(c => {
+      const cv = countries[c];
+      return cv && (regionName === 'all' || cv.region === regionName);
+    });
+
+    const mobileumProductsSet = new Set();
+    const competitionProductsSet = new Set();
+    const productGapsSet = new Set();
+    const managedServicesPossibilitySet = new Set();
+    const replaceableCompetitorsSet = new Set();
+    const finalStrategiesSet = new Set();
+
+    activeCountries.forEach(c => {
+      const section = MOCK_ACCOUNT_INSIGHTS[c].productSection;
+      if (section) {
+        section.mobileumProducts?.forEach(p => mobileumProductsSet.add(p));
+        section.competitionProducts?.forEach(p => competitionProductsSet.add(p));
+        section.productGaps?.forEach(p => productGapsSet.add(p));
+        section.managedServicesPossibility?.forEach(p => managedServicesPossibilitySet.add(p));
+        section.replaceableCompetitors?.forEach(p => replaceableCompetitorsSet.add(p));
+        section.finalStrategies?.forEach(p => finalStrategiesSet.add(p));
+      }
+    });
+
+    if (mobileumProductsSet.size === 0) {
+      ['Fraud Management', 'Roaming DNA', 'Steering of Roaming', '5G Active Testing'].forEach(p => mobileumProductsSet.add(p));
+      ['Syniverse clearing', 'Tomia roaming'].forEach(p => competitionProductsSet.add(p));
+      ['Managed services enablement', 'Fast-track onboarding'].forEach(p => productGapsSet.add(p));
+      ['Managed fraud operations', 'Roaming optimization'].forEach(p => managedServicesPossibilitySet.add(p));
+      ['Syniverse'].forEach(p => replaceableCompetitorsSet.add(p));
+      ['Transition operators to SaaS models', 'Target legacy competitor deployments for replacement', 'Establish managed services pilot programs'].forEach(p => finalStrategiesSet.add(p));
+    }
+
+    let totalProfit = 0;
+    let totalCapex = 0;
+    activeCountries.forEach(c => {
+      const fin = MOCK_ACCOUNT_INSIGHTS[c].financialSection;
+      if (fin) {
+        const p = parseFloat(fin.profit.replace(/[^0-9.]/g, '')) || 0;
+        const cx = parseFloat(fin.capexInvestment.replace(/[^0-9.]/g, '')) || 0;
+        totalProfit += p;
+        totalCapex += cx;
+      }
+    });
+    if (totalProfit === 0) {
+      totalProfit = 12.5;
+      totalCapex = 4.2;
+    }
+
+    const amcRenewal = [];
+    const managedServicesRenewal = [];
+    const installedTicketsMap = {};
+    const usageMap = {};
+
+    activeCountries.forEach(c => {
+      const renewal = MOCK_ACCOUNT_INSIGHTS[c].renewalSection;
+      if (renewal) {
+        renewal.amcRenewal?.forEach(r => amcRenewal.push({ ...r, name: `${c} - ${r.name}` }));
+        renewal.managedServicesRenewal?.forEach(r => managedServicesRenewal.push({ ...r, name: `${c} - ${r.name}` }));
+      }
+      const health = MOCK_ACCOUNT_INSIGHTS[c].healthSection;
+      if (health) {
+        health.installedProductWiseSupportTicket?.forEach(h => {
+          if (!installedTicketsMap[h.product]) {
+            installedTicketsMap[h.product] = { tickets: 0, trend: h.trend };
+          }
+          installedTicketsMap[h.product].tickets += h.tickets;
+        });
+        health.usageOfInstalledProducts?.forEach(u => {
+          usageMap[u.product] = (usageMap[u.product] || '') + `; ${c}: ${u.usage}`;
+        });
+      }
+    });
+
+    if (amcRenewal.length === 0) {
+      amcRenewal.push({ name: 'Primary AMC renewal', value: '$850K', status: 'Renewal due Q4' });
+      managedServicesRenewal.push({ name: 'Managed Roaming Support', value: '$450K', status: 'Renewal due Q3' });
+      installedTicketsMap['Core Platform'] = { tickets: 24, trend: 'Stable' };
+      usageMap['Core Platform'] = 'High usage across regional operators';
+    }
+
+    let totalPipeline = 0;
+    const allProductsFocused = new Set();
+    activeCountries.forEach(c => {
+      const plan = MOCK_ACCOUNT_INSIGHTS[c].plan2026;
+      if (plan) {
+        const pip = parseFloat(plan.valueOfOpportunities.replace(/[^0-9.]/g, '')) || 0;
+        totalPipeline += pip;
+        plan.productsFocusedOn?.forEach(p => allProductsFocused.add(p));
+      }
+    });
+    if (totalPipeline === 0) {
+      totalPipeline = 18.4;
+      ['Roaming DNA', 'Fraud Management', 'Steering of Roaming'].forEach(p => allProductsFocused.add(p));
+    }
+
+    return {
+      productSection: {
+        mobileumProducts: Array.from(mobileumProductsSet),
+        competitionProducts: Array.from(competitionProductsSet),
+        productGaps: Array.from(productGapsSet),
+        managedServicesPossibility: Array.from(managedServicesPossibilitySet),
+        replaceableCompetitors: Array.from(replaceableCompetitorsSet),
+        finalStrategies: Array.from(finalStrategiesSet)
+      },
+      financialSection: {
+        profit: `$${totalProfit.toFixed(1)}M ARR Potential`,
+        capexInvestment: `$${totalCapex.toFixed(1)}M Total Capex`,
+        note: `Overall growth and renewal strategy for the ${regionName === 'all' ? 'global' : regionName} markets.`
+      },
+      renewalSection: {
+        amcRenewal,
+        managedServicesRenewal
+      },
+      healthSection: {
+        installedProductWiseSupportTicket: Object.entries(installedTicketsMap).map(([prod, info]) => ({
+          product: prod,
+          tickets: info.tickets,
+          trend: info.trend
+        })),
+        usageOfInstalledProducts: Object.entries(usageMap).map(([prod, txt]) => ({
+          product: prod,
+          usage: typeof txt === 'string' && txt.startsWith(';') ? txt.substring(2) : txt
+        }))
+      },
+      plan2026: {
+        productsFocusedOn: Array.from(allProductsFocused),
+        valueOfOpportunities: `$${totalPipeline.toFixed(1)}M pipeline in 2026`,
+        pocOrDemoGiven: `Demonstrations completed across active regional accounts.`,
+        consultingTrialsGiven: `Active consulting engagements and pilot evaluations running across the region.`
+      }
+    };
+  };
+
+  useEffect(() => {
     setIsDataLoading(true);
     const timer = setTimeout(() => {
+      if (!selectedCountry) {
+        // Aggregated region mode loading
+        const tickets = getAggregatedTickets(activeRegion);
+        const amcs = getAggregatedAMC(activeRegion);
+        const accountInsight = getAggregatedAccountData(activeRegion);
+
+        setTicketData(tickets);
+        setAmcData(amcs);
+        setCompetitorData(MOCK_COMPETITORS);
+        setAccountData(accountInsight);
+        setIsDataLoading(false);
+        return;
+      }
+
       const tickets = MOCK_TICKETS[selectedCountry] || {
         "total_tickets": 620,
         "trend_12_months": [
@@ -247,7 +570,8 @@ export default function App() {
           competitionProducts: ['Syniverse clearing', 'Tomia roaming'],
           productGaps: ['Managed services enablement', 'Fast-track onboarding'],
           managedServicesPossibility: ['Managed fraud operations', 'Roaming optimization'],
-          replaceableCompetitors: ['Syniverse']
+          replaceableCompetitors: ['Syniverse'],
+          finalStrategies: ['Upsell core platforms to SaaS models', 'Target legacy competitor deployments for replacement', 'Establish managed services pilot programs']
         },
         financialSection: {
           profit: '$2.5M projected value',
@@ -273,25 +597,38 @@ export default function App() {
       let opInsight = { ...baseInsight };
 
       if (selectedOperator) {
-        // Find if there are specific AMCs for this operator in MOCK_AMC or amcs list
+        const opData = ops.find(o => o.operator === selectedOperator);
+        const plan = opData?.plan2026 || {
+          productsFocusedOn: baseInsight.plan2026.productsFocusedOn,
+          valueOfOpportunities: `$2.5M pipeline for ${selectedOperator}`,
+          pocOrDemoGiven: `PoC successfully showcased to ${selectedOperator} team`,
+          consultingTrialsGiven: baseInsight.plan2026.consultingTrialsGiven,
+          strategies: [
+            `Target ${selectedOperator} for full RAID 9 Fraud Management migration`,
+            `Position modern Steering of Roaming solutions`,
+            `Conduct sandbox onboarding workshops`
+          ]
+        };
+
+        // Find if there are specific AMCs for this operator
         const opAmcs = amcs.filter(row => {
           const client = row.client_name.toLowerCase();
           const op = selectedOperator.toLowerCase();
           return client.includes(op) || op.includes(client);
         });
         
-        // Customize renewals based on operator-specific info
         const amcList = opAmcs.length > 0 
           ? opAmcs.map(row => ({ name: `AMC - ${row.business_unit}`, value: `$${(row.outstanding_amount / 1000).toFixed(0)}K`, status: 'Renewal Pending' }))
           : [{ name: `Primary AMC contract for ${selectedOperator}`, value: '$150K', status: 'Active Support' }];
 
         opInsight = {
           productSection: {
-            mobileumProducts: baseInsight.productSection.mobileumProducts.map(p => `${p} (${selectedOperator})`),
-            competitionProducts: baseInsight.productSection.competitionProducts.map(p => `${p} at ${selectedOperator}`),
+            mobileumProducts: plan.productsFocusedOn,
+            competitionProducts: baseInsight.productSection.competitionProducts,
             productGaps: baseInsight.productSection.productGaps,
             managedServicesPossibility: baseInsight.productSection.managedServicesPossibility,
-            replaceableCompetitors: baseInsight.productSection.replaceableCompetitors
+            replaceableCompetitors: baseInsight.productSection.replaceableCompetitors,
+            finalStrategies: plan.strategies
           },
           financialSection: {
             profit: `$${(Math.random() * 1.5 + 1).toFixed(1)}M ARR for ${selectedOperator}`,
@@ -314,12 +651,7 @@ export default function App() {
               product: `${u.product} (${selectedOperator})`
             }))
           },
-          plan2026: {
-            productsFocusedOn: baseInsight.plan2026.productsFocusedOn,
-            valueOfOpportunities: `$${(Math.random() * 2 + 1.5).toFixed(1)}M pipeline for ${selectedOperator}`,
-            pocOrDemoGiven: `PoC successfully showcased to ${selectedOperator} team`,
-            consultingTrialsGiven: baseInsight.plan2026.consultingTrialsGiven
-          }
+          plan2026: plan
         };
       }
 
@@ -331,7 +663,7 @@ export default function App() {
     }, 250);
 
     return () => clearTimeout(timer);
-  }, [selectedCountry, selectedOperator]);
+  }, [selectedCountry, selectedOperator, activeRegion]);
 
   // Reset tab and operator on country change
   useEffect(() => {
@@ -474,6 +806,19 @@ export default function App() {
 
         <div className="filter-sep"></div>
 
+        <button 
+          className={`filter-btn ${showGlobalOverview && !selectedCountry ? 'active' : ''}`} 
+          onClick={() => {
+            setSelectedCountry(null);
+            setShowGlobalOverview(prev => !prev);
+          }}
+          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+        >
+          🌍 Global Overview
+        </button>
+
+        <div className="filter-sep"></div>
+
         <button className="filter-btn" onClick={openCompareModal}>
           ⊕ Compare Countries
         </button>
@@ -481,194 +826,220 @@ export default function App() {
 
       {/* MAIN APP CONTAINER */}
       <div id="app">
-        {!selectedCountry ? (
-          <div style={{ display: 'flex', width: '100%', height: '100%', overflow: 'hidden' }}>
-            {activeRegion !== 'all' && (
-              <div className="region-sidebar" style={{
-                width: '320px',
-                background: 'var(--bg-card)',
-                borderRight: '1px solid var(--border)',
-                display: 'flex',
-                flexDirection: 'column',
-                height: '100%',
-                overflow: 'hidden'
-              }}>
-                <div style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
-                  <div style={{ fontSize: '18px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
-                    🌍 {activeRegion} Countries
+        <div style={{ display: 'flex', width: '100%', height: '100%', gap: '20px', padding: '16px', overflow: 'hidden' }}>
+          {/* Left panel: Map (Always Visible) with Floating Overlay Sidebar */}
+          <div style={{ display: (!selectedCountry && showGlobalOverview) ? 'none' : 'flex', flex: 1.2, height: '100%', overflow: 'hidden', position: 'relative' }}>
+            <div style={{ display: 'flex', width: '100%', height: '100%', overflow: 'hidden', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px' }}>
+              {activeRegion !== 'all' && (
+                <div className="region-sidebar" style={{
+                  width: '320px',
+                  background: 'var(--bg-card)',
+                  borderRight: '1px solid var(--border)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '100%',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
+                    <div style={{ fontSize: '18px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
+                      🌍 {activeRegion} Countries
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                      {Object.values(countries).filter(c => c.region === activeRegion).length} markets available
+                    </div>
                   </div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                    {Object.values(countries).filter(c => c.region === activeRegion).length} markets available
+                  <div style={{ flex: 1, overflowY: 'auto', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {Object.entries(countries)
+                      .filter(([_, c]) => c.region === activeRegion)
+                      .sort((a, b) => a[0].localeCompare(b[0]))
+                      .map(([name, c]) => {
+                        const clr = CLUSTER_COLORS[c.cluster_name] || '#3b82f6';
+                        return (
+                          <div
+                            key={name}
+                            className="region-country-card"
+                            onClick={() => setSelectedCountry(name)}
+                            style={{
+                              background: 'var(--bg-card2)',
+                              border: '1px solid var(--border)',
+                              borderRadius: '8px',
+                              padding: '12px',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                            }}
+                            onMouseOver={(e) => {
+                              e.currentTarget.style.borderColor = 'var(--blue)';
+                              e.currentTarget.style.transform = 'translateY(-1px)';
+                              e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.05)';
+                            }}
+                            onMouseOut={(e) => {
+                              e.currentTarget.style.borderColor = 'var(--border)';
+                              e.currentTarget.style.transform = 'none';
+                              e.currentTarget.style.boxShadow = 'none';
+                            }}
+                          >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)' }}>
+                                {getFlagEmoji(c.iso)} {name}
+                              </span>
+                              <span style={{
+                                fontSize: '9px',
+                                background: `${clr}15`,
+                                color: clr,
+                                border: `1px solid ${clr}33`,
+                                padding: '2px 6px',
+                                borderRadius: '10px',
+                                fontWeight: '600'
+                              }}>
+                                {c.num_operators} Ops
+                              </span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px', fontSize: '10px', color: 'var(--text-muted)' }}>
+                              <span>{c.sub_region || '—'}</span>
+                              <span style={{ color: 'var(--text-secondary)' }}>{c.cluster_name}</span>
+                            </div>
+                          </div>
+                        );
+                      })
+                    }
                   </div>
                 </div>
-                <div style={{ flex: 1, overflowY: 'auto', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {Object.entries(countries)
-                    .filter(([_, c]) => c.region === activeRegion)
-                    .sort((a, b) => a[0].localeCompare(b[0]))
-                    .map(([name, c]) => {
-                      const clr = CLUSTER_COLORS[c.cluster_name] || '#3b82f6';
-                      return (
-                        <div
-                          key={name}
-                          className="region-country-card"
-                          onClick={() => setSelectedCountry(name)}
-                          style={{
-                            background: 'var(--bg-card2)',
-                            border: '1px solid var(--border)',
-                            borderRadius: '8px',
-                            padding: '12px',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease',
-                          }}
-                          onMouseOver={(e) => {
-                            e.currentTarget.style.borderColor = 'var(--blue)';
-                            e.currentTarget.style.transform = 'translateY(-1px)';
-                            e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.05)';
-                          }}
-                          onMouseOut={(e) => {
-                            e.currentTarget.style.borderColor = 'var(--border)';
-                            e.currentTarget.style.transform = 'none';
-                            e.currentTarget.style.boxShadow = 'none';
-                          }}
-                        >
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)' }}>
-                              {getFlagEmoji(c.iso)} {name}
-                            </span>
-                            <span style={{
-                              fontSize: '9px',
-                              background: `${clr}15`,
-                              color: clr,
-                              border: `1px solid ${clr}33`,
-                              padding: '2px 6px',
-                              borderRadius: '10px',
-                              fontWeight: '600'
-                            }}>
-                              {c.num_operators} Ops
-                            </span>
-                          </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px', fontSize: '10px', color: 'var(--text-muted)' }}>
-                            <span>{c.sub_region || '—'}</span>
-                            <span style={{ color: 'var(--text-secondary)' }}>{c.cluster_name}</span>
-                          </div>
-                        </div>
-                      );
-                    })
-                  }
-                </div>
-              </div>
-            )}
+              )}
 
-            <div id="map-container" style={{ flex: 1, position: 'relative' }}>
-              <MapComponent
-                countries={countries}
-                currentLens={currentLens}
-                activeRegion={activeRegion}
-                onSelectCountry={setSelectedCountry}
-                theme={theme}
-              />
-              <div id="map-hover-box">Click any country to open detailed analysis</div>
+              <div id="map-container" style={{ flex: 1, position: 'relative' }}>
+                <MapComponent
+                  countries={countries}
+                  currentLens={currentLens}
+                  activeRegion={activeRegion}
+                  onSelectCountry={setSelectedCountry}
+                  theme={theme}
+                />
+                <div id="map-hover-box">Click any country to open detailed analysis</div>
 
-              {/* Map Legend */}
-              <div id="legend">
-                <h4 id="legend-title">
-                  {
+                {/* Map Legend */}
+                <div id="legend">
+                  <h4 id="legend-title">
                     {
-                      cluster: 'Market Cluster',
-                      fraud: 'Fraud Risk',
-                      fiveG: '5G Readiness',
-                      roaming: 'Roaming Intensity',
-                      arpu: 'ARPU Pressure'
-                    }[currentLens]
-                  }
-                </h4>
-                <div id="legend-items">
-                  {currentLens === 'cluster' ? (
-                    Object.entries({
-                      'Mature & Saturated': '#9B59B6',
-                      'High Growth Corridor': '#F39C12',
-                      'Emerging Mid-Tier': '#1ABC9C',
-                      'Small Wealthy Market': '#2ECC71',
-                      'Frontier Market': '#E74C3C',
-                      'Regulatory Transition': '#7F8C8D',
-                    }).map(([name, color]) => (
-                      <div className="legend-row" key={name}>
-                        <div className="legend-dot" style={{ background: color }}></div>
-                        {name}
-                      </div>
-                    ))
-                  ) : currentLens === 'fraud' ? (
-                    [
-                      { label: 'Very Low', color: '#1ABC9C' },
-                      { label: 'Low', color: '#F39C12' },
-                      { label: 'Medium', color: '#E67E22' },
-                      { label: 'High', color: '#E74C3C' },
-                      { label: 'Critical', color: '#C0392B' }
-                    ].map(item => (
-                      <div className="legend-row" key={item.label}>
-                        <div className="legend-dot" style={{ background: item.color }}></div>
-                        {item.label}
-                      </div>
-                    ))
-                  ) : currentLens === 'fiveG' ? (
-                    [
-                      { label: '<20%', color: '#1e3054' },
-                      { label: '20-40%', color: '#1A5276' },
-                      { label: '40-60%', color: '#2471A3' },
-                      { label: '60-80%', color: '#2980B9' },
-                      { label: '>80%', color: '#1ABC9C' }
-                    ].map(item => (
-                      <div className="legend-row" key={item.label}>
-                        <div className="legend-dot" style={{ background: item.color }}></div>
-                        {item.label}
-                      </div>
-                    ))
-                  ) : currentLens === 'roaming' ? (
-                    [
-                      { label: 'Minimal', color: '#1e3054' },
-                      { label: 'Low', color: '#1A5276' },
-                      { label: 'Moderate', color: '#2471A3' },
-                      { label: 'High', color: '#2980B9' },
-                      { label: 'Very High', color: '#1ABC9C' }
-                    ].map(item => (
-                      <div className="legend-row" key={item.label}>
-                        <div className="legend-dot" style={{ background: item.color }}></div>
-                        {item.label}
-                      </div>
-                    ))
-                  ) : (
-                    [
-                      { label: 'Growing', color: '#27AE60' },
-                      { label: 'Stable', color: '#F39C12' },
-                      { label: 'Pressure', color: '#E67E22' },
-                      { label: 'Critical', color: '#E74C3C' }
-                    ].map(item => (
-                      <div className="legend-row" key={item.label}>
-                        <div className="legend-dot" style={{ background: item.color }}></div>
-                        {item.label}
-                      </div>
-                    ))
-                  )}
+                      {
+                        cluster: 'Market Cluster',
+                        fraud: 'Fraud Risk',
+                        fiveG: '5G Readiness',
+                        roaming: 'Roaming Intensity',
+                        arpu: 'ARPU Pressure'
+                      }[currentLens]
+                    }
+                  </h4>
+                  <div id="legend-items">
+                    {currentLens === 'cluster' ? (
+                      Object.entries({
+                        'Mature & Saturated': '#9B59B6',
+                        'High Growth Corridor': '#F39C12',
+                        'Emerging Mid-Tier': '#1ABC9C',
+                        'Small Wealthy Market': '#2ECC71',
+                        'Frontier Market': '#E74C3C',
+                        'Regulatory Transition': '#7F8C8D',
+                      }).map(([name, color]) => (
+                        <div className="legend-row" key={name}>
+                          <div className="legend-dot" style={{ background: color }}></div>
+                          {name}
+                        </div>
+                      ))
+                    ) : currentLens === 'fraud' ? (
+                      [
+                        { label: 'Very Low', color: '#1ABC9C' },
+                        { label: 'Low', color: '#F39C12' },
+                        { label: 'Medium', color: '#E67E22' },
+                        { label: 'High', color: '#E74C3C' },
+                        { label: 'Critical', color: '#C0392B' }
+                      ].map(item => (
+                        <div className="legend-row" key={item.label}>
+                          <div className="legend-dot" style={{ background: item.color }}></div>
+                          {item.label}
+                        </div>
+                      ))
+                    ) : currentLens === 'fiveG' ? (
+                      [
+                        { label: '<20%', color: '#1e3054' },
+                        { label: '20-40%', color: '#1A5276' },
+                        { label: '40-60%', color: '#2471A3' },
+                        { label: '60-80%', color: '#2980B9' },
+                        { label: '>80%', color: '#1ABC9C' }
+                      ].map(item => (
+                        <div className="legend-row" key={item.label}>
+                          <div className="legend-dot" style={{ background: item.color }}></div>
+                          {item.label}
+                        </div>
+                      ))
+                    ) : currentLens === 'roaming' ? (
+                      [
+                        { label: 'Minimal', color: '#1e3054' },
+                        { label: 'Low', color: '#1A5276' },
+                        { label: 'Moderate', color: '#2471A3' },
+                        { label: 'High', color: '#2980B9' },
+                        { label: 'Very High', color: '#1ABC9C' }
+                      ].map(item => (
+                        <div className="legend-row" key={item.label}>
+                          <div className="legend-dot" style={{ background: item.color }}></div>
+                          {item.label}
+                        </div>
+                      ))
+                    ) : (
+                      [
+                        { label: 'Growing', color: '#27AE60' },
+                        { label: 'Stable', color: '#F39C12' },
+                        { label: 'Pressure', color: '#E67E22' },
+                        { label: 'Critical', color: '#E74C3C' }
+                      ].map(item => (
+                        <div className="legend-row" key={item.label}>
+                          <div className="legend-dot" style={{ background: item.color }}></div>
+                          {item.label}
+                        </div>
+                      ))
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
+
+            {/* Country Floating Overlay Sidebar (positioned inside Map panel) */}
+            {selectedCountry && (
+              <div style={{
+                position: 'absolute',
+                top: '16px',
+                left: activeRegion !== 'all' ? '336px' : '16px',
+                maxHeight: 'calc(100% - 32px)',
+                zIndex: 1000,
+                display: 'flex',
+                flexDirection: 'column'
+              }}>
+                <StaticCountrySidebar
+                  selectedCountry={selectedCountry}
+                  countryData={countries[selectedCountry]}
+                  onClose={() => {
+                    setSelectedCountry(null);
+                    setSelectedOperator(null);
+                  }}
+                  getFlagEmoji={getFlagEmoji}
+                  selectedOperator={selectedOperator}
+                  onSelectOperator={(opName) => {
+                    setSelectedOperator(opName);
+                    if (opName) {
+                      setActiveTab('account');
+                    } else {
+                      setActiveTab('operators');
+                    }
+                  }}
+                />
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="dashboard-selected-layout" style={{ display: 'flex', width: '100%', height: '100%', gap: '20px', padding: '16px', overflow: 'hidden' }}>
-            <StaticCountrySidebar
-              selectedCountry={selectedCountry}
-              countryData={countries[selectedCountry]}
-              onClose={() => setSelectedCountry(null)}
-              getFlagEmoji={getFlagEmoji}
-              selectedOperator={selectedOperator}
-              onSelectOperator={(opName) => {
-                setSelectedOperator(opName);
-                setActiveTab('account');
-              }}
-            />
-            <DynamicCenterDashboard
-              selectedCountry={selectedCountry}
-              countryData={countries[selectedCountry]}
+
+          {/* Right panel: Dynamic Dashboard */}
+          {(selectedCountry || showGlobalOverview) && (
+            <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
+              <DynamicCenterDashboard
+                selectedCountry={selectedCountry}
+              countryData={selectedCountry ? countries[selectedCountry] : aggregateRegionData(activeRegion)}
               allCountries={countries}
               metadata={metadata}
               getFlagEmoji={getFlagEmoji}
@@ -682,9 +1053,15 @@ export default function App() {
               setActiveTab={setActiveTab}
               selectedOperator={selectedOperator}
               setSelectedOperator={setSelectedOperator}
+              setSelectedCountry={setSelectedCountry}
+              activeRegion={activeRegion}
+              setActiveRegion={setActiveRegion}
+              onCloseOverview={() => setShowGlobalOverview(false)}
             />
           </div>
-        )}
+          )}
+
+        </div>
       </div>
 
       {/* COMPARISON SLIDE-UP PILLS BAR */}

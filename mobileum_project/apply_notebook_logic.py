@@ -345,5 +345,5 @@ def np_serial(o):
 with open(BASE + 'master_telecom.json','w', encoding='utf-8') as f:
     json.dump(master, f, default=np_serial, ensure_ascii=False, separators=(',',':'))
 
-print(f"\n✅ Notebook logic applied and saved to master_telecom.json")
+print(f"\nSUCCESS: Notebook logic applied and saved to master_telecom.json")
 print(f"Size: {__import__('os').path.getsize(BASE + 'master_telecom.json') // 1000} KB")

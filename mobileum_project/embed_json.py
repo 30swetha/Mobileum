@@ -39,5 +39,5 @@ with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
     f.write(final_html)
 
 size_mb = len(final_html) / 1_000_000
-print(f"\n✅ Done! {OUTPUT_FILE} created ({size_mb:.1f} MB)")
+print(f"\nDone! {OUTPUT_FILE} created ({size_mb:.1f} MB)")
 print(f"   Double-click {OUTPUT_FILE} to open in your browser.")

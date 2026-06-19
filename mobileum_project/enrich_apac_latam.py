@@ -176,7 +176,7 @@ def parse_month_to_num(month_str):
 for sheet_name, parsed in all_parsed.items():
     country_key = SHEET_TO_KEY.get(sheet_name)
     if not country_key or country_key not in C:
-        print(f"  SKIP {sheet_name} → key={country_key}")
+        print(f"  SKIP {sheet_name} -> key={country_key}")
         continue
 
     v = C[country_key]
@@ -282,7 +282,7 @@ for sheet_name, parsed in all_parsed.items():
 
     enriched_count += 1
 
-print(f"\n✅ Enriched {enriched_count} countries from APAC/LATAM sheets")
+print(f"\nSUCCESS: Enriched {enriched_count} countries from APAC/LATAM sheets")
 
 # Also pull from prediction notebook: the rule logic is already implemented in our scoring engine.
 # The notebook used exact same column names — we've replicated its logic in Python scoring functions.
@@ -316,4 +316,4 @@ def np_serial(o):
 with open(BASE + 'master_telecom.json','w', encoding='utf-8') as f:
     json.dump(master, f, default=np_serial, ensure_ascii=False, separators=(',',':'))
 
-print(f"\n✅ master_telecom.json updated with APAC/LATAM enrichment")
+print(f"\nSUCCESS: master_telecom.json updated with APAC/LATAM enrichment")

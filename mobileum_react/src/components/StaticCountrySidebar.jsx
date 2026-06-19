@@ -25,7 +25,7 @@ export default function StaticCountrySidebar({
   };
 
   return (
-    <div className="static-context-sidebar">
+    <div className="static-context-sidebar hide-scrollbar">
       {/* Back to Map Button at the Top */}
       <div style={{ marginBottom: '10px' }}>
         <button
@@ -79,7 +79,7 @@ export default function StaticCountrySidebar({
                 <button
                   key={o.operator}
                   onClick={() => {
-                    onSelectOperator(o.operator);
+                    onSelectOperator(isSelected ? null : o.operator);
                   }}
                   style={{
                     background: isSelected ? 'var(--blue)' : 'var(--bg-card)',

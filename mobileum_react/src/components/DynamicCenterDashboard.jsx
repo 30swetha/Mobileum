@@ -3,6 +3,7 @@ import Chart from 'chart.js/auto';
 import CustomerServiceTickets from './CustomerServiceTickets';
 import OutstandingAMCTable from './OutstandingAMCTable';
 import CompetitorsTable from './CompetitorsTable';
+import FinancialReports from './FinancialReports';
 
 const CLUSTER_COLORS = {
   'Ultra-Premium Roaming Hub': '#9B59B6',
@@ -17,6 +18,17 @@ const CLUSTER_COLORS = {
   'Roaming Hub': '#1ABC9C',
   'Emerging Opportunity': '#2ECC71',
   'Unknown': '#7F8C8D'
+};
+
+const trendToScore = (val) => {
+  if (!val || val === 'nan') return 3;
+  const v = val.toLowerCase();
+  if (v.includes('very high') || v.includes('world highest') || v.includes('major') || v.includes('strongly') || v.includes('extreme')) return 5;
+  if (v.includes('high') || v.includes('growing') || v.includes('up') || v.includes('increasing') || v.includes('active') || v.includes('strong') || v.includes('positive') || v.includes('significant')) return 4;
+  if (v.includes('moderate') || v.includes('stable') || v.includes('flat') || v.includes('neutral') || v.includes('marginal') || v.includes('mixed') || v.includes('seasonal')) return 3;
+  if (v.includes('low') || v.includes('declining') || v.includes('down') || v.includes('decreasing') || v.includes('weak') || v.includes('marginal down')) return 2;
+  if (v.includes('very low') || v.includes('none') || v.includes('minimal') || v.includes('absent') || v.includes('nil')) return 1;
+  return 3;
 };
 
 export default function DynamicCenterDashboard({
@@ -34,9 +46,13 @@ export default function DynamicCenterDashboard({
   activeTab,
   setActiveTab,
   selectedOperator,
-  setSelectedOperator
+  setSelectedOperator,
+  setSelectedCountry,
+  activeRegion,
+  onCloseOverview
 }) {
   const chartRefs = useRef({});
+  const [activeSubTab, setActiveSubTab] = useState('profile');
 
   // Refs for the chart canvases
   const overviewRadarRef = useRef(null);
@@ -50,16 +66,20 @@ export default function DynamicCenterDashboard({
   // Panel ref for scroll reset
   const panelRef = useRef(null);
 
-  // Reset scroll position of the panel when active tab or country changes
+  // Reset sub-tab and scroll position of the panel when active tab, country, or operator changes
+  useEffect(() => {
+    setActiveSubTab('profile');
+  }, [selectedCountry, selectedOperator]);
+
   useEffect(() => {
     if (panelRef.current) {
       panelRef.current.scrollTop = 0;
     }
   }, [activeTab, selectedCountry]);
 
-  // Handle Chart rendering when activeTab or selectedCountry changes
+  // Handle Chart rendering when activeTab, selectedCountry, or selectedOperator changes
   useEffect(() => {
-    if (!selectedCountry || !countryData) return;
+    if (!countryData) return;
 
     // Destroy existing charts
     Object.keys(chartRefs.current).forEach(key => {
@@ -95,18 +115,39 @@ export default function DynamicCenterDashboard({
       bodyFont: { size: 10, family: 'Inter' }
     });
 
+    const opData = selectedOperator ? (countryData.operators || []).find(o => o.operator === selectedOperator) : null;
+
+    const getOpRadar = (op) => {
+      const outbound = trendToScore(op.outbound_roaming);
+      const inbound = trendToScore(op.inbound_roaming);
+      const ott = trendToScore(op.ott_intl_calls);
+      const arpu = trendToScore(op.arpu_growth);
+      const fiveG = op.fiveG_pct || 0;
+      const subGrowth = op.subscriber_growth_pct || 0;
+      
+      return {
+        roaming_opportunity: (outbound + inbound) / 2,
+        fraud_risk: ott,
+        fiveG_upsell: Math.min(fiveG / 20, 5),
+        arpu_pressure: 5 - arpu + 1,
+        subscriber_growth: Math.min(subGrowth / 3 + 1, 5),
+        regulatory_risk: trendToScore(op.regulation_impact || op.regulations || 'moderate')
+      };
+    };
+
+    const r = opData ? getOpRadar(opData) : countryData.radar;
+
     // ─── OVERVIEW TAB CHARTS ───
     if (activeTab === 'overview') {
       const canvas = overviewRadarRef.current;
-      if (canvas && countryData.radar) {
+      if (canvas && r) {
         const ctx = canvas.getContext('2d');
-        const r = countryData.radar;
         chartRefs.current['overview_radar'] = new Chart(ctx, {
           type: 'radar',
           data: {
             labels: ['Roaming Opp.', 'Fraud Risk', '5G Upsell', 'ARPU Pressure', 'Sub Growth', 'Regulatory'],
             datasets: [{
-              label: selectedCountry,
+              label: selectedOperator || selectedCountry || countryData.country || 'Overview',
               data: [r.roaming_opportunity, r.fraud_risk, r.fiveG_upsell, r.arpu_pressure, r.subscriber_growth, r.regulatory_risk],
               backgroundColor: 'rgba(59,130,246,0.2)',
               borderColor: '#3b82f6',
@@ -149,7 +190,14 @@ export default function DynamicCenterDashboard({
             labels: ops.map(o => o.operator),
             datasets: [{
               data: ops.map(o => parseFloat(o.market_share_pct) || 0),
-              backgroundColor: ['#3b82f6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'],
+              backgroundColor: ops.map((o, idx) => {
+                if (selectedOperator) {
+                  return o.operator === selectedOperator 
+                    ? ['#3b82f6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'][idx % 6]
+                    : 'rgba(200, 200, 200, 0.15)';
+                }
+                return ['#3b82f6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'][idx % 6];
+              }),
               borderColor: isDark ? '#0d1628' : '#ffffff',
               borderWidth: 2
             }]
@@ -172,16 +220,20 @@ export default function DynamicCenterDashboard({
         chartRefs.current['operators_scatter'] = new Chart(ctx, {
           type: 'bubble',
           data: {
-            datasets: sOps.map((o, i) => ({
-              label: o.operator,
-              data: [{
-                x: parseFloat(o.market_share_pct) || 0,
-                y: o.revenue_growth_score,
-                r: Math.max(5, Math.min(20, (o.sub_base_mln || 1) / 30))
-              }],
-              backgroundColor: ['#3b82f6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'][i % 5] + '99',
-              borderColor: ['#3b82f6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'][i % 5],
-            }))
+            datasets: sOps.map((o, i) => {
+              const isSel = selectedOperator ? o.operator === selectedOperator : true;
+              const baseColor = ['#3b82f6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'][i % 5];
+              return {
+                label: o.operator,
+                data: [{
+                  x: parseFloat(o.market_share_pct) || 0,
+                  y: o.revenue_growth_score,
+                  r: Math.max(5, Math.min(20, (o.sub_base_mln || 1) / 30))
+                }],
+                backgroundColor: isSel ? baseColor + 'CC' : 'rgba(200, 200, 200, 0.15)',
+                borderColor: isSel ? baseColor : 'rgba(200, 200, 200, 0.3)',
+              };
+            })
           },
           options: {
             responsive: true,
@@ -208,20 +260,19 @@ export default function DynamicCenterDashboard({
     }
 
     // ─── IMPACT TAB CHARTS ───
-    if (activeTab === 'impact') {
+    if (activeTab === 'account' && activeSubTab === 'impact') {
       const radarCanvas = impactRadarRef.current;
-      if (radarCanvas && countryData.radar) {
+      if (radarCanvas && r) {
         const ctx = radarCanvas.getContext('2d');
-        const r = countryData.radar;
         const regAvg = countryData.regional_averages;
 
         chartRefs.current['impact_radar'] = new Chart(ctx, {
           type: 'radar',
           data: {
-            labels: ['Roaming Opp.', 'Fraud Risk', '5G Upsell', 'ARPU Pressure', 'Sub Growth', 'Reg. Risk'],
+            labels: ['Roaming Opp.', 'Fraud Risk', '5G Upsell', 'ARPU Pressure', 'Sub Growth', 'Regulatory Risk'],
             datasets: [
               {
-                label: selectedCountry,
+                label: selectedOperator || selectedCountry || countryData.country || 'Overview',
                 data: [r.roaming_opportunity, r.fraud_risk, r.fiveG_upsell, r.arpu_pressure, r.subscriber_growth, r.regulatory_risk],
                 backgroundColor: 'rgba(59,130,246,0.2)',
                 borderColor: '#3b82f6',
@@ -262,7 +313,35 @@ export default function DynamicCenterDashboard({
         });
       }
 
-      const wf = countryData.waterfall;
+      const getOpWaterfall = (op) => {
+        const outbound = trendToScore(op.outbound_roaming);
+        const inbound = trendToScore(op.inbound_roaming);
+        const roamIntensity = (outbound + inbound) / 2;
+        const ott = op.ott_score || trendToScore(op.ott_intl_calls);
+        const arpu = op.arpu_growth_score || trendToScore(op.arpu_growth);
+        const profit = op.profitability_score || trendToScore(op.profitability);
+        const fiveG = op.fiveG_pct || 0;
+        
+        const base = 100;
+        const ott_impact = -(ott - 2) * 2.0;
+        const arpu_impact = -(3 - arpu) * 1.5;
+        const churn_impact = -(3 - profit) * 1.2;
+        const roaming_upside = roamIntensity * 1.8;
+        const fiveG_upside = (fiveG / 100) * 8.0;
+        const net = base + ott_impact + arpu_impact + churn_impact + roaming_upside + fiveG_upside;
+        
+        return {
+          base,
+          ott_substitution: Math.round(ott_impact * 10) / 10,
+          arpu_compression: Math.round(arpu_impact * 10) / 10,
+          churn_pressure: Math.round(churn_impact * 10) / 10,
+          roaming_upside: Math.round(roaming_upside * 10) / 10,
+          fiveG_upside: Math.round(fiveG_upside * 10) / 10,
+          net: Math.round(net * 10) / 10
+        };
+      };
+
+      const wf = opData ? getOpWaterfall(opData) : countryData.waterfall;
       const wfCanvas = impactWaterfallRef.current;
       if (wfCanvas && wf) {
         const ctx = wfCanvas.getContext('2d');
@@ -311,7 +390,7 @@ export default function DynamicCenterDashboard({
     }
 
     // ─── PRODUCTS TAB CHARTS ───
-    if (activeTab === 'products') {
+    if (activeTab === 'account' && activeSubTab === 'products') {
       const products = countryData.product_ranking || [];
       const barCanvas = productsBarRef.current;
       if (barCanvas && products.length) {
@@ -353,8 +432,8 @@ export default function DynamicCenterDashboard({
     // ─── STATISTICS TAB CHARTS ───
     if (activeTab === 'stats') {
       const regionPeers = Object.entries(allCountries)
-        .filter(([_, cv]) => cv.region === countryData.region)
-        .slice(0, 20);
+        .filter(([_, cv]) => countryData.region === 'Global' || cv.region === countryData.region)
+        .slice(0, 40);
       const bubbleCanvas = statsBubbleRef.current;
       if (bubbleCanvas && regionPeers.length) {
         const ctx = bubbleCanvas.getContext('2d');
@@ -407,19 +486,19 @@ export default function DynamicCenterDashboard({
         }
       });
     };
-  }, [selectedCountry, countryData, activeTab, theme]);
+  }, [selectedCountry, countryData, activeTab, activeSubTab, theme]);
 
-  if (!selectedCountry || !countryData) return null;
+  if (!countryData) return null;
 
   const clr = CLUSTER_COLORS[countryData.cluster_name] || '#4A90D9';
 
   const hmColor = (score) => {
     const s = Math.max(0, Math.min(100, score || 0));
     if (s < 20) return '#ef4444';
-    if (s < 40) return '#f59e0b';
-    if (s < 60) return '#3b82f6';
-    if (s < 80) return '#10b981';
-    return '#06d6a0';
+    if (s < 40) return 'rgba(245, 158, 11, 0.15)';
+    if (s < 60) return 'rgba(59, 130, 246, 0.15)';
+    if (s < 80) return 'rgba(16, 185, 129, 0.15)';
+    return 'rgba(16, 185, 129, 0.25)';
   };
 
   const trendToScore = (val) => {
@@ -437,11 +516,83 @@ export default function DynamicCenterDashboard({
     <div className="dynamic-center-panel">
       {/* Centered Panel Header */}
       <div id="panel-header" style={{ padding: '0 0 12px 0', borderBottom: '1px solid var(--border)', background: 'transparent', flexShrink: 0, animation: 'none', opacity: 1, transform: 'none' }}>
+        {/* Breadcrumb / Back Navigation */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+          {selectedCountry ? (
+            <button 
+              onClick={() => {
+                if (setSelectedCountry) setSelectedCountry(null);
+              }}
+              style={{
+                background: 'var(--bg-card2)',
+                border: '1px solid var(--border)',
+                borderRadius: '6px',
+                padding: '6px 12px',
+                fontSize: '11px',
+                fontWeight: '600',
+                color: 'var(--text-primary)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseOver={(e) => { e.currentTarget.style.background = 'var(--bg-card3)'; e.currentTarget.style.borderColor = 'var(--blue)'; }}
+              onMouseOut={(e) => { e.currentTarget.style.background = 'var(--bg-card2)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
+            >
+              ← Back to Global Map
+            </button>
+          ) : (
+            <button 
+              onClick={() => {
+                if (onCloseOverview) onCloseOverview();
+              }}
+              style={{
+                background: 'var(--bg-card2)',
+                border: '1px solid var(--border)',
+                borderRadius: '6px',
+                padding: '6px 12px',
+                fontSize: '11px',
+                fontWeight: '600',
+                color: 'var(--text-primary)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.color = 'var(--red)'; e.currentTarget.style.borderColor = 'var(--red)'; }}
+              onMouseOut={(e) => { e.currentTarget.style.background = 'var(--bg-card2)'; e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
+            >
+              ✖ Close Overview
+            </button>
+          )}
+
+          {selectedCountry && (
+            <>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>/</span>
+              <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-primary)' }}>{selectedCountry}</span>
+            </>
+          )}
+          {selectedOperator && (
+            <>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>/</span>
+              <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--blue)' }}>{selectedOperator}</span>
+            </>
+          )}
+        </div>
+
         <div id="panel-title" style={{ fontSize: '24px', fontWeight: '800' }}>
-          {getFlagEmoji(countryData.iso)} {selectedCountry} Operator Details
+          {selectedCountry 
+            ? <>{getFlagEmoji(countryData.iso)} {selectedCountry} Operator Details</>
+            : <>🌍 {activeRegion === 'all' ? 'Global Overview' : `${activeRegion} Regional Overview`}</>
+          }
         </div>
         <div id="panel-subtitle" style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-          Active intelligence, operator benchmarks, support service levels, and competitor analytics.
+          {selectedCountry 
+            ? 'Active intelligence, operator benchmarks, support service levels, and competitor analytics.'
+            : 'Aggregated regional telecom statistics, operator distributions, and market benchmarks.'
+          }
         </div>
       </div>
 
@@ -451,14 +602,9 @@ export default function DynamicCenterDashboard({
           { key: 'operators', label: 'Operator Details' },
           { key: 'overview', label: 'Market Overview' },
           { key: 'account', label: 'Account Section' },
-          { key: 'impact', label: 'Impact Analysis' },
-          { key: 'products', label: 'Product Fit' },
-          { key: 'support_finance', label: 'Support & AMC' },
-          { key: 'competitors', label: 'Competitors' },
-          { key: 'plan2026', label: 'Plan for 2026' },
           { key: 'stats', label: 'Stats Profile' },
           { key: 'narrative', label: 'Narrative Report' }
-        ].map(tab => (
+        ].map((tab) => (
           <button
             key={tab.key}
             className={`tab-btn ${activeTab === tab.key ? 'active' : ''}`}
@@ -585,12 +731,15 @@ export default function DynamicCenterDashboard({
                       >
                         <td className="hm-op-name" style={{ borderLeft: isSelected ? '4px solid var(--blue)' : '' }}>
                           <div className="op-name" style={{ fontSize: '11px' }}>{op.operator}</div>
-                          <div className="op-sub">{op.prepaid_postpaid || ''}</div>
+                          <div className="op-sub">
+                            {op.prepaid_postpaid || ''}
+                            {(!selectedCountry && op.countryName) ? ` • ${op.countryName}` : ''}
+                          </div>
                         </td>
                         {cells.map((cell, cidx) => {
                           const sc = cell.score;
                           const bg = sc === null ? '' : hmColor(sc);
-                          const textClr = sc !== null && sc < 35 ? '#fff' : sc > 65 ? '#0f172a' : 'inherit';
+                          const textClr = sc !== null && sc < 20 ? '#fff' : 'var(--text-primary)';
                           return (
                             <td
                               key={cidx}
@@ -639,16 +788,16 @@ export default function DynamicCenterDashboard({
             return (
               <div className="operator-click-details-panel" style={{
                 background: 'var(--bg-card)',
-                border: '2px solid var(--blue)',
+                border: '1px solid var(--border)',
                 borderRadius: '12px',
                 padding: '16px',
                 margin: '20px 0',
-                boxShadow: '0 4px 20px rgba(37, 99, 235, 0.1)',
+                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.05)',
                 animation: 'fadeIn 0.25s ease-out'
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
                   <h4 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-                    <span style={{ color: 'var(--blue)' }}>💼</span> {selectedOperator} — Financial Contracts (AMC) & Competitors
+                    {selectedOperator} — Financial Contracts (AMC) & Competitors
                   </h4>
                   <button 
                     onClick={() => setSelectedOperator(null)}
@@ -693,7 +842,7 @@ export default function DynamicCenterDashboard({
                                     {row.business_unit}
                                   </span>
                                 </td>
-                                <td style={{ fontWeight: '700', color: 'var(--green)', textAlign: 'right' }}>
+                                <td style={{ fontWeight: '700', color: 'var(--text-primary)', textAlign: 'right' }}>
                                   ${row.outstanding_amount.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                                 </td>
                                 <td style={{ color: 'var(--text-muted)' }}>{row.due_date}</td>
@@ -825,192 +974,6 @@ export default function DynamicCenterDashboard({
       )}
 
       {/* ── TAB: IMPACT ── */}
-      {activeTab === 'impact' && (
-        <div className="tab-content active" style={{ padding: '12px 0 0 0', display: 'block' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
-            <div className="chart-wrap">
-              <div className="chart-title">Impact Radar — Country vs Regional Average</div>
-              <div className="chart-canvas-wrap" style={{ height: '240px' }}>
-                <canvas ref={impactRadarRef} id="impact_radar"></canvas>
-              </div>
-              <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginTop: '10px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '9px', color: 'var(--text-muted)' }}>
-                  <div style={{ width: '12px', height: '3px', background: '#3b82f6', borderRadius: '2px' }}></div>{' '}
-                  {selectedCountry}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '9px', color: 'var(--text-muted)' }}>
-                  <div style={{ width: '12px', height: '3px', background: '#10b981', borderRadius: '2px', opacity: '.6' }}></div>{' '}
-                  Regional Avg
-                </div>
-              </div>
-            </div>
-
-            <div className="chart-wrap">
-              <div className="chart-title">Revenue Opportunity Waterfall — Mobileum Impact</div>
-              <div className="chart-canvas-wrap" style={{ height: '240px' }}>
-                <canvas ref={impactWaterfallRef} id="impact_waterfall"></canvas>
-              </div>
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '20px' }}>
-            <div className="section">
-              <div className="section-title">Seasonal Roaming Calendar</div>
-              <div className="cal-grid" style={{ gap: '4px' }}>
-                {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m, i) => {
-                  const intensity = countryData.seasonal_roaming?.[i + 1] || 1;
-                  const colors = ['var(--bg-card3)', 'var(--bg-card3)', '#1e4080', '#1a5276', '#1abc9c'];
-                  const textColors = ['var(--text-secondary)', 'var(--text-secondary)', '#7fb3d3', '#fff', '#fff'];
-                  return (
-                    <div
-                      key={m}
-                      className="cal-month"
-                      style={{
-                        background: colors[intensity - 1] || colors[0],
-                        color: textColors[intensity - 1] || textColors[0],
-                        fontWeight: intensity >= 3 ? '600' : 'normal',
-                        padding: '8px 2px'
-                      }}
-                      title={`${m}: ${['No data', 'Minimal', 'Low', 'Moderate', 'High', 'Peak'][intensity] || 'Normal'} roaming`}
-                    >
-                      {m}
-                    </div>
-                  );
-                })}
-              </div>
-              <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '10px' }}>
-                {['No data', 'Minimal', 'Moderate', 'High', 'Peak'].map((l, i) => {
-                  const c = ['var(--bg-card3)', 'var(--bg-card3)', '#1e4080', '#1a5276', '#1abc9c'][i];
-                  return (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '9px', color: 'var(--text-muted)' }} key={l}>
-                      <div style={{ width: '8px', height: '8px', background: c, borderRadius: '2px' }}></div>
-                      {l}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="section">
-              <div className="section-title">Impact Analysis Dimensions</div>
-              {(() => {
-                const dims = [
-                  { label: 'Outbound Roaming Impact', key: 'ia_outbound_impact' },
-                  { label: 'Inbound Roaming Impact', key: 'ia_inbound_impact' },
-                  { label: 'ARPU Impact', key: 'ia_arpu_impact' },
-                  { label: 'App/OTT Substitution', key: 'ia_apps' },
-                  { label: 'Revenue Growth Outlook', key: 'ia_rev_growth' },
-                  { label: 'Profitability Outlook', key: 'ia_profitability' }
-                ];
-
-                const op0 = (countryData.operators && countryData.operators[0]) || {};
-                return dims.map(d => {
-                  const val = op0[d.key] || '—';
-                  const score = trendToScore(val);
-                  const barClr = ['#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#10b981'][score - 1] || '#3b82f6';
-                  if (val === '—' || val === 'nan' || val === '') return null;
-                  return (
-                    <div key={d.key} style={{ marginBottom: '8px' }}>
-                      <div className="percentile-row" style={{ marginBottom: '2px' }}>
-                        <div className="perc-label" style={{ fontSize: '10px' }}>{d.label}</div>
-                        <div className="perc-bar" style={{ height: '4px' }}>
-                          <div className="perc-fill" style={{ width: `${(score / 5) * 100}%`, background: barClr }}></div>
-                        </div>
-                        <div className="perc-value" style={{ color: barClr, fontSize: '10px' }}>{score}/5</div>
-                      </div>
-                      <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginLeft: '128px' }}>
-                        {val.substring(0, 120)}
-                      </div>
-                    </div>
-                  );
-                });
-              })()}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── TAB: PRODUCTS (MOBILEUM FIT) ── */}
-      {activeTab === 'products' && (
-        <div className="tab-content active" style={{ padding: '12px 0 0 0', display: 'block' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px' }}>
-            <div className="chart-wrap">
-              <div className="chart-title">Product Fit Score — All Mobileum Solutions</div>
-              <div className="chart-canvas-wrap" style={{ height: '260px' }}>
-                <canvas ref={productsBarRef} id="products_bar"></canvas>
-              </div>
-            </div>
-
-            <div className="section">
-              <div className="section-title">Priority Recommendations</div>
-              {(countryData.product_ranking || []).slice(0, 3).map((p, i) => {
-                const isTop = i === 0;
-                const barClr = p.score > 75 ? '#10b981' : p.score > 50 ? '#f59e0b' : '#3b82f6';
-                return (
-                  <div className={`product-card ${isTop ? 'top' : ''}`} key={p.product} style={{ padding: '10px 12px' }}>
-                    {isTop ? (
-                      <div className="product-top-badge">★ #1 BEST FIT</div>
-                    ) : (
-                      <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginBottom: '2px' }}>
-                        #{i + 1} RECOMMENDED
-                      </div>
-                    )}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <div className="product-name" style={{ fontSize: '12px' }}>{p.product}</div>
-                      <div className="score-circle" style={{ borderColor: barClr, color: barClr, width: '28px', height: '28px', fontSize: '9px' }}>
-                        {p.score}
-                      </div>
-                    </div>
-                    <div className="product-reason" style={{ fontSize: '10px', marginTop: '4px' }}>{p.reason}</div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="section" style={{ marginTop: '20px' }}>
-            <div className="section-title">Full Product Ranking Table</div>
-            <div style={{ overflowX: 'auto', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '6px' }}>
-              <table className="op-table" style={{ width: '100%' }}>
-                <thead>
-                  <tr>
-                    <th style={{ width: '40px' }}>#</th>
-                    <th>Product</th>
-                    <th style={{ width: '100px' }}>Score</th>
-                    <th>Rationale</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(countryData.product_ranking || []).map((p, i) => {
-                    const barClr = p.score > 75 ? 'var(--green)' : p.score > 50 ? 'var(--yellow)' : 'var(--blue)';
-                    return (
-                      <tr key={p.product}>
-                        <td style={{ color: 'var(--text-muted)', fontSize: '10px' }}>{i + 1}</td>
-                        <td className="op-name" style={{ fontSize: '11px' }}>{p.product}</td>
-                        <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <div className="score-bar-bg" style={{ width: '50px', height: '4px' }}>
-                              <div className="score-bar-fill" style={{ width: `${p.score}%`, background: barClr, height: '100%' }}></div>
-                            </div>
-                            <span style={{ fontSize: '10px', fontWeight: '600', color: barClr }}>
-                              {p.score}
-                            </span>
-                          </div>
-                        </td>
-                        <td style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
-                          {p.reason}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── TAB: ACCOUNT SECTION ── */}
       {activeTab === 'account' && (
         <div className="tab-content active" style={{ padding: '12px 0 0 0', display: 'block' }}>
           {accountData ? (
@@ -1056,94 +1019,153 @@ export default function DynamicCenterDashboard({
                 </div>
               )}
 
+              {/* Nested Sub-navigation Bar */}
+              <div id="sub-panel-tabs" style={{ 
+                display: 'flex', 
+                gap: '8px', 
+                borderBottom: '1px solid var(--border)', 
+                padding: '4px 0 10px 0', 
+                position: 'sticky',
+                top: 0,
+                background: 'var(--bg-card)',
+                zIndex: 10,
+                flexShrink: 0
+              }}>
+                {[
+                  { key: 'profile', label: '👤 Account Profile' },
+                  { key: 'impact', label: '📊 Impact Analysis' },
+                  { key: 'products', label: '🎯 Product Fit' },
+                  { key: 'support', label: '🏥 Support & AMC' },
+                  { key: 'competitors', label: '⚔️ Competitors' },
+                  { key: 'plan2026', label: '🚀 Plan for 2026' }
+                ].map(subTab => (
+                  <button
+                    key={subTab.key}
+                    className={`tab-btn ${activeSubTab === subTab.key ? 'active' : ''}`}
+                    onClick={() => setActiveSubTab(subTab.key)}
+                    style={{ 
+                      fontSize: '11px', 
+                      padding: '8px 12px',
+                      background: activeSubTab === subTab.key ? 'rgba(37, 99, 235, 0.15)' : 'transparent',
+                      border: '1px solid var(--border)',
+                      borderRadius: '6px',
+                      color: activeSubTab === subTab.key ? 'var(--blue-light)' : 'var(--text-muted)',
+                      cursor: 'pointer',
+                      fontWeight: '600'
+                    }}
+                  >
+                    {subTab.label}
+                  </button>
+                ))}
+              </div>
+
+              {activeSubTab === 'profile' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', animation: 'fadeIn 0.25s ease-out' }}>
+
               {/* Product Section */}
               <div className="section" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', margin: '0 0 4px 0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                 <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--blue)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   📦 Product Section
                 </div>
                 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {/* 1. Mobileum products */}
-                  <div>
-                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>
-                      1. Mobileum Products
-                    </div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                      {(accountData.productSection?.mobileumProducts || []).map(item => (
-                        <span key={item} style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--blue)', border: '1px solid rgba(37, 99, 235, 0.2)', borderRadius: '6px', padding: '4px 8px', fontSize: '11px', fontWeight: '600' }}>
-                          {item}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* 2. Competition products */}
-                  <div>
-                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>
-                      2. Competition Products
-                    </div>
-                    <ul style={{ margin: '0', paddingLeft: '18px', color: 'var(--text-secondary)', fontSize: '11px', lineHeight: '1.6' }}>
-                      {(accountData.productSection?.competitionProducts || []).map(item => <li key={item}>{item}</li>)}
-                    </ul>
-                  </div>
-
-                  {/* 3. Product gaps */}
-                  <div>
-                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>
-                      3. Product Gaps
-                    </div>
-                    <ul style={{ margin: '0', paddingLeft: '18px', color: 'var(--text-secondary)', fontSize: '11px', lineHeight: '1.6' }}>
-                      {(accountData.productSection?.productGaps || []).map(item => <li key={item}>{item}</li>)}
-                    </ul>
-                  </div>
-
-                  {/* 4. Managed services possibility */}
-                  <div>
-                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>
-                      4. Managed Services Possibility
-                    </div>
-                    <ul style={{ margin: '0', paddingLeft: '18px', color: 'var(--text-secondary)', fontSize: '11px', lineHeight: '1.6' }}>
-                      {(accountData.productSection?.managedServicesPossibility || []).map(item => <li key={item}>{item}</li>)}
-                    </ul>
-                  </div>
-
-                  {/* 5. Plan for 2026 */}
-                  {accountData.plan2026 && (
-                    <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                        <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                          5. Plan for 2026 (Quick View)
-                        </span>
-                        <button 
-                          onClick={() => setActiveTab('plan2026')}
-                          style={{ background: 'var(--blue)', border: 'none', color: '#fff', borderRadius: '4px', padding: '3px 8px', fontSize: '9px', fontWeight: '600', cursor: 'pointer' }}
-                        >
-                          View full plan →
-                        </button>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                  {/* LEFT COLUMN */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {/* 1. Mobileum products */}
+                    <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', height: '100%', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        🔹 Mobileum Products
                       </div>
-                      <div style={{ fontSize: '11px', color: 'var(--text-primary)' }}>
-                        <strong>Pipeline Value:</strong> {accountData.plan2026.valueOfOpportunities}
-                      </div>
-                      <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                        <strong>Focus:</strong> {(accountData.plan2026.productsFocusedOn || []).join(', ')}
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        {(accountData.productSection?.mobileumProducts || []).map(item => (
+                          <span key={item} style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--blue)', border: '1px solid rgba(37, 99, 235, 0.2)', borderRadius: '6px', padding: '4px 8px', fontSize: '11px', fontWeight: '600' }}>
+                            {item}
+                          </span>
+                        ))}
                       </div>
                     </div>
-                  )}
 
-                  {/* 6. Competition which can be replaced */}
-                  <div>
-                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>
-                      6. Competitors to Replace
+                    {/* 3. Product gaps */}
+                    <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', height: '100%', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        🔍 Product Gaps
+                      </div>
+                      <ul style={{ margin: '0', paddingLeft: '18px', color: 'var(--text-secondary)', fontSize: '11px', lineHeight: '1.6' }}>
+                        {(accountData.productSection?.productGaps || []).map(item => <li key={item}>{item}</li>)}
+                      </ul>
                     </div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                      {(accountData.productSection?.replaceableCompetitors || []).map(item => (
-                        <span key={item} style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--red)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '999px', padding: '2px 8px', fontSize: '10px', fontWeight: '600' }}>
-                          {item}
-                        </span>
-                      ))}
+
+                    {/* 4. Managed services possibility */}
+                    <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', height: '100%', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        🛠️ Managed Services Possibility
+                      </div>
+                      <ul style={{ margin: '0', paddingLeft: '18px', color: 'var(--text-secondary)', fontSize: '11px', lineHeight: '1.6' }}>
+                        {(accountData.productSection?.managedServicesPossibility || []).map(item => <li key={item}>{item}</li>)}
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* RIGHT COLUMN */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {/* 2. Competition products */}
+                    <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', height: '100%', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        ⚔️ Competition Products
+                      </div>
+                      <ul style={{ margin: '0', paddingLeft: '18px', color: 'var(--text-secondary)', fontSize: '11px', lineHeight: '1.6' }}>
+                        {(accountData.productSection?.competitionProducts || []).map(item => <li key={item}>{item}</li>)}
+                      </ul>
+                    </div>
+
+                    {/* 6. Competition which can be replaced */}
+                    <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', height: '100%', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        🎯 Competitors to Replace
+                      </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        {(accountData.productSection?.replaceableCompetitors || []).map(item => (
+                          <span key={item} style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--red)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '999px', padding: '2px 8px', fontSize: '10px', fontWeight: '600' }}>
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Final Strategies */}
+                    <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', height: '100%', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        🚀 Final Strategies
+                      </div>
+                      <ul style={{ margin: '0', paddingLeft: '18px', color: 'var(--text-secondary)', fontSize: '11px', lineHeight: '1.6' }}>
+                        {(accountData.productSection?.finalStrategies || []).map(item => <li key={item}>{item}</li>)}
+                      </ul>
                     </div>
                   </div>
                 </div>
+
+                {/* 5. Plan for 2026 */}
+                {accountData.plan2026 && (
+                  <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px', marginTop: '16px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                        Plan for 2026 (Quick View)
+                      </span>
+                      <button 
+                        onClick={() => setActiveSubTab('plan2026')}
+                        style={{ background: 'var(--blue)', border: 'none', color: '#fff', borderRadius: '4px', padding: '3px 8px', fontSize: '9px', fontWeight: '600', cursor: 'pointer' }}
+                      >
+                        View full plan →
+                      </button>
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-primary)' }}>
+                      <strong>Pipeline Value:</strong> {accountData.plan2026.valueOfOpportunities}
+                    </div>
+                    <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                      <strong>Focus:</strong> {(accountData.plan2026.productsFocusedOn || []).join(', ')}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Financial Section */}
@@ -1299,87 +1321,267 @@ export default function DynamicCenterDashboard({
                   </div>
                 </div>
               </div>
-
+            </div>
+          )}
+              {activeSubTab === 'impact' && (
+                <div style={{ animation: 'fadeIn 0.25s ease-out' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+                      <div className="chart-wrap">
+                        <div className="chart-title">Impact Radar — Country vs Regional Average</div>
+                        <div className="chart-canvas-wrap" style={{ height: '240px' }}>
+                          <canvas ref={impactRadarRef} id="impact_radar"></canvas>
+                        </div>
+                        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginTop: '10px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '9px', color: 'var(--text-muted)' }}>
+                            <div style={{ width: '12px', height: '3px', background: '#3b82f6', borderRadius: '2px' }}></div>{' '}
+                            {selectedCountry}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '9px', color: 'var(--text-muted)' }}>
+                            <div style={{ width: '12px', height: '3px', background: '#10b981', borderRadius: '2px', opacity: '.6' }}></div>{' '}
+                            Regional Avg
+                          </div>
+                        </div>
+                      </div>
+          
+                      <div className="chart-wrap">
+                        <div className="chart-title">Revenue Opportunity Waterfall — Mobileum Impact</div>
+                        <div className="chart-canvas-wrap" style={{ height: '240px' }}>
+                          <canvas ref={impactWaterfallRef} id="impact_waterfall"></canvas>
+                        </div>
+                      </div>
+                    </div>
+          
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '20px' }}>
+                      <div className="section">
+                        <div className="section-title">Seasonal Roaming Calendar</div>
+                        <div className="cal-grid" style={{ gap: '4px' }}>
+                          {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m, i) => {
+                            const intensity = countryData.seasonal_roaming?.[i + 1] || 1;
+                            const colors = ['var(--bg-card3)', 'var(--bg-card3)', '#1e4080', '#1a5276', '#1abc9c'];
+                            const textColors = ['var(--text-secondary)', 'var(--text-secondary)', '#7fb3d3', '#fff', '#fff'];
+                            return (
+                              <div
+                                key={m}
+                                className="cal-month"
+                                style={{
+                                  background: colors[intensity - 1] || colors[0],
+                                  color: textColors[intensity - 1] || textColors[0],
+                                  fontWeight: intensity >= 3 ? '600' : 'normal',
+                                  padding: '8px 2px'
+                                }}
+                                title={`${m}: ${['No data', 'Minimal', 'Low', 'Moderate', 'High', 'Peak'][intensity] || 'Normal'} roaming`}
+                              >
+                                {m}
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '10px' }}>
+                          {['No data', 'Minimal', 'Moderate', 'High', 'Peak'].map((l, i) => {
+                            const c = ['var(--bg-card3)', 'var(--bg-card3)', '#1e4080', '#1a5276', '#1abc9c'][i];
+                            return (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '9px', color: 'var(--text-muted)' }} key={l}>
+                                <div style={{ width: '8px', height: '8px', background: c, borderRadius: '2px' }}></div>
+                                {l}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+          
+                      <div className="section">
+                        <div className="section-title">Impact Analysis Dimensions</div>
+                        {(() => {
+                          const dims = [
+                            { label: 'Outbound Roaming Impact', key: 'ia_outbound_impact' },
+                            { label: 'Inbound Roaming Impact', key: 'ia_inbound_impact' },
+                            { label: 'ARPU Impact', key: 'ia_arpu_impact' },
+                            { label: 'App/OTT Substitution', key: 'ia_apps' },
+                            { label: 'Revenue Growth Outlook', key: 'ia_rev_growth' },
+                            { label: 'Profitability Outlook', key: 'ia_profitability' }
+                          ];
+          
+                          const op0 = (countryData.operators && countryData.operators[0]) || {};
+                          return dims.map(d => {
+                            const val = op0[d.key] || '—';
+                            const score = trendToScore(val);
+                            const barClr = ['#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#10b981'][score - 1] || '#3b82f6';
+                            if (val === '—' || val === 'nan' || val === '') return null;
+                            return (
+                              <div key={d.key} style={{ marginBottom: '8px' }}>
+                                <div className="percentile-row" style={{ marginBottom: '2px' }}>
+                                  <div className="perc-label" style={{ fontSize: '10px' }}>{d.label}</div>
+                                  <div className="perc-bar" style={{ height: '4px' }}>
+                                    <div className="perc-fill" style={{ width: `${(score / 5) * 100}%`, background: barClr }}></div>
+                                  </div>
+                                  <div className="perc-value" style={{ color: barClr, fontSize: '10px' }}>{score}/5</div>
+                                </div>
+                                <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginLeft: '128px' }}>
+                                  {val.substring(0, 120)}
+                                </div>
+                              </div>
+                            );
+                          });
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              {activeSubTab === 'products' && (
+                <div style={{ animation: 'fadeIn 0.25s ease-out' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px' }}>
+                      <div className="chart-wrap">
+                        <div className="chart-title">Product Fit Score — All Mobileum Solutions</div>
+                        <div className="chart-canvas-wrap" style={{ height: '260px' }}>
+                          <canvas ref={productsBarRef} id="products_bar"></canvas>
+                        </div>
+                      </div>
+          
+                      <div className="section">
+                        <div className="section-title">Priority Recommendations</div>
+                        {(countryData.product_ranking || []).slice(0, 3).map((p, i) => {
+                          const isTop = i === 0;
+                          const barClr = p.score > 75 ? '#10b981' : p.score > 50 ? '#f59e0b' : '#3b82f6';
+                          return (
+                            <div className={`product-card ${isTop ? 'top' : ''}`} key={p.product} style={{ padding: '10px 12px' }}>
+                              {isTop ? (
+                                <div className="product-top-badge">★ #1 BEST FIT</div>
+                              ) : (
+                                <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginBottom: '2px' }}>
+                                  #{i + 1} RECOMMENDED
+                                </div>
+                              )}
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                <div className="product-name" style={{ fontSize: '12px' }}>{p.product}</div>
+                                <div className="score-circle" style={{ borderColor: barClr, color: barClr, width: '28px', height: '28px', fontSize: '9px' }}>
+                                  {p.score}
+                                </div>
+                              </div>
+                              <div className="product-reason" style={{ fontSize: '10px', marginTop: '4px' }}>{p.reason}</div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+          
+                    <div className="section" style={{ marginTop: '20px' }}>
+                      <div className="section-title">Full Product Ranking Table</div>
+                      <div style={{ overflowX: 'auto', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '6px' }}>
+                        <table className="op-table" style={{ width: '100%' }}>
+                          <thead>
+                            <tr>
+                              <th style={{ width: '40px' }}>#</th>
+                              <th>Product</th>
+                              <th style={{ width: '100px' }}>Score</th>
+                              <th>Rationale</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {(countryData.product_ranking || []).map((p, i) => {
+                              const barClr = p.score > 75 ? 'var(--green)' : p.score > 50 ? 'var(--yellow)' : 'var(--blue)';
+                              return (
+                                <tr key={p.product}>
+                                  <td style={{ color: 'var(--text-muted)', fontSize: '10px' }}>{i + 1}</td>
+                                  <td className="op-name" style={{ fontSize: '11px' }}>{p.product}</td>
+                                  <td>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                      <div className="score-bar-bg" style={{ width: '50px', height: '4px' }}>
+                                        <div className="score-bar-fill" style={{ width: `${p.score}%`, background: barClr, height: '100%' }}></div>
+                                      </div>
+                                      <span style={{ fontSize: '10px', fontWeight: '600', color: barClr }}>
+                                        {p.score}
+                                      </span>
+                                    </div>
+                                  </td>
+                                  <td style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
+                                    {p.reason}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                </div>
+              )}
+              {activeSubTab === 'support' && (
+                <div style={{ animation: 'fadeIn 0.25s ease-out' }}>
+                    <CustomerServiceTickets ticketData={ticketData} isLoading={isDataLoading} />
+                    <OutstandingAMCTable amcData={amcData} isLoading={isDataLoading} />
+                  </div>
+                )}
+              {activeSubTab === 'competitors' && (
+                <div style={{ animation: 'fadeIn 0.25s ease-out' }}>
+                    <CompetitorsTable competitorData={competitorData} />
+                  </div>
+                )}
+              {activeSubTab === 'plan2026' && (
+                <div style={{ animation: 'fadeIn 0.25s ease-out' }}>
+                    {accountData?.plan2026 ? (
+                      <div className="section" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                        <div style={{ fontSize: '15px', fontWeight: '800', color: 'var(--blue)', marginBottom: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          🚀 Mobileum 2026 Strategic Plan
+                        </div>
+                        
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                          {/* 1. Products focused on */}
+                          <div>
+                            <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                              1. Products Focused On
+                            </div>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                              {(accountData.plan2026.productsFocusedOn || []).map(item => (
+                                <span key={item} style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--blue)', border: '1px solid rgba(37, 99, 235, 0.2)', borderRadius: '6px', padding: '4px 8px', fontSize: '11px', fontWeight: '600' }}>
+                                  {item}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+          
+                          {/* 2. Value of opportunities */}
+                          <div>
+                            <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                              2. Value of Opportunities
+                            </div>
+                            <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px', display: 'inline-block' }}>
+                              <strong style={{ fontSize: '14px', color: 'var(--green)' }}>{accountData.plan2026.valueOfOpportunities}</strong>
+                            </div>
+                          </div>
+          
+                          {/* 3. PoC or demo given */}
+                          <div>
+                            <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                              3. PoC or Demo Delivered
+                            </div>
+                            <div className="product-card" style={{ padding: '12px', margin: 0, cursor: 'default', fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                              {accountData.plan2026.pocOrDemoGiven}
+                            </div>
+                          </div>
+          
+                          {/* 4. Consulting trials given */}
+                          <div>
+                            <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                              4. Consulting Trials Given
+                            </div>
+                            <div className="product-card" style={{ padding: '12px', margin: 0, cursor: 'default', fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                              {accountData.plan2026.consultingTrialsGiven}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="section"><div className="section-title">2026 plan</div><div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>No 2026 plan details are available for this account yet.</div></div>
+                    )}
+                    
+                    {/* Render Financial Reports below the Strategic Plan */}
+                    <FinancialReports operator={selectedOperator || selectedCountry || 'Global Market'} />
+                  </div>
+                )}
             </div>
           ) : (
             <div className="section"><div className="section-title">Account insights</div><div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>No account insight is available for this market yet.</div></div>
           )}
-        </div>
-      )}
-
-      {/* ── TAB: PLAN FOR 2026 ── */}
-      {activeTab === 'plan2026' && (
-        <div className="tab-content active" style={{ padding: '12px 0 0 0', display: 'block' }}>
-          {accountData?.plan2026 ? (
-            <div className="section" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-              <div style={{ fontSize: '15px', fontWeight: '800', color: 'var(--blue)', marginBottom: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                🚀 Mobileum 2026 Strategic Plan
-              </div>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {/* 1. Products focused on */}
-                <div>
-                  <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>
-                    1. Products Focused On
-                  </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                    {(accountData.plan2026.productsFocusedOn || []).map(item => (
-                      <span key={item} style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--blue)', border: '1px solid rgba(37, 99, 235, 0.2)', borderRadius: '6px', padding: '4px 8px', fontSize: '11px', fontWeight: '600' }}>
-                        {item}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 2. Value of opportunities */}
-                <div>
-                  <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>
-                    2. Value of Opportunities
-                  </div>
-                  <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px', display: 'inline-block' }}>
-                    <strong style={{ fontSize: '14px', color: 'var(--green)' }}>{accountData.plan2026.valueOfOpportunities}</strong>
-                  </div>
-                </div>
-
-                {/* 3. PoC or demo given */}
-                <div>
-                  <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>
-                    3. PoC or Demo Delivered
-                  </div>
-                  <div className="product-card" style={{ padding: '12px', margin: 0, cursor: 'default', fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
-                    {accountData.plan2026.pocOrDemoGiven}
-                  </div>
-                </div>
-
-                {/* 4. Consulting trials given */}
-                <div>
-                  <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>
-                    4. Consulting Trials Given
-                  </div>
-                  <div className="product-card" style={{ padding: '12px', margin: 0, cursor: 'default', fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
-                    {accountData.plan2026.consultingTrialsGiven}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="section"><div className="section-title">2026 plan</div><div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>No 2026 plan details are available for this account yet.</div></div>
-          )}
-        </div>
-      )}
-
-      {/* ── TAB: SUPPORT & AMC (NEW) ── */}
-      {activeTab === 'support_finance' && (
-        <div className="tab-content active" style={{ padding: '12px 0 0 0', display: 'block' }}>
-          <CustomerServiceTickets ticketData={ticketData} isLoading={isDataLoading} />
-          <OutstandingAMCTable amcData={amcData} isLoading={isDataLoading} />
-        </div>
-      )}
-
-      {/* ── TAB: COMPETITORS (NEW) ── */}
-      {activeTab === 'competitors' && (
-        <div className="tab-content active" style={{ padding: '12px 0 0 0', display: 'block' }}>
-          <CompetitorsTable competitorData={competitorData} />
         </div>
       )}
 

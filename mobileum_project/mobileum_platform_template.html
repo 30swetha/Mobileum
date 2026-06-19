@@ -108,11 +108,12 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
 #panel.open{width:var(--sidebar-w)}
 #panel-inner{
   width:var(--sidebar-w);height:100%;overflow-y:auto;
-  scrollbar-width:thin;scrollbar-color:var(--border) transparent
+  scrollbar-width:auto;scrollbar-color:var(--border) var(--bg-card)
 }
-#panel-inner::-webkit-scrollbar{width:4px}
-#panel-inner::-webkit-scrollbar-track{background:transparent}
-#panel-inner::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+#panel-inner::-webkit-scrollbar{width:12px}
+#panel-inner::-webkit-scrollbar-track{background:var(--bg-card)}
+#panel-inner::-webkit-scrollbar-thumb{background:var(--border);border:3px solid var(--bg-card);border-radius:6px}
+#panel-inner::-webkit-scrollbar-thumb:hover{background:var(--text-muted)}
 
 /* ── PANEL HEADER ── */
 #panel-header{
@@ -349,9 +350,10 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
 [data-source]:hover::after{opacity:1}
 
 /* ── SCROLLBAR ── */
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+::-webkit-scrollbar{width:12px;height:12px}
+::-webkit-scrollbar-track{background:var(--bg-card);border-radius:6px}
+::-webkit-scrollbar-thumb{background:var(--border);border:3px solid var(--bg-card);border-radius:6px}
+::-webkit-scrollbar-thumb:hover{background:var(--text-muted)}
 
 /* ── RESPONSIVE ── */
 @media(max-width:768px){
@@ -421,12 +423,11 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
         <button id="close-panel" onclick="closePanel()">✕</button>
       </div>
       <div id="panel-tabs">
-        <button class="tab-btn active" onclick="showTab('overview')">Overview</button>
-        <button class="tab-btn" onclick="showTab('operators')">Operators</button>
-        <button class="tab-btn" onclick="showTab('impact')">Impact Analysis</button>
-        <button class="tab-btn" onclick="showTab('products')">Mobileum Fit</button>
-        <button class="tab-btn" onclick="showTab('stats')">Statistics</button>
-        <button class="tab-btn" onclick="showTab('narrative')">Intelligence</button>
+        <button class="tab-btn" onclick="showTab('operators')">Operator Details</button>
+        <button class="tab-btn active" onclick="showTab('overview')">Market Overview</button>
+        <button class="tab-btn" onclick="showTab('account')">Account Section</button>
+        <button class="tab-btn" onclick="showTab('stats')">Stats Profile</button>
+        <button class="tab-btn" onclick="showTab('narrative')">Narrative Report</button>
       </div>
 
       <!-- TAB: OVERVIEW -->
@@ -439,14 +440,9 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
         <div id="operators-content"></div>
       </div>
 
-      <!-- TAB: IMPACT ANALYSIS -->
-      <div id="tab-impact" class="tab-content">
-        <div id="impact-content"></div>
-      </div>
-
-      <!-- TAB: MOBILEUM FIT -->
-      <div id="tab-products" class="tab-content">
-        <div id="products-content"></div>
+      <!-- TAB: ACCOUNT SECTION -->
+      <div id="tab-account" class="tab-content">
+        <div id="account-content" style="display:flex;flex-direction:column;gap:20px;padding:12px 0"></div>
       </div>
 
       <!-- TAB: STATISTICS -->
@@ -491,6 +487,152 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
 // EMBED DATA
 // ═══════════════════════════════════════════════════════════════════
 const TELECOM_DATA = /*DATA_PLACEHOLDER*/
+
+// Mock datasets for tickets, amc, and competitors
+const MOCK_TICKETS = {
+  "Saudi Arabia": {
+    "total_tickets": 1420,
+    "trend_12_months": [
+      { "month": "Jun", "count": 110 }, { "month": "Jul", "count": 125 },
+      { "month": "Aug", "count": 95 }, { "month": "Sep", "count": 115 },
+      { "month": "Oct", "count": 130 }, { "month": "Nov", "count": 140 },
+      { "month": "Dec", "count": 150 }, { "month": "Jan", "count": 120 },
+      { "month": "Feb", "count": 110 }, { "month": "Mar", "count": 105 },
+      { "month": "Apr", "count": 118 }, { "month": "May", "count": 102 }
+    ],
+    "business_units": [
+      { "unit": "Risk", "tickets": 340, "color": "#7c3aed" },
+      { "unit": "Fraud", "tickets": 420, "color": "#ef4444" },
+      { "unit": "Roaming Management", "tickets": 280, "color": "#10b981" },
+      { "unit": "Network Security", "tickets": 180, "color": "#3b82f6" },
+      { "unit": "Customer Intelligence", "tickets": 200, "color": "#ea580c" }
+    ]
+  },
+  "UAE": {
+    "total_tickets": 980,
+    "trend_12_months": [
+      { "month": "Jun", "count": 80 }, { "month": "Jul", "count": 85 },
+      { "month": "Aug", "count": 70 }, { "month": "Sep", "count": 90 },
+      { "month": "Oct", "count": 95 }, { "month": "Nov", "count": 110 },
+      { "month": "Dec", "count": 105 }, { "month": "Jan", "count": 85 },
+      { "month": "Feb", "count": 75 }, { "month": "Mar", "count": 80 },
+      { "month": "Apr", "count": 95 }, { "month": "May", "count": 110 }
+    ],
+    "business_units": [
+      { "unit": "Risk", "tickets": 220, "color": "#7c3aed" },
+      { "unit": "Fraud", "tickets": 310, "color": "#ef4444" },
+      { "unit": "Roaming Management", "tickets": 210, "color": "#10b981" },
+      { "unit": "Network Security", "tickets": 110, "color": "#3b82f6" },
+      { "unit": "Customer Intelligence", "tickets": 130, "color": "#ea580c" }
+    ]
+  }
+};
+
+const MOCK_AMC = {
+  "Saudi Arabia": [
+    { "contract_id": "AMC-2026-001", "business_unit": "Risk (RAID 9)", "client_name": "STC Saudi Arabia", "outstanding_amount": 400000.00, "due_date": "2026-08-31" },
+    { "contract_id": "AMC-2026-002", "business_unit": "Roaming Management", "client_name": "Mobily", "outstanding_amount": 200000.00, "due_date": "2026-07-15" },
+    { "contract_id": "AMC-2026-003", "business_unit": "Network Security", "client_name": "Zain KSA", "outstanding_amount": 150000.00, "due_date": "2026-09-30" }
+  ],
+  "UAE": [
+    { "contract_id": "AMC-2026-004", "business_unit": "Roaming DNA", "client_name": "e& UAE", "outstanding_amount": 400000.00, "due_date": "2026-08-15" },
+    { "contract_id": "AMC-2026-005", "business_unit": "Fraud (RAID 9)", "client_name": "du", "outstanding_amount": 200000.00, "due_date": "2026-07-01" },
+    { "contract_id": "AMC-2026-006", "business_unit": "Customer Intelligence", "client_name": "e& UAE", "outstanding_amount": 300000.00, "due_date": "2026-10-10" }
+  ]
+};
+
+const MOCK_COMPETITORS = [
+  { "name": "Syniverse", "category": "Direct Competitor", "key_offerings": "Data/Financial Clearing, IPX Transport connectivity, and basic Roaming Steering.", "versus_mobileum": "Mobileum dominates in advanced analytics (Active Testing, Roaming DNA), whereas Syniverse is infrastructure-heavy." },
+  { "name": "Tomia", "category": "Direct Competitor", "key_offerings": "Clearing and Settlement, Roaming Steering, and Interconnect Optimization.", "versus_mobileum": "Mobileum features advanced signaling firewall security and eSIM, while Tomia focuses on wholesale margins." },
+  { "name": "Subex", "category": "Direct Competitor", "key_offerings": "Business & Revenue Assurance, IoT security, and telecom Fraud Management.", "versus_mobileum": "Mobileum RAID 9 platform is highly modern with SaaS capabilities, whereas Subex has legacy deployments." },
+  { "name": "BICS", "category": "Partner / Niche", "key_offerings": "International voice/SMS carrier routing, roaming hubs, and network quality testing.", "versus_mobileum": "Mobileum is a software vendor partner; we compete only on roaming active testing lines." }
+];
+
+const MOCK_ACCOUNT_INSIGHTS = {
+  "Saudi Arabia": {
+    productSection: {
+      mobileumProducts: ['RAID 9 Fraud Management', 'Roaming DNA', 'Steering of Roaming', '5G Active Testing'],
+      competitionProducts: ['Syniverse clearing & transport', 'Tomia roaming steering', 'Subex assurance'],
+      productGaps: ['Managed security operations for smaller operators', 'Faster deployment accelerators for legacy stacks'],
+      managedServicesPossibility: ['24x7 operations support', 'Fraud analytics tuning', 'Roaming performance managed service'],
+      replaceableCompetitors: ['Syniverse', 'Subex'],
+      finalStrategies: [
+        'Displace Syniverse clearing footprint at STC and Mobily via Roaming DNA integration',
+        'Pitch RAID 9 Fraud Management to Zain KSA to replace legacy Subex assurance stack',
+        'Deploy Roaming DNA active steering trials to capture high-value outbound business routes'
+      ]
+    },
+    financialSection: {
+      profit: '$3.8M annualized revenue potential',
+      capexInvestment: '$1.2M in platform enablement and deployment support',
+      note: 'High-value upsell path through managed services and roaming assurance.'
+    },
+    renewalSection: {
+      amcRenewal: [
+        { name: 'Risk / RAID 9', value: '$420K', status: 'Renewal due in Q3' },
+        { name: 'Roaming Management', value: '$210K', status: 'In discussion' }
+      ],
+      managedServicesRenewal: [
+        { name: 'Fraud operations support', value: '$180K', status: 'Renewal ready' },
+        { name: 'Roaming analytics service', value: '$160K', status: 'Pilot under review' }
+      ]
+    },
+    healthSection: {
+      installedProductWiseSupportTicket: [
+        { product: 'RAID 9', tickets: 18, trend: 'Stable' },
+        { product: 'Roaming DNA', tickets: 11, trend: 'Improving' },
+        { product: '5G Active Testing', tickets: 7, trend: 'Low' }
+      ],
+      usageOfInstalledProducts: [
+        { product: 'RAID 9', usage: '92% of fraud rules active' },
+        { product: 'Roaming DNA', usage: '78% of roaming steering workflows used' },
+        { product: 'Active Testing', usage: '65% of network test cases in production' }
+      ]
+    }
+  },
+  "UAE": {
+    productSection: {
+      mobileumProducts: ['Roaming DNA', 'Fraud Management', 'Customer Intelligence', 'eSIM & OTA'],
+      competitionProducts: ['BICS roaming hub', 'Syniverse transport', 'Tomia settlement'],
+      productGaps: ['Advanced managed services for legacy roaming workflows', 'Faster rollout for data analytics modules'],
+      managedServicesPossibility: ['Managed QA and incident response', 'Roaming performance optimization service'],
+      replaceableCompetitors: ['BICS', 'Tomia'],
+      finalStrategies: [
+        'Replace BICS roaming hub at e& UAE with Mobileum eSIM solutions and steering systems',
+        'Position modern signaling firewall trials at du to address OTT bypass substitution',
+        'Initiate eSIM & OTA platform sandbox onboarding workshop to capture digital nomads'
+      ]
+    },
+    financialSection: {
+      profit: '$2.9M annualized revenue potential',
+      capexInvestment: '$0.9M in solution onboarding and integration support',
+      note: 'Priority is to convert existing contracts into higher-value managed services.'
+    },
+    renewalSection: {
+      amcRenewal: [
+        { name: 'Roaming DNA', value: '$360K', status: 'Renewal in Q4' },
+        { name: 'Customer Intelligence', value: '$240K', status: 'Renewal planning' }
+      ],
+      managedServicesRenewal: [
+        { name: 'Advanced analytics support', value: '$150K', status: 'Ready for renewal' },
+        { name: 'Network operations advisory', value: '$130K', status: 'Upsell candidate' }
+      ]
+    },
+    healthSection: {
+      installedProductWiseSupportTicket: [
+        { product: 'Roaming DNA', tickets: 14, trend: 'Moderate' },
+        { product: 'Fraud Management', tickets: 10, trend: 'Stable' },
+        { product: 'Customer Intelligence', tickets: 8, trend: 'Improving' }
+      ],
+      usageOfInstalledProducts: [
+        { product: 'Roaming DNA', usage: '84% of roaming workflows active' },
+        { product: 'Fraud Management', usage: '90% of detection rules configured' },
+        { product: 'Customer Intelligence', usage: '70% of campaign automation active' }
+      ]
+    }
+  }
+};
+
 
 // ═══════════════════════════════════════════════════════════════════
 // GLOBALS
@@ -765,8 +907,8 @@ function closePanel() {
 }
 
 function showTab(tab) {
+  const tabs = ['operators', 'overview', 'account', 'stats', 'narrative'];
   document.querySelectorAll('.tab-btn').forEach((b,i) => {
-    const tabs = ['overview','operators','impact','products','stats','narrative'];
     b.classList.toggle('active', tabs[i] === tab);
   });
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -781,8 +923,7 @@ function showTab(tab) {
   switch(tab) {
     case 'overview': renderOverview(v, currentCountry); break;
     case 'operators': renderOperators(v, currentCountry); break;
-    case 'impact': renderImpact(v, currentCountry); break;
-    case 'products': renderProducts(v, currentCountry); break;
+    case 'account': renderAccount(v, currentCountry); break;
     case 'stats': renderStats(v, currentCountry); break;
     case 'narrative': renderNarrative(v, currentCountry); break;
   }
@@ -943,29 +1084,50 @@ function renderOperators(v, name) {
     </tr>`;
 
   v.operators.forEach(op => {
-    const cells = [
-      {val: op.sub_base_mln, fmt: v => v ? v+'M' : '—', score: null},
-      {val: op.fiveG_pct, fmt: v => v != null ? v+'%' : '—', score: op.fiveG_pct},
-      {val: op.subscriber_growth_pct, fmt: v => v != null ? v+'%' : '—', score: (op.subscriber_growth_pct||0)+5},
-      {val: op.arpu_growth_score, fmt: v => op.arpu_growth||'—', score: op.arpu_growth_score * 20},
-      {val: op.revenue_growth_score, fmt: v => op.revenue_growth||'—', score: op.revenue_growth_score * 20},
-      {val: op.profitability_score, fmt: v => op.profitability||'—', score: op.profitability_score * 20},
-      {val: op.outbound_roaming_score, fmt: v => op.outbound_roaming||'—', score: op.outbound_roaming_score * 20},
-      {val: op.inbound_roaming_score, fmt: v => op.inbound_roaming||'—', score: op.inbound_roaming_score * 20},
-    ];
-
     html += `<tr>
       <td class="hm-op-name">
         <div class="op-name">${op.operator}</div>
         <div class="op-sub">${op.prepaid_postpaid || ''}</div>
       </td>`;
 
-    cells.forEach(cell => {
-      const sc = cell.score;
-      const bg = sc === null ? '' : `background:${hmColor(sc)}`;
-      const textClr = sc !== null && sc < 35 ? 'color:#fff' : sc > 65 ? 'color:#0a2010' : '';
-      html += `<td style="${bg};${textClr}">${cell.fmt(cell.val)}</td>`;
-    });
+    const renderCellHTML = (cidx, val, score, fmt) => {
+      const text = fmt(val);
+      if (cidx === 0) {
+        return `<td style="vertical-align:middle;color:var(--text-primary)">${text}</td>`;
+      } else if (cidx === 1 || cidx === 2) {
+        const pct = parseFloat(val);
+        let alpha = 0;
+        if (!isNaN(pct)) {
+          alpha = (cidx === 1) ? 0.05 + (pct / 100) * 0.45 : 0.05 + Math.max(0, Math.min(1, (pct + 5) / 20)) * 0.45;
+        }
+        const bg = isNaN(pct) ? '' : `background:rgba(99, 121, 150, ${alpha})`;
+        return `<td style="${bg};vertical-align:middle;font-weight:600;color:var(--text-primary)">${text}</td>`;
+      } else {
+        let pillColor = '#7F8C8D';
+        if (score >= 80) pillColor = '#6B9080';
+        else if (score === 60) pillColor = '#C9A227';
+        else if (score <= 40) pillColor = '#B05A5A';
+        
+        if (text === '—') return `<td style="vertical-align:middle">—</td>`;
+        
+        return `<td style="vertical-align:middle;padding:4px 6px">
+          <span class="hm-status-pill" style="background:${pillColor}15;color:${pillColor};border:1px solid ${pillColor}33;display:inline-flex;align-items:center;gap:6px;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:600">
+            <span class="hm-status-dot" style="background:${pillColor};width:6px;height:6px;border-radius:50%"></span>
+            ${text}
+          </span>
+        </td>`;
+      }
+    };
+
+    html += renderCellHTML(0, op.sub_base_mln, null, v => v ? v+'M' : '—');
+    html += renderCellHTML(1, op.fiveG_pct, op.fiveG_pct, v => v !== null ? v+'%' : '—');
+    html += renderCellHTML(2, op.subscriber_growth_pct, (op.subscriber_growth_pct||0)+5, v => v !== null ? v+'%' : '—');
+    html += renderCellHTML(3, op.arpu_growth, op.arpu_growth_score * 20, () => op.arpu_growth || '—');
+    html += renderCellHTML(4, op.revenue_growth, op.revenue_growth_score * 20, () => op.revenue_growth || '—');
+    html += renderCellHTML(5, op.profitability, op.profitability_score * 20, () => op.profitability || '—');
+    html += renderCellHTML(6, op.outbound_roaming, op.outbound_roaming_score * 20, () => op.outbound_roaming || '—');
+    html += renderCellHTML(7, op.inbound_roaming, op.inbound_roaming_score * 20, () => op.inbound_roaming || '—');
+    
     html += `</tr>`;
   });
 
@@ -1065,115 +1227,501 @@ function renderOperators(v, name) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// TAB: IMPACT ANALYSIS
-// ═══════════════════════════════════════════════════════════════════
-function renderImpact(v, name) {
-  let html = '';
-  const r = v.radar;
+function renderAccount(v, name) {
+  // Get mock account data or fallback
+  const accountData = MOCK_ACCOUNT_INSIGHTS[name] || {
+    productSection: {
+      mobileumProducts: ['Fraud Management', 'Roaming DNA'],
+      competitionProducts: ['Syniverse clearing', 'Tomia roaming'],
+      productGaps: ['Managed services enablement', 'Fast-track onboarding'],
+      managedServicesPossibility: ['Managed fraud operations', 'Roaming optimization'],
+      replaceableCompetitors: ['Syniverse'],
+      finalStrategies: ['Upsell core platforms to SaaS models', 'Target legacy competitor deployments for replacement', 'Establish managed services pilot programs']
+    },
+    financialSection: {
+      profit: '$2.5M projected value',
+      capexInvestment: '$0.8M deployment investment',
+      note: 'A strong 2026 growth path through upsell and managed services.'
+    },
+    renewalSection: {
+      amcRenewal: [{ name: 'Primary AMC contract', value: '$200K', status: 'Renewal in plan' }],
+      managedServicesRenewal: [{ name: 'Managed support service', value: '$150K', status: 'Renewal opportunity' }]
+    },
+    healthSection: {
+      installedProductWiseSupportTicket: [{ product: 'Core Platform', tickets: 9, trend: 'Stable' }],
+      usageOfInstalledProducts: [{ product: 'Core Platform', usage: 'High usage across the account' }]
+    },
+    plan2026: {
+      productsFocusedOn: ['Roaming DNA', 'Fraud Management'],
+      valueOfOpportunities: '$3.5M pipeline',
+      pocOrDemoGiven: 'Demo and solution workshop completed',
+      consultingTrialsGiven: '1 consulting trial scheduled'
+    }
+  };
 
-  // Dual-layer radar
-  html += `<div class="chart-wrap">
-    <div class="chart-title">Impact Radar — Country vs Regional Average</div>
-    <div class="chart-canvas-wrap" style="height:250px"><canvas id="impact_radar"></canvas></div>
-    <div style="display:flex;gap:16px;justify-content:center;margin-top:8px">
-      <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:var(--text-muted)">
-        <div style="width:12px;height:3px;background:#3b82f6;border-radius:2px"></div> ${name}
-      </div>
-      <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:var(--text-muted)">
-        <div style="width:12px;height:3px;background:#10b981;border-radius:2px;opacity:.6"></div> Regional Avg
-      </div>
-    </div>
-  </div>`;
-
-  // Waterfall chart
-  html += `<div class="chart-wrap">
-    <div class="chart-title">Revenue Opportunity Waterfall — Mobileum Impact</div>
-    <div class="chart-canvas-wrap" style="height:200px"><canvas id="impact_waterfall"></canvas></div>
-  </div>`;
-
-  // Seasonal roaming calendar
-  const seasonal = v.seasonal_roaming || {};
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  html += `<div class="section"><div class="section-title">Seasonal Roaming Calendar</div>
-    <div class="cal-grid">`;
-  months.forEach((m, i) => {
-    const intensity = seasonal[i+1] || 1;
-    const colors = ['#1e3054','#1e3054','#1e4080','#1a5276','#1abc9c'];
-    const textColors = ['#4a6080','#4a6080','#7fb3d3','#fff','#000'];
-    html += `<div class="cal-month" style="background:${colors[intensity-1] || colors[0]};color:${textColors[intensity-1]||textColors[0]}"
-      title="${m}: ${['No data','Minimal','Low','Moderate','High','Peak'][intensity]||'Normal'} roaming">
-      ${m}</div>`;
-  });
-  html += `</div>
-    <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
-      ${['No data','Minimal','Moderate','High','Peak'].map((l,i) => {
-        const c = ['#1e3054','#1e3054','#1e4080','#1a5276','#1abc9c'][i];
-        return `<div style="display:flex;align-items:center;gap:3px;font-size:9px;color:var(--text-muted)">
-          <div style="width:8px;height:8px;background:${c};border-radius:2px"></div>${l}</div>`;
-      }).join('')}
-    </div>
-  </div>`;
-
-  // IA dimension scores
-  html += `<div class="section"><div class="section-title">Impact Analysis Dimensions</div>`;
-  const dims = [
-    {label:'Outbound Roaming Impact', key:'ia_outbound_impact', src:'Impact Analysis'},
-    {label:'Inbound Roaming Impact', key:'ia_inbound_impact', src:'Impact Analysis'},
-    {label:'ARPU Impact', key:'ia_arpu_impact', src:'Impact Analysis'},
-    {label:'App/OTT Substitution', key:'ia_apps', src:'Impact Analysis'},
-    {label:'Revenue Growth Outlook', key:'ia_rev_growth', src:'Impact Analysis'},
-    {label:'Profitability Outlook', key:'ia_profitability', src:'Impact Analysis'},
-    {label:'MS Financial Need', key:'ia_need_ms_financial', src:'Impact Analysis'},
-    {label:'MS Technical Need', key:'ia_need_ms_technical', src:'Impact Analysis'},
-  ];
-
-  // Use first operator's IA data (country-level)
-  const op0 = v.operators[0] || {};
-  dims.forEach(d => {
-    const val = op0[d.key] || '—';
-    const score = trendToScore(val);
-    const barClr = ['#ef4444','#f59e0b','#3b82f6','#10b981','#10b981'][score-1] || '#3b82f6';
-    if (val === '—' || val === 'nan' || val === '') return;
-    html += `<div class="percentile-row" data-source="${d.src}">
-      <div class="perc-label">${d.label}</div>
-      <div class="perc-bar">
-        <div class="perc-fill" style="width:${score/5*100}%;background:${barClr}"></div>
-      </div>
-      <div class="perc-value" style="color:${barClr}">${score}/5</div>
-    </div>
-    <div style="font-size:9px;color:var(--text-muted);margin:-4px 0 6px 128px">${val.substring(0,60)}</div>`;
-  });
-  html += `</div>`;
-
-  // Per-operator IA summary
-  if (v.operators.length > 1) {
-    html += `<div class="section"><div class="section-title">Operator-Level IA Summary</div>`;
-    v.operators.forEach(op => {
-      const bizModel = op.ia_recommended_biz_model;
-      const fin = op.ia_financials;
-      if (!bizModel && !fin) return;
-      html += `<div style="background:var(--bg-card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px">
-        <div style="font-size:11px;font-weight:600;color:var(--text-primary);margin-bottom:4px">${op.operator}</div>
-        ${fin && fin !== 'nan' ? `<div style="font-size:10px;color:var(--text-secondary);margin-bottom:3px">💰 ${fin.substring(0,80)}</div>` : ''}
-        ${bizModel && bizModel !== 'nan' ? `<div style="font-size:10px;color:var(--blue-light)">🎯 ${bizModel.substring(0,80)}</div>` : ''}
-      </div>`;
-    });
-    html += `</div>`;
+  // Set default values if plan2026 is missing
+  if (!accountData.plan2026) {
+    accountData.plan2026 = {
+      productsFocusedOn: ['Roaming DNA', 'Fraud Management'],
+      valueOfOpportunities: '$3.5M pipeline',
+      pocOrDemoGiven: 'Demo and solution workshop completed',
+      consultingTrialsGiven: '1 consulting trial scheduled'
+    };
   }
 
-  document.getElementById('impact-content').innerHTML = html;
+  // Get ticket data
+  const tickets = MOCK_TICKETS[name] || {
+    "total_tickets": 620,
+    "trend_12_months": [
+      { "month": "Jun", "count": 45 }, { "month": "Jul", "count": 52 },
+      { "month": "Aug", "count": 38 }, { "month": "Sep", "count": 47 },
+      { "month": "Oct", "count": 55 }, { "month": "Nov", "count": 62 },
+      { "month": "Dec", "count": 58 }, { "month": "Jan", "count": 49 },
+      { "month": "Feb", "count": 41 }, { "month": "Mar", "count": 53 },
+      { "month": "Apr", "count": 60 }, { "month": "May", "count": 50 }
+    ],
+    "business_units": [
+      { "unit": "Risk", "tickets": 150, "color": "#7c3aed" },
+      { "unit": "Fraud", "tickets": 180, "color": "#ef4444" },
+      { "unit": "Roaming Management", "tickets": 110, "color": "#10b981" },
+      { "unit": "Network Security", "tickets": 90, "color": "#3b82f6" },
+      { "unit": "Customer Intelligence", "tickets": 90, "color": "#ea580c" }
+    ]
+  };
 
-  // Draw charts
+  // Get amc data
+  const amcs = MOCK_AMC[name] || v.operators.map((op, idx) => {
+    const buList = ["Risk (RAID 9)", "Roaming Management", "Network Security", "Fraud Management", "Revenue Assurance"];
+    const bu = buList[idx % buList.length];
+    const chars = ['X', 'Y', 'Z', 'W', 'V'];
+    const char = chars[idx % chars.length];
+    return {
+      "contract_id": `AMC-2026-${char}${Math.floor(Math.random() * 90) + 10}`,
+      "business_unit": bu,
+      "client_name": op.operator,
+      "outstanding_amount": (350000.00 - idx * 70000) * (Math.random() * 0.4 + 0.8),
+      "due_date": `2026-07-${10 + idx * 5}`
+    };
+  });
+
+  let html = '';
+
+  // 1. Product Section (2 columns)
+  html += `
+  <div class="section" style="background:transparent;border:none;padding:0;margin:0;box-shadow:none">
+    <div style="font-size:14px;font-weight:800;color:var(--blue);margin-bottom:16px;display:flex;align-items:center;gap:8px">
+      📦 Product Section
+    </div>
+    
+    <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:20px">
+      <!-- Left Column: Mobileum Products, Gaps, MS Possibility -->
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="product-card" style="cursor:default">
+          <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px">Mobileum Products</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            ${(accountData.productSection?.mobileumProducts || []).map(p => 
+              `<span style="background:rgba(37,99,235,0.1);color:var(--blue);border:1px solid rgba(37,99,235,0.2);border-radius:6px;padding:4px 8px;font-size:11px;font-weight:600">${p}</span>`
+            ).join('')}
+          </div>
+        </div>
+        <div class="product-card" style="cursor:default">
+          <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px">Product Gaps</div>
+          <ul style="margin:0;padding-left:16px;color:var(--text-secondary);font-size:11px;line-height:1.6">
+            ${(accountData.productSection?.productGaps || []).map(g => `<li>${g}</li>`).join('')}
+          </ul>
+        </div>
+        <div class="product-card" style="cursor:default">
+          <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px">Managed Services Possibility</div>
+          <ul style="margin:0;padding-left:16px;color:var(--text-secondary);font-size:11px;line-height:1.6">
+            ${(accountData.productSection?.managedServicesPossibility || []).map(ms => `<li>${ms}</li>`).join('')}
+          </ul>
+        </div>
+      </div>
+
+      <!-- Right Column: Competition, Replaceable, Final Strategies -->
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="product-card" style="cursor:default">
+          <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px">Competition Products</div>
+          <ul style="margin:0;padding-left:16px;color:var(--text-secondary);font-size:11px;line-height:1.6">
+            ${(accountData.productSection?.competitionProducts || []).map(cp => `<li>${cp}</li>`).join('')}
+          </ul>
+        </div>
+        <div class="product-card" style="cursor:default">
+          <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px">Competitors to Replace</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            ${(accountData.productSection?.replaceableCompetitors || []).map(c => 
+              `<span style="background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:2px 8px;font-size:10px;font-weight:600">${c}</span>`
+            ).join('')}
+          </div>
+        </div>
+        <div class="product-card" style="cursor:default">
+          <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px">Final Strategies</div>
+          <ul style="margin:0;padding-left:16px;color:var(--text-secondary);font-size:11px;line-height:1.6">
+            ${(accountData.productSection?.finalStrategies || []).map(s => `<li>${s}</li>`).join('')}
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Plan for 2026 Highlighted Card -->
+    <div style="margin-top:16px;background:linear-gradient(135deg,rgba(37,99,235,0.08) 0%,rgba(16,185,129,0.08) 100%);border:1.5px solid var(--blue);border-radius:12px;padding:16px;position:relative;overflow:hidden">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span style="font-size:13px;font-weight:800;color:var(--blue);display:flex;align-items:center;gap:6px">
+          🚀 Emphasized Plan for 2026
+        </span>
+        <button onclick="document.getElementById('plan2026-full-details')?.scrollIntoView({behavior:'smooth'})"
+          style="background:var(--blue);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:10px;font-weight:700;cursor:pointer">
+          View Full Details ↓
+        </button>
+      </div>
+      
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <div style="font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase">Pipeline Value</div>
+          <div style="font-size:16px;font-weight:800;color:var(--green);margin-top:4px">${accountData.plan2026.valueOfOpportunities}</div>
+        </div>
+        <div>
+          <div style="font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase">Focus Areas</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">
+            ${(accountData.plan2026.productsFocusedOn || []).map(p => 
+              `<span style="background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:9px;font-weight:600">${p}</span>`
+            ).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+
+  // 2. Financial Section
+  html += `
+  <div class="section" style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;margin:0">
+    <div style="font-size:14px;font-weight:800;color:var(--teal);margin-bottom:12px;display:flex;align-items:center;gap:8px">
+      💰 Financial Section
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="product-card" style="padding:10px;margin:0;cursor:default">
+        <div style="font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase">Profit / Revenue Potential</div>
+        <div style="font-size:13px;font-weight:800;color:var(--green);margin-top:4px">${accountData.financialSection?.profit || '—'}</div>
+      </div>
+      <div class="product-card" style="padding:10px;margin:0;cursor:default">
+        <div style="font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase">Capex Investment</div>
+        <div style="font-size:13px;font-weight:800;color:var(--blue);margin-top:4px">${accountData.financialSection?.capexInvestment || '—'}</div>
+      </div>
+      <div class="product-card" style="padding:10px;margin:0;cursor:default;grid-column:1/-1">
+        <div style="font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase">Strategic Notes & Outlook</div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;line-height:1.4">${accountData.financialSection?.note || '—'}</div>
+      </div>
+    </div>
+  </div>`;
+
+  // 3. Renewal Section
+  html += `
+  <div class="section" style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;margin:0">
+    <div style="font-size:14px;font-weight:800;color:var(--purple);margin-bottom:12px;display:flex;align-items:center;gap:8px">
+      🔄 Renewal Section
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px">AMC Renewal List</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${(accountData.renewalSection?.amcRenewal || []).map(r => `
+            <div style="background:var(--bg-card2);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:11px">
+              <div style="display:flex;justify-content:space-between"><strong>${r.name}</strong><span style="color:var(--green)">${r.value}</span></div>
+              <div style="display:flex;justify-content:space-between;margin-top:2px;font-size:9px;color:var(--text-muted)"><span>Status:</span><span style="color:var(--yellow)">${r.status}</span></div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px">Managed Services Renewal</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${(accountData.renewalSection?.managedServicesRenewal || []).map(r => `
+            <div style="background:var(--bg-card2);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:11px">
+              <div style="display:flex;justify-content:space-between"><strong>${r.name}</strong><span style="color:var(--green)">${r.value}</span></div>
+              <div style="display:flex;justify-content:space-between;margin-top:2px;font-size:9px;color:var(--text-muted)"><span>Status:</span><span style="color:var(--blue)">${r.status}</span></div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  </div>`;
+
+  // 4. Health Section
+  html += `
+  <div class="section" style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;margin:0">
+    <div style="font-size:14px;font-weight:800;color:var(--red);margin-bottom:12px;display:flex;align-items:center;gap:8px">
+      🏥 Health of Solution Section
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px">Installed Product Support Tickets</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${(accountData.healthSection?.installedProductWiseSupportTicket || []).map(t => `
+            <div style="background:var(--bg-card2);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:11px">
+              <div style="display:flex;justify-content:space-between"><strong>${t.product}</strong><span style="color:var(--red)">${t.tickets} Tickets</span></div>
+              <div style="display:flex;justify-content:space-between;margin-top:2px;font-size:9px;color:var(--text-muted)"><span>Trend:</span><span>${t.trend}</span></div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px">Usage of Installed Products</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${(accountData.healthSection?.usageOfInstalledProducts || []).map(u => `
+            <div style="background:var(--bg-card2);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:11px">
+              <strong>${u.product}</strong>
+              <div style="font-size:9px;color:var(--text-secondary);margin-top:2px">${u.usage}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  </div>`;
+
+  // 5. Impact Analysis Section (Radar & Waterfall)
+  html += `
+  <div class="section" style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;margin:0">
+    <div style="font-size:14px;font-weight:800;color:var(--blue);margin-bottom:12px;display:flex;align-items:center;gap:8px">
+      📊 Impact Analysis Section
+    </div>
+    
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div class="chart-wrap" style="margin:0">
+        <div class="chart-title">Impact Radar — Country vs Regional Average</div>
+        <div class="chart-canvas-wrap" style="height:220px"><canvas id="impact_radar"></canvas></div>
+        <div style="display:flex;gap:12px;justify-content:center;margin-top:6px">
+          <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:var(--text-muted)">
+            <div style="width:10px;height:3px;background:#3b82f6;border-radius:1px"></div> ${name}
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:var(--text-muted)">
+            <div style="width:10px;height:3px;background:#10b981;border-radius:1px;opacity:.6"></div> Regional Avg
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-wrap" style="margin:0">
+        <div class="chart-title">Revenue Opportunity Waterfall</div>
+        <div class="chart-canvas-wrap" style="height:220px"><canvas id="impact_waterfall"></canvas></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:16px">
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px">Seasonal Roaming Calendar</div>
+        <div class="cal-grid" style="gap:2px">
+          ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((m, i) => {
+            const intensity = v.seasonal_roaming?.[i+1] || 1;
+            const colors = ['var(--bg-card3)','var(--bg-card3)','#1e4080','#1a5276','#1abc9c'];
+            const textColors = ['var(--text-secondary)','var(--text-secondary)','#7fb3d3','#fff','#000'];
+            return `<div class="cal-month" style="background:${colors[intensity-1]||colors[0]};color:${textColors[intensity-1]||textColors[0]};font-size:8px;padding:6px 2px">${m}</div>`;
+          }).join('')}
+        </div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px">Impact Analysis Dimensions</div>
+        <div>
+          ${(() => {
+            const dims = [
+              {label:'Outbound Roaming Impact', key:'ia_outbound_impact'},
+              {label:'Inbound Roaming Impact', key:'ia_inbound_impact'},
+              {label:'ARPU Impact', key:'ia_arpu_impact'},
+              {label:'App/OTT Substitution', key:'ia_apps'},
+              {label:'Revenue Growth Outlook', key:'ia_rev_growth'},
+              {label:'Profitability Outlook', key:'ia_profitability'}
+            ];
+            const op0 = v.operators[0] || {};
+            return dims.map(d => {
+              const val = op0[d.key] || '—';
+              const score = trendToScore(val);
+              const barClr = ['#ef4444','#f59e0b','#3b82f6','#10b981','#10b981'][score-1] || '#3b82f6';
+              if (val === '—' || val === 'nan' || val === '') return '';
+              return `
+                <div style="margin-bottom:6px">
+                  <div class="percentile-row" style="margin-bottom:2px">
+                    <div class="perc-label" style="font-size:9px;width:120px">${d.label}</div>
+                    <div class="perc-bar" style="height:3px"><div class="perc-fill" style="width:${score/5*100}%;background:${barClr}"></div></div>
+                    <div class="perc-value" style="font-size:9px;color:${barClr};width:20px;text-align:right">${score}/5</div>
+                  </div>
+                </div>`;
+            }).join('');
+          })()}
+        </div>
+      </div>
+    </div>
+  </div>`;
+
+  // 6. Product Fit Section
+  html += `
+  <div class="section" style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;margin:0">
+    <div style="font-size:14px;font-weight:800;color:var(--teal);margin-bottom:12px;display:flex;align-items:center;gap:8px">
+      🎯 Product Fit Section
+    </div>
+    
+    <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:16px">
+      <div class="chart-wrap" style="margin:0">
+        <div class="chart-title">Product Fit Score — All Mobileum Solutions</div>
+        <div class="chart-canvas-wrap" style="height:240px"><canvas id="products_bar"></canvas></div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px">Priority Recommendations</div>
+        ${(v.product_ranking || []).slice(0, 3).map((p, i) => {
+          const isTop = i === 0;
+          const barClr = p.score > 75 ? '#10b981' : p.score > 50 ? '#f59e0b' : '#3b82f6';
+          return `
+            <div class="product-card ${isTop ? 'top' : ''}" style="padding:8px 10px;margin-bottom:6px;cursor:default">
+              <div style="display:flex;justify-content:space-between">
+                <span class="product-name" style="font-size:12px">${p.product}</span>
+                <span class="score-circle" style="border-color:${barClr};color:${barClr};width:24px;height:24px;font-size:9px">${p.score}</span>
+              </div>
+              <div class="product-reason" style="font-size:9px;margin-top:2px">${p.reason}</div>
+            </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div style="margin-top:12px">
+      <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px">Full Product Ranking Table</div>
+      <div style="overflow-x:auto;background:var(--bg-card2);border:1px solid var(--border);border-radius:8px;padding:4px">
+        <table class="op-table" style="width:100%;font-size:10px">
+          <thead>
+            <tr><th style="width:30px">#</th><th>Product</th><th style="width:80px">Score</th><th>Rationale</th></tr>
+          </thead>
+          <tbody>
+            ${(v.product_ranking || []).map((p, i) => {
+              const barClr = p.score > 75 ? 'var(--green)' : p.score > 50 ? 'var(--yellow)' : 'var(--blue-light)';
+              return `
+                <tr>
+                  <td style="color:var(--text-muted)">${i+1}</td>
+                  <td class="op-name">${p.product}</td>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:4px">
+                      <div class="score-bar-bg" style="width:40px;height:3px"><div class="score-bar-fill" style="width:${p.score}%;background:${barClr};height:100%"></div></div>
+                      <strong style="color:${barClr}">${p.score}</strong>
+                    </div>
+                  </td>
+                  <td style="color:var(--text-secondary);font-size:9px">${p.reason || ''}</td>
+                </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+
+  // 7. Support & AMC Section
+  html += `
+  <div class="section" style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;margin:0">
+    <div style="font-size:14px;font-weight:800;color:var(--purple);margin-bottom:12px;display:flex;align-items:center;gap:8px">
+      🏥 Support & AMC Section
+    </div>
+    
+    <div class="product-card" style="cursor:default;padding:12px;margin:0">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase">Customer Support Tickets (12m)</div>
+          <div style="font-size:16px;font-weight:800;color:var(--red);margin-top:4px">${tickets.total_tickets} Total Tickets</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          ${tickets.business_units.slice(0, 3).map(bu => 
+            `<span style="background:${bu.color}15;color:${bu.color};border:1px solid ${bu.color}33;border-radius:4px;padding:2px 6px;font-size:9px;font-weight:600">${bu.unit}: ${bu.tickets}</span>`
+          ).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:12px">
+      <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px">Outstanding AMC Contracts</div>
+      <div style="overflow-x:auto;background:var(--bg-card2);border:1px solid var(--border);border-radius:8px;padding:4px">
+        <table class="op-table" style="width:100%;font-size:10px">
+          <thead>
+            <tr><th>Contract ID</th><th>Business Unit</th><th>Outstanding</th><th>Due Date</th></tr>
+          </thead>
+          <tbody>
+            ${amcs.map(a => `
+              <tr>
+                <td style="font-weight:600">${a.contract_id}</td>
+                <td>${a.business_unit}</td>
+                <td style="color:var(--green);font-weight:600">$${fmtNum(a.outstanding_amount)}</td>
+                <td style="color:var(--text-secondary)">${a.due_date}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+
+  // 8. Competitors Section
+  html += `
+  <div class="section" style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;margin:0">
+    <div style="font-size:14px;font-weight:800;color:var(--red);margin-bottom:12px;display:flex;align-items:center;gap:8px">
+      ⚔️ Competitors Section
+    </div>
+    <div style="overflow-x:auto;background:var(--bg-card2);border:1px solid var(--border);border-radius:8px;padding:4px">
+      <table class="op-table" style="width:100%;font-size:10px">
+        <thead>
+          <tr><th>Competitor</th><th>Category</th><th>Key Offerings</th><th>vs Mobileum</th></tr>
+        </thead>
+        <tbody>
+          ${MOCK_COMPETITORS.map(c => `
+            <tr>
+              <td style="font-weight:600;color:var(--blue-light)">${c.name}</td>
+              <td style="color:var(--text-muted)">${c.category}</td>
+              <td style="color:var(--text-secondary);font-size:9px">${c.key_offerings}</td>
+              <td style="color:var(--text-primary);font-size:9px">${c.versus_mobileum}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+
+  // 9. Plan for 2026 Section
+  html += `
+  <div id="plan2026-full-details" class="section" style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;margin:0">
+    <div style="font-size:14px;font-weight:800;color:var(--blue);margin-bottom:12px;display:flex;align-items:center;gap:8px">
+      🚀 Mobileum 2026 Strategic Plan (Full Details)
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;font-size:11px">
+      <div>
+        <strong style="color:var(--text-muted)">Products Focused On:</strong>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">
+          ${(accountData.plan2026.productsFocusedOn || []).map(p => 
+            `<span style="background:rgba(37,99,235,0.1);color:var(--blue);border:1px solid rgba(37,99,235,0.2);border-radius:6px;padding:2px 6px">${p}</span>`
+          ).join('')}
+        </div>
+      </div>
+      <div style="margin-top:6px">
+        <strong style="color:var(--text-muted)">Value of Opportunities:</strong>
+        <div style="font-size:13px;color:var(--green);font-weight:700;margin-top:2px">${accountData.plan2026.valueOfOpportunities}</div>
+      </div>
+      <div style="margin-top:6px">
+        <strong style="color:var(--text-muted)">Demo/PoC Status:</strong>
+        <div style="color:var(--text-secondary);margin-top:2px">${accountData.plan2026.pocOrDemoGiven}</div>
+      </div>
+      <div style="margin-top:6px">
+        <strong style="color:var(--text-muted)">Consulting Trials & Next Steps:</strong>
+        <div style="color:var(--text-secondary);margin-top:2px">${accountData.plan2026.consultingTrialsGiven}</div>
+      </div>
+    </div>
+  </div>`;
+
+  document.getElementById('account-content').innerHTML = html;
+
+  // Initialize charts for consolidated sections
   setTimeout(() => {
-    // Radar — country vs regional avg
-    const regAvg = v.regional_averages;
-    createRadar('impact_radar', {
-      labels: ['Roaming Opp.','Fraud Risk','5G Upsell','ARPU Pressure','Sub Growth','Reg. Risk'],
-      values: [r.roaming_opportunity, r.fraud_risk, r.fiveG_upsell, r.arpu_pressure, r.subscriber_growth, r.regulatory_risk],
-      regional: [3, 2.6, (regAvg?.avg_5g || 31)/20, 3, 2, 2.5]
-    });
+    // 1. Impact Radar
+    const r = v.radar;
+    if (r) {
+      const regAvg = v.regional_averages;
+      createRadar('impact_radar', {
+        labels: ['Roaming Opp.','Fraud Risk','5G Upsell','ARPU Pressure','Sub Growth','Reg. Risk'],
+        values: [r.roaming_opportunity, r.fraud_risk, r.fiveG_upsell, r.arpu_pressure, r.subscriber_growth, r.regulatory_risk],
+        regional: [3, 2.6, (regAvg?.avg_5g || 31)/20, 3, 2, 2.5]
+      });
+    }
 
-    // Waterfall bar chart
+    // 2. Impact Waterfall
     const wf = v.waterfall;
     if (wf) {
       const ctx = document.getElementById('impact_waterfall')?.getContext('2d');
@@ -1220,87 +1768,13 @@ function renderImpact(v, name) {
         });
       }
     }
-  }, 50);
-}
 
-// ═══════════════════════════════════════════════════════════════════
-// TAB: MOBILEUM FIT
-// ═══════════════════════════════════════════════════════════════════
-function renderProducts(v, name) {
-  let html = '';
-  const products = v.product_ranking || [];
-
-  // Score bar chart top 6
-  html += `<div class="chart-wrap">
-    <div class="chart-title">Product Fit Score — All Mobileum Solutions</div>
-    <div class="chart-canvas-wrap" style="height:220px"><canvas id="products_bar"></canvas></div>
-  </div>`;
-
-  // Top 3 detailed
-  html += `<div class="section"><div class="section-title">Priority Recommendations</div>`;
-  products.slice(0, 3).forEach((p, i) => {
-    const isTop = i === 0;
-    const barClr = p.score > 75 ? '#10b981' : p.score > 50 ? '#f59e0b' : '#3b82f6';
-    html += `<div class="product-card ${isTop ? 'top' : ''}">
-      ${isTop ? '<div class="product-top-badge">★ #1 BEST FIT</div>' : `<div style="font-size:9px;color:var(--text-muted);margin-bottom:4px">#${i+1} RECOMMENDED</div>`}
-      <div style="display:flex;justify-content:space-between;align-items:flex-start">
-        <div class="product-name">${p.product}</div>
-        <div class="score-circle" style="border-color:${barClr};color:${barClr}">
-          ${p.score}
-        </div>
-      </div>
-      <div class="score-bar-wrap">
-        <div class="score-bar-bg"><div class="score-bar-fill" style="width:${p.score}%;background:${barClr}"></div></div>
-        <div class="score-num">${p.score}/100</div>
-      </div>
-      <div class="product-reason">${p.reason}</div>
-    </div>`;
-  });
-  html += `</div>`;
-
-  // All products ranked table
-  html += `<div class="section"><div class="section-title">Full Product Ranking</div>
-    <table class="op-table">
-      <tr><th>#</th><th>Product</th><th style="width:80px">Score</th><th>Rationale</th></tr>`;
-  products.forEach((p, i) => {
-    const barClr = p.score > 75 ? 'var(--green)' : p.score > 50 ? 'var(--yellow)' : 'var(--blue-light)';
-    html += `<tr>
-      <td style="color:var(--text-muted);font-size:10px">${i+1}</td>
-      <td class="op-name" style="font-size:11px">${p.product}</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:4px">
-          <div class="score-bar-bg"><div class="score-bar-fill" style="width:${p.score}%;background:${barClr}"></div></div>
-          <span style="font-size:10px;font-weight:600;color:${barClr};white-space:nowrap">${p.score}</span>
-        </div>
-      </td>
-      <td style="font-size:9px;color:var(--text-muted)">${(p.reason||'').substring(0,60)}</td>
-    </tr>`;
-  });
-  html += `</table></div>`;
-
-  // Parsed Mobileum services from IA
-  const parsedServices = v.operators[0]?.mobileum_services_parsed || [];
-  if (parsedServices.length > 0) {
-    html += `<div class="section"><div class="section-title">Mobileum IA Service Detail (Operator Level)</div>`;
-    parsedServices.forEach(svc => {
-      html += `<div class="narrative-block">
-        <h4>${svc.name}</h4>
-        <p><strong>Category:</strong> ${svc.category}</p>
-        <p style="margin-top:4px">${svc.rationale}</p>
-        ${svc.kpi ? `<p style="margin-top:4px;color:var(--green)">📊 KPI: ${svc.kpi}</p>` : ''}
-      </div>`;
-    });
-    html += `</div>`;
-  }
-
-  document.getElementById('products-content').innerHTML = html;
-
-  // Chart
-  setTimeout(() => {
-    const ctx = document.getElementById('products_bar')?.getContext('2d');
-    if (ctx && products.length) {
+    // 3. Product Fit Bar Chart
+    const products = v.product_ranking || [];
+    const ctxBar = document.getElementById('products_bar')?.getContext('2d');
+    if (ctxBar && products.length) {
       destroyChart('products_bar');
-      chartInstances['products_bar'] = new Chart(ctx, {
+      chartInstances['products_bar'] = new Chart(ctxBar, {
         type: 'bar',
         data: {
           labels: products.map(p => p.product.replace('–', '-').substring(0, 22)),

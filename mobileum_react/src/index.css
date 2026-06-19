@@ -1168,12 +1168,12 @@ html, body {
   border-radius: 6px;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border: 2px solid var(--bg-card);
+  background: var(--text-muted);
+  border: 1.5px solid var(--bg-card);
   border-radius: 8px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: var(--text-secondary);
 }
 
 /* ── RESPONSIVE ── */
@@ -1238,7 +1238,7 @@ html, body {
 }
 
 .static-context-sidebar {
-  width: 320px;
+  width: 360px;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 12px;

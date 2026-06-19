@@ -31,6 +31,27 @@ const trendToScore = (val) => {
   return 3;
 };
 
+const parsePipelineValue = (valStr) => {
+  if (!valStr) return 0;
+  const match = valStr.match(/\$?([0-9.]+)\s*M/i);
+  if (match) {
+    return parseFloat(match[1]);
+  }
+  const cleanNum = parseFloat(valStr.replace(/[^0-9.]/g, ''));
+  return isNaN(cleanNum) ? 0 : cleanNum;
+};
+
+const getProductValue = (index, totalValStr, numProducts) => {
+  const totalVal = parsePipelineValue(totalValStr);
+  if (totalVal <= 0) return '$0.0M';
+  if (numProducts <= 1) return `$${totalVal.toFixed(1)}M`;
+  
+  const sumWeights = (numProducts * (numProducts + 1)) / 2;
+  const productWeight = (numProducts - index) / sumWeights;
+  const productVal = totalVal * productWeight;
+  return `$${productVal.toFixed(1)}M`;
+};
+
 export default function DynamicCenterDashboard({
   selectedCountry,
   countryData,
@@ -53,6 +74,35 @@ export default function DynamicCenterDashboard({
 }) {
   const chartRefs = useRef({});
   const [activeSubTab, setActiveSubTab] = useState('profile');
+  const [productStates, setProductStates] = useState({});
+
+  const getProductState = (productName) => {
+    const key = `${selectedCountry || 'global'}_${selectedOperator || 'none'}_${productName}`;
+    const state = productStates[key];
+    if (state) return state;
+
+    const usedProducts = accountData?.productSection?.mobileumProducts || [];
+    const isUsed = usedProducts.includes(productName);
+    
+    return {
+      used: isUsed,
+      channel: 'Licensed'
+    };
+  };
+
+  const setProductStateValue = (productName, field, value) => {
+    const key = `${selectedCountry || 'global'}_${selectedOperator || 'none'}_${productName}`;
+    setProductStates(prev => {
+      const currentState = prev[key] || getProductState(productName);
+      return {
+        ...prev,
+        [key]: {
+          ...currentState,
+          [field]: value
+        }
+      };
+    });
+  };
 
   // Refs for the chart canvases
   const overviewRadarRef = useRef(null);
@@ -521,7 +571,11 @@ export default function DynamicCenterDashboard({
           {selectedCountry ? (
             <button 
               onClick={() => {
-                if (setSelectedCountry) setSelectedCountry(null);
+                if (selectedOperator) {
+                  if (setSelectedOperator) setSelectedOperator(null);
+                } else {
+                  if (setSelectedCountry) setSelectedCountry(null);
+                }
               }}
               style={{
                 background: 'var(--bg-card2)',
@@ -540,7 +594,7 @@ export default function DynamicCenterDashboard({
               onMouseOver={(e) => { e.currentTarget.style.background = 'var(--bg-card3)'; e.currentTarget.style.borderColor = 'var(--blue)'; }}
               onMouseOut={(e) => { e.currentTarget.style.background = 'var(--bg-card2)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
             >
-              ← Back to Global Map
+              {selectedOperator ? `← Back to ${selectedCountry}` : '← Back to Global Map'}
             </button>
           ) : (
             <button 
@@ -571,13 +625,31 @@ export default function DynamicCenterDashboard({
           {selectedCountry && (
             <>
               <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>/</span>
-              <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-primary)' }}>{selectedCountry}</span>
+              {selectedOperator ? (
+                <span 
+                  onClick={() => {
+                    if (setSelectedOperator) setSelectedOperator(null);
+                  }}
+                  style={{ 
+                    fontSize: '11px', 
+                    fontWeight: '600', 
+                    color: 'var(--blue)', 
+                    cursor: 'pointer',
+                    textDecoration: 'underline'
+                  }}
+                  title={`Back to ${selectedCountry} details`}
+                >
+                  {selectedCountry}
+                </span>
+              ) : (
+                <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-primary)' }}>{selectedCountry}</span>
+              )}
             </>
           )}
           {selectedOperator && (
             <>
               <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>/</span>
-              <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--blue)' }}>{selectedOperator}</span>
+              <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-primary)' }}>{selectedOperator}</span>
             </>
           )}
         </div>
@@ -958,12 +1030,12 @@ export default function DynamicCenterDashboard({
                       </div>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '10px', fontSize: '10px', color: 'var(--text-secondary)' }}>
-                      <div>📶 5G: <strong style={{ color: 'var(--text-primary)' }}>{op.fiveG_pct !== null ? op.fiveG_pct + '%' : '—'}</strong></div>
-                      <div>📈 ARPU: <strong style={{ color: 'var(--text-primary)' }}>{op.arpu_growth || '—'}</strong></div>
-                      <div>🔄 Sub Growth: <strong style={{ color: 'var(--text-primary)' }}>{op.subscriber_growth_pct !== null ? op.subscriber_growth_pct + '%' : '—'}</strong></div>
-                      <div>💰 Capex: <strong style={{ color: 'var(--text-primary)' }}>{capexText.length > 25 ? capexText.substring(0, 22) + '…' : capexText}</strong></div>
-                      <div>🌍 Outbound: <strong style={{ color: 'var(--text-primary)' }}>{(op.outbound_roaming || '—').substring(0, 15)}</strong></div>
-                      <div>✈️ Top Routes: <strong style={{ color: 'var(--text-primary)' }}>{(op.top_roaming_countries || '—').substring(0, 20)}</strong></div>
+                      <div>5G: <strong style={{ color: 'var(--text-primary)' }}>{op.fiveG_pct !== null ? op.fiveG_pct + '%' : '—'}</strong></div>
+                      <div>ARPU: <strong style={{ color: 'var(--text-primary)' }}>{op.arpu_growth || '—'}</strong></div>
+                      <div>Sub Growth: <strong style={{ color: 'var(--text-primary)' }}>{op.subscriber_growth_pct !== null ? op.subscriber_growth_pct + '%' : '—'}</strong></div>
+                      <div>Capex: <strong style={{ color: 'var(--text-primary)' }}>{capexText.length > 25 ? capexText.substring(0, 22) + '…' : capexText}</strong></div>
+                      <div>Outbound: <strong style={{ color: 'var(--text-primary)' }}>{(op.outbound_roaming || '—').substring(0, 15)}</strong></div>
+                      <div>Top Routes: <strong style={{ color: 'var(--text-primary)' }}>{(op.top_roaming_countries || '—').substring(0, 20)}</strong></div>
                     </div>
                   </div>
                 );
@@ -1032,12 +1104,12 @@ export default function DynamicCenterDashboard({
                 flexShrink: 0
               }}>
                 {[
-                  { key: 'profile', label: '👤 Account Profile' },
-                  { key: 'impact', label: '📊 Impact Analysis' },
-                  { key: 'products', label: '🎯 Product Fit' },
-                  { key: 'support', label: '🏥 Support & AMC' },
-                  { key: 'competitors', label: '⚔️ Competitors' },
-                  { key: 'plan2026', label: '🚀 Plan for 2026' }
+                  { key: 'profile', label: 'Account Profile' },
+                  { key: 'impact', label: 'Impact Analysis' },
+                  { key: 'products', label: 'Product Fit' },
+                  { key: 'support', label: 'Support & AMC' },
+                  { key: 'competitors', label: 'Competitors' },
+                  { key: 'plan2026', label: 'Plan for 2026' }
                 ].map(subTab => (
                   <button
                     key={subTab.key}
@@ -1065,7 +1137,7 @@ export default function DynamicCenterDashboard({
               {/* Product Section */}
               <div className="section" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', margin: '0 0 4px 0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                 <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--blue)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  📦 Product Section
+                  Product Section
                 </div>
                 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
@@ -1074,7 +1146,7 @@ export default function DynamicCenterDashboard({
                     {/* 1. Mobileum products */}
                     <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', height: '100%', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
                       <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        🔹 Mobileum Products
+                        Mobileum Products
                       </div>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                         {(accountData.productSection?.mobileumProducts || []).map(item => (
@@ -1088,7 +1160,7 @@ export default function DynamicCenterDashboard({
                     {/* 3. Product gaps */}
                     <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', height: '100%', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
                       <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        🔍 Product Gaps
+                        Product Gaps
                       </div>
                       <ul style={{ margin: '0', paddingLeft: '18px', color: 'var(--text-secondary)', fontSize: '11px', lineHeight: '1.6' }}>
                         {(accountData.productSection?.productGaps || []).map(item => <li key={item}>{item}</li>)}
@@ -1098,7 +1170,7 @@ export default function DynamicCenterDashboard({
                     {/* 4. Managed services possibility */}
                     <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', height: '100%', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
                       <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        🛠️ Managed Services Possibility
+                        Managed Services Possibility
                       </div>
                       <ul style={{ margin: '0', paddingLeft: '18px', color: 'var(--text-secondary)', fontSize: '11px', lineHeight: '1.6' }}>
                         {(accountData.productSection?.managedServicesPossibility || []).map(item => <li key={item}>{item}</li>)}
@@ -1111,7 +1183,7 @@ export default function DynamicCenterDashboard({
                     {/* 2. Competition products */}
                     <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', height: '100%', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
                       <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        ⚔️ Competition Products
+                        Competition Products
                       </div>
                       <ul style={{ margin: '0', paddingLeft: '18px', color: 'var(--text-secondary)', fontSize: '11px', lineHeight: '1.6' }}>
                         {(accountData.productSection?.competitionProducts || []).map(item => <li key={item}>{item}</li>)}
@@ -1121,7 +1193,7 @@ export default function DynamicCenterDashboard({
                     {/* 6. Competition which can be replaced */}
                     <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', height: '100%', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
                       <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        🎯 Competitors to Replace
+                        Competitors to Replace
                       </div>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                         {(accountData.productSection?.replaceableCompetitors || []).map(item => (
@@ -1135,7 +1207,7 @@ export default function DynamicCenterDashboard({
                     {/* Final Strategies */}
                     <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', height: '100%', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
                       <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        🚀 Final Strategies
+                        Final Strategies
                       </div>
                       <ul style={{ margin: '0', paddingLeft: '18px', color: 'var(--text-secondary)', fontSize: '11px', lineHeight: '1.6' }}>
                         {(accountData.productSection?.finalStrategies || []).map(item => <li key={item}>{item}</li>)}
@@ -1171,7 +1243,7 @@ export default function DynamicCenterDashboard({
               {/* Financial Section */}
               <div className="section" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', margin: '0 0 4px 0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                 <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--teal)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  💰 Financial Section
+                  Financial Section
                 </div>
                 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
@@ -1201,7 +1273,7 @@ export default function DynamicCenterDashboard({
               {/* Renewal Section */}
               <div className="section" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', margin: '0 0 4px 0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                 <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--purple)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  🔄 Renewal Section
+                  Renewal Section
                 </div>
                 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
@@ -1274,7 +1346,7 @@ export default function DynamicCenterDashboard({
               {/* Health of Solution Section */}
               <div className="section" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', margin: '0 0 4px 0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                 <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--red)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  🏥 Health of Solution Section
+                  Health of Solution Section
                 </div>
                 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
@@ -1521,50 +1593,107 @@ export default function DynamicCenterDashboard({
                     {accountData?.plan2026 ? (
                       <div className="section" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                         <div style={{ fontSize: '15px', fontWeight: '800', color: 'var(--blue)', marginBottom: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          🚀 Mobileum 2026 Strategic Plan
+                          Mobileum 2026 Strategic Plan
                         </div>
                         
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                          {/* 1. Products focused on */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                          {/* Recommended Products Table */}
                           <div>
-                            <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>
-                              1. Products Focused On
+                            <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>
+                              Recommended Products & Revenue Distribution
                             </div>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                              {(accountData.plan2026.productsFocusedOn || []).map(item => (
-                                <span key={item} style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--blue)', border: '1px solid rgba(37, 99, 235, 0.2)', borderRadius: '6px', padding: '4px 8px', fontSize: '11px', fontWeight: '600' }}>
-                                  {item}
-                                </span>
-                              ))}
+                            <div style={{ overflowX: 'auto', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--bg-card)' }}>
+                              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                                <thead>
+                                  <tr style={{ background: 'var(--bg-card2)', borderBottom: '1px solid var(--border)' }}>
+                                    <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: '700', color: 'var(--text-primary)', width: '160px' }}>MOBILEUM PRODUCT USED</th>
+                                    <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: '700', color: 'var(--text-primary)' }}>PRODUCT NAME</th>
+                                    <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: '700', color: 'var(--text-primary)', width: '120px' }}>VALUE</th>
+                                    <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: '700', color: 'var(--text-primary)', width: '180px' }}>TYPE OF CHANNEL</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {(accountData.plan2026.productsFocusedOn || []).map((product, idx) => {
+                                    const state = getProductState(product);
+                                    const val = getProductValue(idx, accountData.plan2026.valueOfOpportunities, (accountData.plan2026.productsFocusedOn || []).length);
+                                    return (
+                                      <tr key={product} style={{ borderBottom: idx === (accountData.plan2026.productsFocusedOn || []).length - 1 ? 'none' : '1px solid var(--border)', transition: 'background 0.2s' }}>
+                                        <td style={{ padding: '10px 12px' }}>
+                                          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', userSelect: 'none' }}>
+                                            <input
+                                              type="checkbox"
+                                              checked={state.used}
+                                              onChange={(e) => setProductStateValue(product, 'used', e.target.checked)}
+                                              style={{
+                                                width: '15px',
+                                                height: '15px',
+                                                accentColor: 'var(--blue)',
+                                                cursor: 'pointer'
+                                              }}
+                                            />
+                                            <span style={{ color: 'var(--text-secondary)', fontWeight: '500' }}>Used</span>
+                                          </label>
+                                        </td>
+                                        <td style={{ padding: '10px 12px', fontWeight: '600', color: 'var(--text-primary)' }}>
+                                          {product}
+                                        </td>
+                                        <td style={{ padding: '10px 12px', fontWeight: '700', color: 'var(--green)' }}>
+                                          {val}
+                                        </td>
+                                        <td style={{ padding: '10px 12px' }}>
+                                          <select
+                                            value={state.channel}
+                                            onChange={(e) => setProductStateValue(product, 'channel', e.target.value)}
+                                            style={{
+                                              background: 'var(--bg-card2)',
+                                              border: '1px solid var(--border)',
+                                              borderRadius: '6px',
+                                              color: 'var(--text-primary)',
+                                              padding: '4px 8px',
+                                              fontSize: '11px',
+                                              outline: 'none',
+                                              cursor: 'pointer',
+                                              width: '100%'
+                                            }}
+                                          >
+                                            <option value="Licensed">Licensed</option>
+                                            <option value="Mobileum Service">Mobileum Service</option>
+                                          </select>
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
                             </div>
                           </div>
           
-                          {/* 2. Value of opportunities */}
+                          {/* 2. Total Opportunities Value */}
                           <div>
-                            <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>
-                              2. Value of Opportunities
+                            <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.05em' }}>
+                              Total Value of Opportunities
                             </div>
-                            <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px', display: 'inline-block' }}>
-                              <strong style={{ fontSize: '14px', color: 'var(--green)' }}>{accountData.plan2026.valueOfOpportunities}</strong>
+                            <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px 16px', display: 'inline-block' }}>
+                              <strong style={{ fontSize: '15px', color: 'var(--green)' }}>{accountData.plan2026.valueOfOpportunities}</strong>
                             </div>
                           </div>
           
                           {/* 3. PoC or demo given */}
                           <div>
-                            <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>
-                              3. PoC or Demo Delivered
+                            <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.05em' }}>
+                              PoC or Demo Delivered
                             </div>
-                            <div className="product-card" style={{ padding: '12px', margin: 0, cursor: 'default', fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                            <div className="product-card" style={{ padding: '12px 16px', margin: 0, cursor: 'default', fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.6', borderRadius: '8px', background: 'var(--bg-card2)', border: '1px solid var(--border)' }}>
                               {accountData.plan2026.pocOrDemoGiven}
                             </div>
                           </div>
           
                           {/* 4. Consulting trials given */}
                           <div>
-                            <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>
-                              4. Consulting Trials Given
+                            <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.05em' }}>
+                              Consulting Trials Given & Next Steps
                             </div>
-                            <div className="product-card" style={{ padding: '12px', margin: 0, cursor: 'default', fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                            <div className="product-card" style={{ padding: '12px 16px', margin: 0, cursor: 'default', fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.6', borderRadius: '8px', background: 'var(--bg-card2)', border: '1px solid var(--border)' }}>
                               {accountData.plan2026.consultingTrialsGiven}
                             </div>
                           </div>

@@ -378,7 +378,7 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
     <div class="stat-pill">Regions <span id="stat-regions">5</span></div>
   </div>
   <div style="position:relative">
-    <input type="text" id="search-box" placeholder="🔍  Search country..." autocomplete="off">
+    <input type="text" id="search-box" placeholder="Search country..." autocomplete="off">
     <div id="search-results"></div>
   </div>
 </div>
@@ -547,6 +547,62 @@ const MOCK_COMPETITORS = [
   { "name": "Subex", "category": "Direct Competitor", "key_offerings": "Business & Revenue Assurance, IoT security, and telecom Fraud Management.", "versus_mobileum": "Mobileum RAID 9 platform is highly modern with SaaS capabilities, whereas Subex has legacy deployments." },
   { "name": "BICS", "category": "Partner / Niche", "key_offerings": "International voice/SMS carrier routing, roaming hubs, and network quality testing.", "versus_mobileum": "Mobileum is a software vendor partner; we compete only on roaming active testing lines." }
 ];
+
+window.productStates = window.productStates || {};
+
+function getProductState(countryName, productName, accountData) {
+  const key = `${countryName}_${productName}`;
+  if (window.productStates[key]) {
+    return window.productStates[key];
+  }
+  const usedProducts = accountData?.productSection?.mobileumProducts || [];
+  const isUsed = usedProducts.includes(productName);
+  const state = {
+    used: isUsed,
+    channel: 'Licensed'
+  };
+  window.productStates[key] = state;
+  return state;
+}
+
+function setProductUsed(countryName, productName, checked) {
+  const key = `${countryName}_${productName}`;
+  if (!window.productStates[key]) {
+    window.productStates[key] = { used: checked, channel: 'Licensed' };
+  } else {
+    window.productStates[key].used = checked;
+  }
+}
+
+function setProductChannel(countryName, productName, channel) {
+  const key = `${countryName}_${productName}`;
+  if (!window.productStates[key]) {
+    window.productStates[key] = { used: false, channel: channel };
+  } else {
+    window.productStates[key].channel = channel;
+  }
+}
+
+function parsePipelineValue(valStr) {
+  if (!valStr) return 0;
+  const match = valStr.match(/\$?([0-9.]+)\s*M/i);
+  if (match) {
+    return parseFloat(match[1]);
+  }
+  const cleanNum = parseFloat(valStr.replace(/[^0-9.]/g, ''));
+  return isNaN(cleanNum) ? 0 : cleanNum;
+}
+
+function getProductValue(index, totalValStr, numProducts) {
+  const totalVal = parsePipelineValue(totalValStr);
+  if (totalVal <= 0) return '$0.0M';
+  if (numProducts <= 1) return `$${totalVal.toFixed(1)}M`;
+  
+  const sumWeights = (numProducts * (numProducts + 1)) / 2;
+  const productWeight = (numProducts - index) / sumWeights;
+  const productVal = totalVal * productWeight;
+  return `$${productVal.toFixed(1)}M`;
+}
 
 const MOCK_ACCOUNT_INSIGHTS = {
   "Saudi Arabia": {
@@ -1148,12 +1204,12 @@ function renderOperators(v, name) {
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;font-size:10px;color:var(--text-secondary)">
-        <div>📶 5G: <strong style="color:var(--text-primary)">${op.fiveG_pct != null ? op.fiveG_pct+'%' : '—'}</strong></div>
-        <div>📈 ARPU: <strong style="color:var(--text-primary)">${op.arpu_growth || '—'}</strong></div>
-        <div>🔄 Sub Growth: <strong style="color:var(--text-primary)">${op.subscriber_growth_pct != null ? op.subscriber_growth_pct+'%' : '—'}</strong></div>
-        <div>💰 Capex: <strong style="color:var(--text-primary)">${capexText.length > 30 ? capexText.substring(0,28)+'…' : capexText}</strong></div>
-        <div>🌍 Outbound: <strong style="color:var(--text-primary)">${op.outbound_roaming.substring(0,20)||'—'}</strong></div>
-        <div>✈️ Top Routes: <strong style="color:var(--text-primary)">${op.top_roaming_countries.substring(0,25)||'—'}</strong></div>
+        <div>5G: <strong style="color:var(--text-primary)">${op.fiveG_pct != null ? op.fiveG_pct+'%' : '—'}</strong></div>
+        <div>ARPU: <strong style="color:var(--text-primary)">${op.arpu_growth || '—'}</strong></div>
+        <div>Sub Growth: <strong style="color:var(--text-primary)">${op.subscriber_growth_pct != null ? op.subscriber_growth_pct+'%' : '—'}</strong></div>
+        <div>Capex: <strong style="color:var(--text-primary)">${capexText.length > 30 ? capexText.substring(0,28)+'…' : capexText}</strong></div>
+        <div>Outbound: <strong style="color:var(--text-primary)">${op.outbound_roaming.substring(0,20)||'—'}</strong></div>
+        <div>Top Routes: <strong style="color:var(--text-primary)">${op.top_roaming_countries.substring(0,25)||'—'}</strong></div>
       </div>
       ${op.financial_comments && op.financial_comments !== 'nan' ?
         `<div style="margin-top:6px;font-size:9px;color:var(--text-muted);font-style:italic">${op.financial_comments.substring(0,120)}</div>` : ''}
@@ -1367,7 +1423,7 @@ function renderAccount(v, name) {
     <div style="margin-top:16px;background:linear-gradient(135deg,rgba(37,99,235,0.08) 0%,rgba(16,185,129,0.08) 100%);border:1.5px solid var(--blue);border-radius:12px;padding:16px;position:relative;overflow:hidden">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
         <span style="font-size:13px;font-weight:800;color:var(--blue);display:flex;align-items:center;gap:6px">
-          🚀 Emphasized Plan for 2026
+          Emphasized Plan for 2026
         </span>
         <button onclick="document.getElementById('plan2026-full-details')?.scrollIntoView({behavior:'smooth'})"
           style="background:var(--blue);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:10px;font-weight:700;cursor:pointer">
@@ -1396,7 +1452,7 @@ function renderAccount(v, name) {
   html += `
   <div class="section" style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;margin:0">
     <div style="font-size:14px;font-weight:800;color:var(--teal);margin-bottom:12px;display:flex;align-items:center;gap:8px">
-      💰 Financial Section
+      Financial Section
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
       <div class="product-card" style="padding:10px;margin:0;cursor:default">
@@ -1418,7 +1474,7 @@ function renderAccount(v, name) {
   html += `
   <div class="section" style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;margin:0">
     <div style="font-size:14px;font-weight:800;color:var(--purple);margin-bottom:12px;display:flex;align-items:center;gap:8px">
-      🔄 Renewal Section
+      Renewal Section
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
       <div>
@@ -1450,7 +1506,7 @@ function renderAccount(v, name) {
   html += `
   <div class="section" style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;margin:0">
     <div style="font-size:14px;font-weight:800;color:var(--red);margin-bottom:12px;display:flex;align-items:center;gap:8px">
-      🏥 Health of Solution Section
+      Health of Solution Section
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
       <div>
@@ -1482,7 +1538,7 @@ function renderAccount(v, name) {
   html += `
   <div class="section" style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;margin:0">
     <div style="font-size:14px;font-weight:800;color:var(--blue);margin-bottom:12px;display:flex;align-items:center;gap:8px">
-      📊 Impact Analysis Section
+      Impact Analysis Section
     </div>
     
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
@@ -1554,7 +1610,7 @@ function renderAccount(v, name) {
   html += `
   <div class="section" style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;margin:0">
     <div style="font-size:14px;font-weight:800;color:var(--teal);margin-bottom:12px;display:flex;align-items:center;gap:8px">
-      🎯 Product Fit Section
+      Product Fit Section
     </div>
     
     <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:16px">
@@ -1612,7 +1668,7 @@ function renderAccount(v, name) {
   html += `
   <div class="section" style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;margin:0">
     <div style="font-size:14px;font-weight:800;color:var(--purple);margin-bottom:12px;display:flex;align-items:center;gap:8px">
-      🏥 Support & AMC Section
+      Support & AMC Section
     </div>
     
     <div class="product-card" style="cursor:default;padding:12px;margin:0">
@@ -1655,7 +1711,7 @@ function renderAccount(v, name) {
   html += `
   <div class="section" style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;margin:0">
     <div style="font-size:14px;font-weight:800;color:var(--red);margin-bottom:12px;display:flex;align-items:center;gap:8px">
-      ⚔️ Competitors Section
+      Competitors Section
     </div>
     <div style="overflow-x:auto;background:var(--bg-card2);border:1px solid var(--border);border-radius:8px;padding:4px">
       <table class="op-table" style="width:100%;font-size:10px">
@@ -1677,31 +1733,102 @@ function renderAccount(v, name) {
   </div>`;
 
   // 9. Plan for 2026 Section
+  const products = accountData.plan2026.productsFocusedOn || [];
+  const tableRows = products.map((product, idx) => {
+    const state = getProductState(name, product, accountData);
+    const val = getProductValue(idx, accountData.plan2026.valueOfOpportunities, products.length);
+    const isLicensedSelected = state.channel === 'Licensed' ? 'selected' : '';
+    const isServiceSelected = state.channel === 'Mobileum Service' ? 'selected' : '';
+    const isChecked = state.used ? 'checked' : '';
+    
+    return `
+      <tr style="border-bottom: ${idx === products.length - 1 ? 'none' : '1px solid var(--border)'}; transition: background 0.2s">
+        <td style="padding: 10px 12px">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none">
+            <input
+              type="checkbox"
+              ${isChecked}
+              onchange="setProductUsed('${name}', '${product}', this.checked)"
+              style="width: 15px; height: 15px; accent-color: var(--blue); cursor: pointer"
+            />
+            <span style="color: var(--text-secondary); font-weight: 500">Used</span>
+          </label>
+        </td>
+        <td style="padding: 10px 12px; font-weight: 600; color: var(--text-primary)">
+          ${product}
+        </td>
+        <td style="padding: 10px 12px; font-weight: 700; color: var(--green)">
+          ${val}
+        </td>
+        <td style="padding: 10px 12px">
+          <select
+            onchange="setProductChannel('${name}', '${product}', this.value)"
+            style="background: var(--bg-card2); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); padding: 4px 8px; font-size: 11px; outline: none; cursor: pointer; width: 100%"
+          >
+            <option value="Licensed" ${isLicensedSelected}>Licensed</option>
+            <option value="Mobileum Service" ${isServiceSelected}>Mobileum Service</option>
+          </select>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
   html += `
-  <div id="plan2026-full-details" class="section" style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;margin:0">
-    <div style="font-size:14px;font-weight:800;color:var(--blue);margin-bottom:12px;display:flex;align-items:center;gap:8px">
-      🚀 Mobileum 2026 Strategic Plan (Full Details)
+  <div id="plan2026-full-details" class="section" style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;margin:0">
+    <div style="font-size:15px;font-weight:800;color:var(--blue);margin-bottom:18px;display:flex;align-items:center;gap:8px">
+      Mobileum 2026 Strategic Plan
     </div>
-    <div style="display:flex;flex-direction:column;gap:10px;font-size:11px">
+    <div style="display:flex;flex-direction:column;gap:20px;font-size:11px">
+      <!-- Recommended Products Table -->
       <div>
-        <strong style="color:var(--text-muted)">Products Focused On:</strong>
-        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">
-          ${(accountData.plan2026.productsFocusedOn || []).map(p => 
-            `<span style="background:rgba(37,99,235,0.1);color:var(--blue);border:1px solid rgba(37,99,235,0.2);border-radius:6px;padding:2px 6px">${p}</span>`
-          ).join('')}
+        <div style="font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px;letter-spacing:0.05em">
+          Recommended Products & Revenue Distribution
+        </div>
+        <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;background:var(--bg-card)">
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead>
+              <tr style="background:var(--bg-card2);border-bottom:1px solid var(--border)">
+                <th style="padding:10px 12px;text-align:left;font-weight:700;color:var(--text-primary);width:160px">MOBILEUM PRODUCT USED</th>
+                <th style="padding:10px 12px;text-align:left;font-weight:700;color:var(--text-primary)">PRODUCT NAME</th>
+                <th style="padding:10px 12px;text-align:left;font-weight:700;color:var(--text-primary);width:120px">VALUE</th>
+                <th style="padding:10px 12px;text-align:left;font-weight:700;color:var(--text-primary);width:180px">TYPE OF CHANNEL</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+            </tbody>
+          </table>
         </div>
       </div>
-      <div style="margin-top:6px">
-        <strong style="color:var(--text-muted)">Value of Opportunities:</strong>
-        <div style="font-size:13px;color:var(--green);font-weight:700;margin-top:2px">${accountData.plan2026.valueOfOpportunities}</div>
+
+      <!-- Total Opportunities Value -->
+      <div>
+        <div style="font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px;letter-spacing:0.05em">
+          Total Value of Opportunities
+        </div>
+        <div style="background:var(--bg-card2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;display:inline-block">
+          <strong style="font-size:14px;color:var(--green)">${accountData.plan2026.valueOfOpportunities}</strong>
+        </div>
       </div>
-      <div style="margin-top:6px">
-        <strong style="color:var(--text-muted)">Demo/PoC Status:</strong>
-        <div style="color:var(--text-secondary);margin-top:2px">${accountData.plan2026.pocOrDemoGiven}</div>
+
+      <!-- Demo/PoC Status -->
+      <div>
+        <div style="font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px;letter-spacing:0.05em">
+          Demo/PoC Status
+        </div>
+        <div class="product-card" style="padding:12px 16px;margin:0;cursor:default;font-size:12px;color:var(--text-secondary);line-height:1.6;border-radius:8px;background:var(--bg-card2);border:1px solid var(--border)">
+          ${accountData.plan2026.pocOrDemoGiven}
+        </div>
       </div>
-      <div style="margin-top:6px">
-        <strong style="color:var(--text-muted)">Consulting Trials & Next Steps:</strong>
-        <div style="color:var(--text-secondary);margin-top:2px">${accountData.plan2026.consultingTrialsGiven}</div>
+
+      <!-- Consulting Trials & Next Steps -->
+      <div>
+        <div style="font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px;letter-spacing:0.05em">
+          Consulting Trials & Next Steps
+        </div>
+        <div class="product-card" style="padding:12px 16px;margin:0;cursor:default;font-size:12px;color:var(--text-secondary);line-height:1.6;border-radius:8px;background:var(--bg-card2);border:1px solid var(--border)">
+          ${accountData.plan2026.consultingTrialsGiven}
+        </div>
       </div>
     </div>
   </div>`;

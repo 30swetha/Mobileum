@@ -741,14 +741,14 @@ export default function App() {
         </div>
 
         <button className="theme-toggle-btn" onClick={toggleTheme} title="Toggle Dark/Light Mode">
-          {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
+          {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
         </button>
 
         <div style={{ position: 'relative' }}>
           <input
             type="text"
             id="search-box"
-            placeholder="🔍  Search country..."
+            placeholder="Search country..."
             value={searchQuery}
             onChange={handleSearchChange}
             autoComplete="off"
@@ -798,9 +798,12 @@ export default function App() {
           <button
             key={region}
             className={`filter-btn ${activeRegion === region ? 'active' : ''}`}
-            onClick={() => setActiveRegion(region)}
+            onClick={() => {
+              setActiveRegion(region);
+              setSelectedCountry(null);
+            }}
           >
-            {region === 'all' ? 'All' : region}
+            {region === 'all' ? 'All Regions' : region}
           </button>
         ))}
 
@@ -814,251 +817,273 @@ export default function App() {
           }}
           style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
         >
-          🌍 Global Overview
+          Global Overview
         </button>
 
         <div className="filter-sep"></div>
 
         <button className="filter-btn" onClick={openCompareModal}>
-          ⊕ Compare Countries
+          Compare Countries
         </button>
       </div>
 
       {/* MAIN APP CONTAINER */}
       <div id="app">
         <div style={{ display: 'flex', width: '100%', height: '100%', gap: '20px', padding: '16px', overflow: 'hidden' }}>
-          {/* Left panel: Map (Always Visible) with Floating Overlay Sidebar */}
-          <div style={{ display: (!selectedCountry && showGlobalOverview) ? 'none' : 'flex', flex: 1.2, height: '100%', overflow: 'hidden', position: 'relative' }}>
-            <div style={{ display: 'flex', width: '100%', height: '100%', overflow: 'hidden', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px' }}>
-              {activeRegion !== 'all' && (
-                <div className="region-sidebar" style={{
-                  width: '320px',
-                  background: 'var(--bg-card)',
-                  borderRight: '1px solid var(--border)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  height: '100%',
-                  overflow: 'hidden'
-                }}>
-                  <div style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
-                    <div style={{ fontSize: '18px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
-                      🌍 {activeRegion} Countries
-                    </div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                      {Object.values(countries).filter(c => c.region === activeRegion).length} markets available
-                    </div>
-                  </div>
-                  <div style={{ flex: 1, overflowY: 'auto', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {Object.entries(countries)
-                      .filter(([_, c]) => c.region === activeRegion)
-                      .sort((a, b) => a[0].localeCompare(b[0]))
-                      .map(([name, c]) => {
-                        const clr = CLUSTER_COLORS[c.cluster_name] || '#3b82f6';
-                        return (
-                          <div
-                            key={name}
-                            className="region-country-card"
-                            onClick={() => setSelectedCountry(name)}
-                            style={{
-                              background: 'var(--bg-card2)',
-                              border: '1px solid var(--border)',
-                              borderRadius: '8px',
-                              padding: '12px',
-                              cursor: 'pointer',
-                              transition: 'all 0.2s ease',
-                            }}
-                            onMouseOver={(e) => {
-                              e.currentTarget.style.borderColor = 'var(--blue)';
-                              e.currentTarget.style.transform = 'translateY(-1px)';
-                              e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.05)';
-                            }}
-                            onMouseOut={(e) => {
-                              e.currentTarget.style.borderColor = 'var(--border)';
-                              e.currentTarget.style.transform = 'none';
-                              e.currentTarget.style.boxShadow = 'none';
-                            }}
-                          >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)' }}>
-                                {getFlagEmoji(c.iso)} {name}
-                              </span>
-                              <span style={{
-                                fontSize: '9px',
-                                background: `${clr}15`,
-                                color: clr,
-                                border: `1px solid ${clr}33`,
-                                padding: '2px 6px',
-                                borderRadius: '10px',
-                                fontWeight: '600'
-                              }}>
-                                {c.num_operators} Ops
-                              </span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px', fontSize: '10px', color: 'var(--text-muted)' }}>
-                              <span>{c.sub_region || '—'}</span>
-                              <span style={{ color: 'var(--text-secondary)' }}>{c.cluster_name}</span>
-                            </div>
-                          </div>
-                        );
-                      })
-                    }
-                  </div>
-                </div>
-              )}
+          
+          {selectedCountry ? (
+            // SIDE-BY-SIDE VIEW: Country Context Sidebar & Dynamic Operator Details (No Map)
+            <>
+              {/* Left Panel: Static Country Sidebar */}
+              <StaticCountrySidebar
+                selectedCountry={selectedCountry}
+                countryData={countries[selectedCountry]}
+                onClose={() => {
+                  setSelectedCountry(null);
+                  setSelectedOperator(null);
+                }}
+                getFlagEmoji={getFlagEmoji}
+                selectedOperator={selectedOperator}
+                onSelectOperator={(opName) => {
+                  setSelectedOperator(opName);
+                  if (opName) {
+                    setActiveTab('account');
+                  } else {
+                    setActiveTab('operators');
+                  }
+                }}
+              />
 
-              <div id="map-container" style={{ flex: 1, position: 'relative' }}>
-                <MapComponent
-                  countries={countries}
-                  currentLens={currentLens}
-                  activeRegion={activeRegion}
-                  onSelectCountry={setSelectedCountry}
-                  theme={theme}
-                />
-                <div id="map-hover-box">Click any country to open detailed analysis</div>
-
-                {/* Map Legend */}
-                <div id="legend">
-                  <h4 id="legend-title">
-                    {
-                      {
-                        cluster: 'Market Cluster',
-                        fraud: 'Fraud Risk',
-                        fiveG: '5G Readiness',
-                        roaming: 'Roaming Intensity',
-                        arpu: 'ARPU Pressure'
-                      }[currentLens]
-                    }
-                  </h4>
-                  <div id="legend-items">
-                    {currentLens === 'cluster' ? (
-                      Object.entries({
-                        'Mature & Saturated': '#9B59B6',
-                        'High Growth Corridor': '#F39C12',
-                        'Emerging Mid-Tier': '#1ABC9C',
-                        'Small Wealthy Market': '#2ECC71',
-                        'Frontier Market': '#E74C3C',
-                        'Regulatory Transition': '#7F8C8D',
-                      }).map(([name, color]) => (
-                        <div className="legend-row" key={name}>
-                          <div className="legend-dot" style={{ background: color }}></div>
-                          {name}
-                        </div>
-                      ))
-                    ) : currentLens === 'fraud' ? (
-                      [
-                        { label: 'Very Low', color: '#1ABC9C' },
-                        { label: 'Low', color: '#F39C12' },
-                        { label: 'Medium', color: '#E67E22' },
-                        { label: 'High', color: '#E74C3C' },
-                        { label: 'Critical', color: '#C0392B' }
-                      ].map(item => (
-                        <div className="legend-row" key={item.label}>
-                          <div className="legend-dot" style={{ background: item.color }}></div>
-                          {item.label}
-                        </div>
-                      ))
-                    ) : currentLens === 'fiveG' ? (
-                      [
-                        { label: '<20%', color: '#1e3054' },
-                        { label: '20-40%', color: '#1A5276' },
-                        { label: '40-60%', color: '#2471A3' },
-                        { label: '60-80%', color: '#2980B9' },
-                        { label: '>80%', color: '#1ABC9C' }
-                      ].map(item => (
-                        <div className="legend-row" key={item.label}>
-                          <div className="legend-dot" style={{ background: item.color }}></div>
-                          {item.label}
-                        </div>
-                      ))
-                    ) : currentLens === 'roaming' ? (
-                      [
-                        { label: 'Minimal', color: '#1e3054' },
-                        { label: 'Low', color: '#1A5276' },
-                        { label: 'Moderate', color: '#2471A3' },
-                        { label: 'High', color: '#2980B9' },
-                        { label: 'Very High', color: '#1ABC9C' }
-                      ].map(item => (
-                        <div className="legend-row" key={item.label}>
-                          <div className="legend-dot" style={{ background: item.color }}></div>
-                          {item.label}
-                        </div>
-                      ))
-                    ) : (
-                      [
-                        { label: 'Growing', color: '#27AE60' },
-                        { label: 'Stable', color: '#F39C12' },
-                        { label: 'Pressure', color: '#E67E22' },
-                        { label: 'Critical', color: '#E74C3C' }
-                      ].map(item => (
-                        <div className="legend-row" key={item.label}>
-                          <div className="legend-dot" style={{ background: item.color }}></div>
-                          {item.label}
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Country Floating Overlay Sidebar (positioned inside Map panel) */}
-            {selectedCountry && (
-              <div style={{
-                position: 'absolute',
-                top: '16px',
-                left: activeRegion !== 'all' ? '336px' : '16px',
-                maxHeight: 'calc(100% - 32px)',
-                zIndex: 1000,
-                display: 'flex',
-                flexDirection: 'column'
-              }}>
-                <StaticCountrySidebar
+              {/* Right Panel: Dynamic Operator Details Dashboard */}
+              <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
+                <DynamicCenterDashboard
                   selectedCountry={selectedCountry}
                   countryData={countries[selectedCountry]}
-                  onClose={() => {
-                    setSelectedCountry(null);
-                    setSelectedOperator(null);
-                  }}
+                  allCountries={countries}
+                  metadata={metadata}
                   getFlagEmoji={getFlagEmoji}
+                  theme={theme}
+                  ticketData={ticketData}
+                  amcData={amcData}
+                  competitorData={competitorData}
+                  accountData={accountData}
+                  isDataLoading={isDataLoading}
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
                   selectedOperator={selectedOperator}
-                  onSelectOperator={(opName) => {
-                    setSelectedOperator(opName);
-                    if (opName) {
-                      setActiveTab('account');
-                    } else {
-                      setActiveTab('operators');
-                    }
-                  }}
+                  setSelectedOperator={setSelectedOperator}
+                  setSelectedCountry={setSelectedCountry}
+                  activeRegion={activeRegion}
+                  setActiveRegion={setActiveRegion}
+                  onCloseOverview={() => {}}
                 />
               </div>
-            )}
-          </div>
+            </>
+          ) : (
+            // MAP VIEW: Show map when no country is selected
+            <>
+              {/* Left panel: Map */}
+              <div style={{ display: showGlobalOverview ? 'none' : 'flex', flex: 1.2, height: '100%', overflow: 'hidden', position: 'relative' }}>
+                <div style={{ display: 'flex', width: '100%', height: '100%', overflow: 'hidden', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px' }}>
+                  {activeRegion !== 'all' && (
+                    <div className="region-sidebar" style={{
+                      width: '320px',
+                      background: 'var(--bg-card)',
+                      borderRight: '1px solid var(--border)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      height: '100%',
+                      overflow: 'hidden'
+                    }}>
+                      <div style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
+                        <div style={{ fontSize: '18px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
+                          {activeRegion} Countries
+                        </div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                          {Object.values(countries).filter(c => c.region === activeRegion).length} markets available
+                        </div>
+                      </div>
+                      <div style={{ flex: 1, overflowY: 'auto', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {Object.entries(countries)
+                          .filter(([_, c]) => c.region === activeRegion)
+                          .sort((a, b) => a[0].localeCompare(b[0]))
+                          .map(([name, c]) => {
+                            const clr = CLUSTER_COLORS[c.cluster_name] || '#3b82f6';
+                            return (
+                              <div
+                                key={name}
+                                className="region-country-card"
+                                onClick={() => setSelectedCountry(name)}
+                                style={{
+                                  background: 'var(--bg-card2)',
+                                  border: '1px solid var(--border)',
+                                  borderRadius: '8px',
+                                  padding: '12px',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.2s ease',
+                                }}
+                                onMouseOver={(e) => {
+                                  e.currentTarget.style.borderColor = 'var(--blue)';
+                                  e.currentTarget.style.transform = 'translateY(-1px)';
+                                  e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.05)';
+                                }}
+                                onMouseOut={(e) => {
+                                  e.currentTarget.style.borderColor = 'var(--border)';
+                                  e.currentTarget.style.transform = 'none';
+                                  e.currentTarget.style.boxShadow = 'none';
+                                }}
+                              >
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)' }}>
+                                    {getFlagEmoji(c.iso)} {name}
+                                  </span>
+                                  <span style={{
+                                    fontSize: '9px',
+                                    background: `${clr}15`,
+                                    color: clr,
+                                    border: `1px solid ${clr}33`,
+                                    padding: '2px 6px',
+                                    borderRadius: '10px',
+                                    fontWeight: '600'
+                                  }}>
+                                    {c.num_operators} Ops
+                                  </span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px', fontSize: '10px', color: 'var(--text-muted)' }}>
+                                  <span>{c.sub_region || '—'}</span>
+                                  <span style={{ color: 'var(--text-secondary)' }}>{c.cluster_name}</span>
+                                </div>
+                              </div>
+                            );
+                          })
+                        }
+                      </div>
+                    </div>
+                  )}
 
-          {/* Right panel: Dynamic Dashboard */}
-          {(selectedCountry || showGlobalOverview) && (
-            <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
-              <DynamicCenterDashboard
-                selectedCountry={selectedCountry}
-              countryData={selectedCountry ? countries[selectedCountry] : aggregateRegionData(activeRegion)}
-              allCountries={countries}
-              metadata={metadata}
-              getFlagEmoji={getFlagEmoji}
-              theme={theme}
-              ticketData={ticketData}
-              amcData={amcData}
-              competitorData={competitorData}
-              accountData={accountData}
-              isDataLoading={isDataLoading}
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              selectedOperator={selectedOperator}
-              setSelectedOperator={setSelectedOperator}
-              setSelectedCountry={setSelectedCountry}
-              activeRegion={activeRegion}
-              setActiveRegion={setActiveRegion}
-              onCloseOverview={() => setShowGlobalOverview(false)}
-            />
-          </div>
+                  <div id="map-container" style={{ flex: 1, position: 'relative' }}>
+                    <MapComponent
+                      countries={countries}
+                      currentLens={currentLens}
+                      activeRegion={activeRegion}
+                      onSelectCountry={setSelectedCountry}
+                      theme={theme}
+                    />
+                    <div id="map-hover-box">Click any country to open detailed analysis</div>
+
+                    {/* Map Legend */}
+                    <div id="legend">
+                      <h4 id="legend-title">
+                        {
+                          {
+                            cluster: 'Market Cluster',
+                            fraud: 'Fraud Risk',
+                            fiveG: '5G Readiness',
+                            roaming: 'Roaming Intensity',
+                            arpu: 'ARPU Pressure'
+                          }[currentLens]
+                        }
+                      </h4>
+                      <div id="legend-items">
+                        {currentLens === 'cluster' ? (
+                          Object.entries({
+                            'Mature & Saturated': '#9B59B6',
+                            'High Growth Corridor': '#F39C12',
+                            'Emerging Mid-Tier': '#1ABC9C',
+                            'Small Wealthy Market': '#2ECC71',
+                            'Frontier Market': '#E74C3C',
+                            'Regulatory Transition': '#7F8C8D',
+                          }).map(([name, color]) => (
+                            <div className="legend-row" key={name}>
+                              <div className="legend-dot" style={{ background: color }}></div>
+                              {name}
+                            </div>
+                          ))
+                        ) : currentLens === 'fraud' ? (
+                          [
+                            { label: 'Very Low', color: '#1ABC9C' },
+                            { label: 'Low', color: '#F39C12' },
+                            { label: 'Medium', color: '#E67E22' },
+                            { label: 'High', color: '#E74C3C' },
+                            { label: 'Critical', color: '#C0392B' }
+                          ].map(item => (
+                            <div className="legend-row" key={item.label}>
+                              <div className="legend-dot" style={{ background: item.color }}></div>
+                              {item.label}
+                            </div>
+                          ))
+                        ) : currentLens === 'fiveG' ? (
+                          [
+                            { label: '<20%', color: '#1e3054' },
+                            { label: '20-40%', color: '#1A5276' },
+                            { label: '40-60%', color: '#2471A3' },
+                            { label: '60-80%', color: '#2980B9' },
+                            { label: '>80%', color: '#1ABC9C' }
+                          ].map(item => (
+                            <div className="legend-row" key={item.label}>
+                              <div className="legend-dot" style={{ background: item.color }}></div>
+                              {item.label}
+                            </div>
+                          ))
+                        ) : currentLens === 'roaming' ? (
+                          [
+                            { label: 'Minimal', color: '#1e3054' },
+                            { label: 'Low', color: '#1A5276' },
+                            { label: 'Moderate', color: '#2471A3' },
+                            { label: 'High', color: '#2980B9' },
+                            { label: 'Very High', color: '#1ABC9C' }
+                          ].map(item => (
+                            <div className="legend-row" key={item.label}>
+                              <div className="legend-dot" style={{ background: item.color }}></div>
+                              {item.label}
+                            </div>
+                          ))
+                        ) : (
+                          [
+                            { label: 'Growing', color: '#27AE60' },
+                            { label: 'Stable', color: '#F39C12' },
+                            { label: 'Pressure', color: '#E67E22' },
+                            { label: 'Critical', color: '#E74C3C' }
+                          ].map(item => (
+                            <div className="legend-row" key={item.label}>
+                              <div className="legend-dot" style={{ background: item.color }}></div>
+                              {item.label}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right panel: Dynamic Dashboard (Global / Regional Overview) */}
+              {!selectedCountry && showGlobalOverview && (
+                <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
+                  <DynamicCenterDashboard
+                    selectedCountry={null}
+                    countryData={aggregateRegionData(activeRegion)}
+                    allCountries={countries}
+                    metadata={metadata}
+                    getFlagEmoji={getFlagEmoji}
+                    theme={theme}
+                    ticketData={ticketData}
+                    amcData={amcData}
+                    competitorData={competitorData}
+                    accountData={accountData}
+                    isDataLoading={isDataLoading}
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    selectedOperator={selectedOperator}
+                    setSelectedOperator={setSelectedOperator}
+                    setSelectedCountry={setSelectedCountry}
+                    activeRegion={activeRegion}
+                    setActiveRegion={setActiveRegion}
+                    onCloseOverview={() => setShowGlobalOverview(false)}
+                  />
+                </div>
+              )}
+            </>
           )}
 
         </div>

@@ -36,9 +36,9 @@ export default function FinancialReports({ operator }) {
       
       {/* Annual Report Card */}
       <div className="section" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '24px', boxShadow: '0 4px 12px -2px rgba(0,0,0,0.08)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '16px', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', justifycontent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '16px', marginBottom: '20px' }}>
           <div style={{ fontSize: '18px', fontWeight: '800', color: 'var(--blue)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            📊 {operator} Annual Performance Report
+            {operator} Annual Performance Report
           </div>
           <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', background: 'var(--bg-card2)', padding: '4px 10px', borderRadius: '20px', border: '1px solid var(--border)' }}>
             FY 2025 (Projected)
@@ -72,9 +72,9 @@ export default function FinancialReports({ operator }) {
 
       {/* Quarterly Breakdown Card */}
       <div className="section" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '24px', boxShadow: '0 4px 12px -2px rgba(0,0,0,0.08)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', justifycontent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <div style={{ fontSize: '16px', fontWeight: '800', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            📈 Quarterly Financial Breakdown
+            Quarterly Financial Breakdown
           </div>
         </div>
         
@@ -98,13 +98,13 @@ export default function FinancialReports({ operator }) {
                   <td style={{ padding: '14px 16px', fontSize: '13px', color: 'var(--text-secondary)' }}>{metrics.netAdds}</td>
                   <td style={{ padding: '14px 16px' }}>
                     <span style={{ 
-                      fontSize: '10px', 
-                      fontWeight: '700', 
-                      textTransform: 'uppercase', 
-                      padding: '4px 8px', 
-                      borderRadius: '4px',
-                      background: metrics.status === 'completed' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
-                      color: metrics.status === 'completed' ? 'var(--green)' : 'var(--yellow)'
+                       fontSize: '10px', 
+                       fontWeight: '700', 
+                       textTransform: 'uppercase', 
+                       padding: '4px 8px', 
+                       borderRadius: '4px',
+                       background: metrics.status === 'completed' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                       color: metrics.status === 'completed' ? 'var(--green)' : 'var(--yellow)'
                     }}>
                       {metrics.status}
                     </span>

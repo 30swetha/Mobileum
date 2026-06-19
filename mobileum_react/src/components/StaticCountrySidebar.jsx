@@ -25,7 +25,7 @@ export default function StaticCountrySidebar({
   };
 
   return (
-    <div className="static-context-sidebar hide-scrollbar">
+    <div className="static-context-sidebar">
       {/* Back to Map Button at the Top */}
       <div style={{ marginBottom: '10px' }}>
         <button
@@ -72,59 +72,48 @@ export default function StaticCountrySidebar({
 
         <div className="sidebar-metric-card" style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 12px' }}>
           <div style={{ fontSize: '9px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>Operators ({countryData.num_operators})</div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-            {countryData.operators?.map(o => {
-              const isSelected = selectedOperator === o.operator;
-              return (
-                <button
-                  key={o.operator}
-                  onClick={() => {
-                    onSelectOperator(isSelected ? null : o.operator);
-                  }}
-                  style={{
-                    background: isSelected ? 'var(--blue)' : 'var(--bg-card)',
-                    color: isSelected ? '#fff' : 'var(--text-primary)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '6px',
-                    padding: '4px 8px',
-                    fontSize: '11px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                    textAlign: 'left'
-                  }}
-                  onMouseOver={(e) => {
-                    if (!isSelected) e.currentTarget.style.background = 'var(--bg-card3)';
-                  }}
-                  onMouseOut={(e) => {
-                    if (!isSelected) e.currentTarget.style.background = 'var(--bg-card)';
-                  }}
-                >
-                  {o.operator}
-                </button>
-              );
-            }) || '—'}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {countryData.operators ? [...countryData.operators]
+              .sort((a, b) => a.operator.localeCompare(b.operator))
+              .map(o => {
+                const isSelected = selectedOperator === o.operator;
+                return (
+                  <button
+                    key={o.operator}
+                    onClick={() => {
+                      onSelectOperator(isSelected ? null : o.operator);
+                    }}
+                    style={{
+                      background: isSelected ? 'var(--blue)' : 'var(--bg-card)',
+                      color: isSelected ? '#fff' : 'var(--text-primary)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '6px',
+                      padding: '8px 12px',
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      textAlign: 'left',
+                      width: '100%'
+                    }}
+                    onMouseOver={(e) => {
+                      if (!isSelected) e.currentTarget.style.background = 'var(--bg-card3)';
+                    }}
+                    onMouseOut={(e) => {
+                      if (!isSelected) e.currentTarget.style.background = 'var(--bg-card)';
+                    }}
+                  >
+                    {o.operator}
+                  </button>
+                );
+              }) : '—'}
           </div>
         </div>
 
         <div className="sidebar-metric-card" style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 12px' }}>
-          <div style={{ fontSize: '9px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Population</div>
+          <div style={{ fontSize: '9px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Average Age</div>
           <div style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)', marginTop: '2px' }}>
-            {fmt(countryData.population_mln, 'M', 1)}
-          </div>
-        </div>
-
-        <div className="sidebar-metric-card" style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 12px' }}>
-          <div style={{ fontSize: '9px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Mobile Subscribers</div>
-          <div style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)', marginTop: '2px' }}>
-            {fmt(countryData.mobile_users_mln, 'M', 1)}
-          </div>
-        </div>
-
-        <div className="sidebar-metric-card" style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 12px' }}>
-          <div style={{ fontSize: '9px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Mobile Penetration</div>
-          <div style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)', marginTop: '2px' }}>
-            {fmt(countryData.mobile_penetration_pct, '%')}
+            {fmt(countryData.avg_age, ' yrs', 1)}
           </div>
         </div>
 
@@ -143,16 +132,30 @@ export default function StaticCountrySidebar({
         </div>
 
         <div className="sidebar-metric-card" style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 12px' }}>
-          <div style={{ fontSize: '9px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Average Age</div>
+          <div style={{ fontSize: '9px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Internet Penetration</div>
           <div style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)', marginTop: '2px' }}>
-            {fmt(countryData.avg_age, ' yrs', 1)}
+            {fmt(countryData.internet_users_pct, '%')}
           </div>
         </div>
 
         <div className="sidebar-metric-card" style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 12px' }}>
-          <div style={{ fontSize: '9px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Internet Penetration</div>
+          <div style={{ fontSize: '9px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Mobile Penetration</div>
           <div style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)', marginTop: '2px' }}>
-            {fmt(countryData.internet_users_pct, '%')}
+            {fmt(countryData.mobile_penetration_pct, '%')}
+          </div>
+        </div>
+
+        <div className="sidebar-metric-card" style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 12px' }}>
+          <div style={{ fontSize: '9px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Mobile Subscribers</div>
+          <div style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)', marginTop: '2px' }}>
+            {fmt(countryData.mobile_users_mln, 'M', 1)}
+          </div>
+        </div>
+
+        <div className="sidebar-metric-card" style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 12px' }}>
+          <div style={{ fontSize: '9px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Population</div>
+          <div style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)', marginTop: '2px' }}>
+            {fmt(countryData.population_mln, 'M', 1)}
           </div>
         </div>
       </div>

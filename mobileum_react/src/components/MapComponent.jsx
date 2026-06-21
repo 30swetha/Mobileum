@@ -154,9 +154,8 @@ export default function MapComponent({
 
     tileLayerRef.current = tileLayer;
 
-    // Create labels pane above overlayPane to show labels on top of colored countries
     map.createPane('labels');
-    map.getPane('labels').style.zIndex = 650;
+    map.getPane('labels').style.zIndex = 450;
     map.getPane('labels').style.pointerEvents = 'none';
 
     // Add labels layer
@@ -224,7 +223,7 @@ export default function MapComponent({
         continents.forEach(c => {
           const icon = L.divIcon({
             className: 'continent-label',
-            html: `<span>${c.name}</span>`,
+            html: `<span style="font-weight: 800; font-size: 13px; color: #ffffff; text-shadow: 0px 1px 3px rgba(0,0,0,0.95), 0px 0px 6px rgba(0,0,0,0.8); letter-spacing: 0.5px; text-transform: uppercase;">${c.name}</span>`,
             iconSize: [120, 24],
             iconAnchor: [60, 12]
           });
@@ -320,7 +319,8 @@ export default function MapComponent({
         'MENA': [[10, -10], [50, 80]],
         'Europe': [[35, -10], [72, 40]],
         'APAC': [[-45, 60], [55, 180]],
-        'LATAM': [[-60, -90], [30, -30]]
+        'LATAM': [[-60, -145], [75, -30]],
+        'Africa': [[-35, -20], [38, 52]]
       };
       if (regionBounds[activeRegion]) {
         mapInstanceRef.current.fitBounds(regionBounds[activeRegion]);

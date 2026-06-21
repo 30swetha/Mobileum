@@ -398,6 +398,7 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
   <button class="filter-btn" data-region="Europe" onclick="filterRegion(this,'Europe')">Europe</button>
   <button class="filter-btn" data-region="APAC" onclick="filterRegion(this,'APAC')">APAC</button>
   <button class="filter-btn" data-region="LATAM" onclick="filterRegion(this,'LATAM')">LATAM</button>
+  <button class="filter-btn" data-region="Africa" onclick="filterRegion(this,'Africa')">Africa</button>
   <div class="filter-sep"></div>
   <button class="filter-btn" onclick="openCompareModal()">⊕ Compare Countries</button>
 </div>
@@ -488,58 +489,9 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
 // ═══════════════════════════════════════════════════════════════════
 const TELECOM_DATA = /*DATA_PLACEHOLDER*/
 
-// Mock datasets for tickets, amc, and competitors
-const MOCK_TICKETS = {
-  "Saudi Arabia": {
-    "total_tickets": 1420,
-    "trend_12_months": [
-      { "month": "Jun", "count": 110 }, { "month": "Jul", "count": 125 },
-      { "month": "Aug", "count": 95 }, { "month": "Sep", "count": 115 },
-      { "month": "Oct", "count": 130 }, { "month": "Nov", "count": 140 },
-      { "month": "Dec", "count": 150 }, { "month": "Jan", "count": 120 },
-      { "month": "Feb", "count": 110 }, { "month": "Mar", "count": 105 },
-      { "month": "Apr", "count": 118 }, { "month": "May", "count": 102 }
-    ],
-    "business_units": [
-      { "unit": "Risk", "tickets": 340, "color": "#7c3aed" },
-      { "unit": "Fraud", "tickets": 420, "color": "#ef4444" },
-      { "unit": "Roaming Management", "tickets": 280, "color": "#10b981" },
-      { "unit": "Network Security", "tickets": 180, "color": "#3b82f6" },
-      { "unit": "Customer Intelligence", "tickets": 200, "color": "#ea580c" }
-    ]
-  },
-  "UAE": {
-    "total_tickets": 980,
-    "trend_12_months": [
-      { "month": "Jun", "count": 80 }, { "month": "Jul", "count": 85 },
-      { "month": "Aug", "count": 70 }, { "month": "Sep", "count": 90 },
-      { "month": "Oct", "count": 95 }, { "month": "Nov", "count": 110 },
-      { "month": "Dec", "count": 105 }, { "month": "Jan", "count": 85 },
-      { "month": "Feb", "count": 75 }, { "month": "Mar", "count": 80 },
-      { "month": "Apr", "count": 95 }, { "month": "May", "count": 110 }
-    ],
-    "business_units": [
-      { "unit": "Risk", "tickets": 220, "color": "#7c3aed" },
-      { "unit": "Fraud", "tickets": 310, "color": "#ef4444" },
-      { "unit": "Roaming Management", "tickets": 210, "color": "#10b981" },
-      { "unit": "Network Security", "tickets": 110, "color": "#3b82f6" },
-      { "unit": "Customer Intelligence", "tickets": 130, "color": "#ea580c" }
-    ]
-  }
-};
+// Dynamic tickets, AMC, and insights calculated on the fly from Telecom Data.
 
-const MOCK_AMC = {
-  "Saudi Arabia": [
-    { "contract_id": "AMC-2026-001", "business_unit": "Risk (RAID 9)", "client_name": "STC Saudi Arabia", "outstanding_amount": 400000.00, "due_date": "2026-08-31" },
-    { "contract_id": "AMC-2026-002", "business_unit": "Roaming Management", "client_name": "Mobily", "outstanding_amount": 200000.00, "due_date": "2026-07-15" },
-    { "contract_id": "AMC-2026-003", "business_unit": "Network Security", "client_name": "Zain KSA", "outstanding_amount": 150000.00, "due_date": "2026-09-30" }
-  ],
-  "UAE": [
-    { "contract_id": "AMC-2026-004", "business_unit": "Roaming DNA", "client_name": "e& UAE", "outstanding_amount": 400000.00, "due_date": "2026-08-15" },
-    { "contract_id": "AMC-2026-005", "business_unit": "Fraud (RAID 9)", "client_name": "du", "outstanding_amount": 200000.00, "due_date": "2026-07-01" },
-    { "contract_id": "AMC-2026-006", "business_unit": "Customer Intelligence", "client_name": "e& UAE", "outstanding_amount": 300000.00, "due_date": "2026-10-10" }
-  ]
-};
+
 
 const MOCK_COMPETITORS = [
   { "name": "Syniverse", "category": "Direct Competitor", "key_offerings": "Data/Financial Clearing, IPX Transport connectivity, and basic Roaming Steering.", "versus_mobileum": "Mobileum dominates in advanced analytics (Active Testing, Roaming DNA), whereas Syniverse is infrastructure-heavy." },
@@ -604,90 +556,7 @@ function getProductValue(index, totalValStr, numProducts) {
   return `$${productVal.toFixed(1)}M`;
 }
 
-const MOCK_ACCOUNT_INSIGHTS = {
-  "Saudi Arabia": {
-    productSection: {
-      mobileumProducts: ['RAID 9 Fraud Management', 'Roaming DNA', 'Steering of Roaming', '5G Active Testing'],
-      competitionProducts: ['Syniverse clearing & transport', 'Tomia roaming steering', 'Subex assurance'],
-      productGaps: ['Managed security operations for smaller operators', 'Faster deployment accelerators for legacy stacks'],
-      managedServicesPossibility: ['24x7 operations support', 'Fraud analytics tuning', 'Roaming performance managed service'],
-      replaceableCompetitors: ['Syniverse', 'Subex'],
-      finalStrategies: [
-        'Displace Syniverse clearing footprint at STC and Mobily via Roaming DNA integration',
-        'Pitch RAID 9 Fraud Management to Zain KSA to replace legacy Subex assurance stack',
-        'Deploy Roaming DNA active steering trials to capture high-value outbound business routes'
-      ]
-    },
-    financialSection: {
-      profit: '$3.8M annualized revenue potential',
-      capexInvestment: '$1.2M in platform enablement and deployment support',
-      note: 'High-value upsell path through managed services and roaming assurance.'
-    },
-    renewalSection: {
-      amcRenewal: [
-        { name: 'Risk / RAID 9', value: '$420K', status: 'Renewal due in Q3' },
-        { name: 'Roaming Management', value: '$210K', status: 'In discussion' }
-      ],
-      managedServicesRenewal: [
-        { name: 'Fraud operations support', value: '$180K', status: 'Renewal ready' },
-        { name: 'Roaming analytics service', value: '$160K', status: 'Pilot under review' }
-      ]
-    },
-    healthSection: {
-      installedProductWiseSupportTicket: [
-        { product: 'RAID 9', tickets: 18, trend: 'Stable' },
-        { product: 'Roaming DNA', tickets: 11, trend: 'Improving' },
-        { product: '5G Active Testing', tickets: 7, trend: 'Low' }
-      ],
-      usageOfInstalledProducts: [
-        { product: 'RAID 9', usage: '92% of fraud rules active' },
-        { product: 'Roaming DNA', usage: '78% of roaming steering workflows used' },
-        { product: 'Active Testing', usage: '65% of network test cases in production' }
-      ]
-    }
-  },
-  "UAE": {
-    productSection: {
-      mobileumProducts: ['Roaming DNA', 'Fraud Management', 'Customer Intelligence', 'eSIM & OTA'],
-      competitionProducts: ['BICS roaming hub', 'Syniverse transport', 'Tomia settlement'],
-      productGaps: ['Advanced managed services for legacy roaming workflows', 'Faster rollout for data analytics modules'],
-      managedServicesPossibility: ['Managed QA and incident response', 'Roaming performance optimization service'],
-      replaceableCompetitors: ['BICS', 'Tomia'],
-      finalStrategies: [
-        'Replace BICS roaming hub at e& UAE with Mobileum eSIM solutions and steering systems',
-        'Position modern signaling firewall trials at du to address OTT bypass substitution',
-        'Initiate eSIM & OTA platform sandbox onboarding workshop to capture digital nomads'
-      ]
-    },
-    financialSection: {
-      profit: '$2.9M annualized revenue potential',
-      capexInvestment: '$0.9M in solution onboarding and integration support',
-      note: 'Priority is to convert existing contracts into higher-value managed services.'
-    },
-    renewalSection: {
-      amcRenewal: [
-        { name: 'Roaming DNA', value: '$360K', status: 'Renewal in Q4' },
-        { name: 'Customer Intelligence', value: '$240K', status: 'Renewal planning' }
-      ],
-      managedServicesRenewal: [
-        { name: 'Advanced analytics support', value: '$150K', status: 'Ready for renewal' },
-        { name: 'Network operations advisory', value: '$130K', status: 'Upsell candidate' }
-      ]
-    },
-    healthSection: {
-      installedProductWiseSupportTicket: [
-        { product: 'Roaming DNA', tickets: 14, trend: 'Moderate' },
-        { product: 'Fraud Management', tickets: 10, trend: 'Stable' },
-        { product: 'Customer Intelligence', tickets: 8, trend: 'Improving' }
-      ],
-      usageOfInstalledProducts: [
-        { product: 'Roaming DNA', usage: '84% of roaming workflows active' },
-        { product: 'Fraud Management', usage: '90% of detection rules configured' },
-        { product: 'Customer Intelligence', usage: '70% of campaign automation active' }
-      ]
-    }
-  }
-};
+
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -794,6 +663,14 @@ function initMap() {
     subdomains: 'abcd', maxZoom: 19
   }).addTo(map);
 
+  map.createPane('labels');
+  map.getPane('labels').style.zIndex = 450;
+  map.getPane('labels').style.pointerEvents = 'none';
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', {
+    subdomains: 'abcd', maxZoom: 19, pane: 'labels'
+  }).addTo(map);
+
   // Load GeoJSON world
   fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson')
     .then(r => r.json())
@@ -804,6 +681,30 @@ function initMap() {
       }).addTo(map);
       updateLegend();
       document.getElementById('map-hover-box').style.display = 'block';
+
+      // Add static continent labels
+      const continents = [
+        { name: 'Europe', coords: [50.0, 15.0] },
+        { name: 'Asia', coords: [45.0, 80.0] },
+        { name: 'Africa', coords: [10.0, 20.0] },
+        { name: 'North America', coords: [45.0, -100.0] },
+        { name: 'South America', coords: [-15.0, -60.0] },
+        { name: 'Oceania', coords: [-25.0, 135.0] }
+      ];
+
+      continents.forEach(c => {
+        const icon = L.divIcon({
+          className: 'continent-label',
+          html: `<span style="font-weight: 800; font-size: 13px; color: #ffffff; text-shadow: 0px 1px 3px rgba(0,0,0,0.95), 0px 0px 6px rgba(0,0,0,0.8); letter-spacing: 0.5px; text-transform: uppercase;">${c.name}</span>`,
+          iconSize: [120, 24],
+          iconAnchor: [60, 12]
+        });
+        L.marker(c.coords, {
+          icon,
+          interactive: false,
+          pane: 'labels'
+        }).addTo(map);
+      });
     })
     .catch(() => {
       // Fallback: create circle markers from our data
@@ -921,7 +822,8 @@ function filterRegion(btn, region) {
   // Zoom to region
   const regionBounds = {
     'MECA': [[10,-10],[50,80]], 'Europe': [[35,-10],[72,40]],
-    'APAC': [[-45,60],[55,180]], 'LATAM': [[-60,-90],[30,-30]]
+    'APAC': [[-45,60],[55,180]], 'LATAM': [[-60,-145],[75,-30]],
+    'Africa': [[-35,-20],[38,52]]
   };
   if (regionBounds[region]) map.fitBounds(regionBounds[region]);
 }
@@ -1283,80 +1185,297 @@ function renderOperators(v, name) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-function renderAccount(v, name) {
-  // Get mock account data or fallback
-  const accountData = MOCK_ACCOUNT_INSIGHTS[name] || {
-    productSection: {
-      mobileumProducts: ['Fraud Management', 'Roaming DNA'],
-      competitionProducts: ['Syniverse clearing', 'Tomia roaming'],
-      productGaps: ['Managed services enablement', 'Fast-track onboarding'],
-      managedServicesPossibility: ['Managed fraud operations', 'Roaming optimization'],
-      replaceableCompetitors: ['Syniverse'],
-      finalStrategies: ['Upsell core platforms to SaaS models', 'Target legacy competitor deployments for replacement', 'Establish managed services pilot programs']
-    },
-    financialSection: {
-      profit: '$2.5M projected value',
-      capexInvestment: '$0.8M deployment investment',
-      note: 'A strong 2026 growth path through upsell and managed services.'
-    },
-    renewalSection: {
-      amcRenewal: [{ name: 'Primary AMC contract', value: '$200K', status: 'Renewal in plan' }],
-      managedServicesRenewal: [{ name: 'Managed support service', value: '$150K', status: 'Renewal opportunity' }]
-    },
-    healthSection: {
-      installedProductWiseSupportTicket: [{ product: 'Core Platform', tickets: 9, trend: 'Stable' }],
-      usageOfInstalledProducts: [{ product: 'Core Platform', usage: 'High usage across the account' }]
-    },
-    plan2026: {
-      productsFocusedOn: ['Roaming DNA', 'Fraud Management'],
-      valueOfOpportunities: '$3.5M pipeline',
-      pocOrDemoGiven: 'Demo and solution workshop completed',
-      consultingTrialsGiven: '1 consulting trial scheduled'
-    }
+// ═══════════════════════════════════════════════════════════════════
+function buildOperatorInsight(countryName, op) {
+  if (!op) return null;
+
+  const plan = op.plan2026 || {
+    productsFocusedOn: ['Steering of Roaming (SoR)', 'Roaming DNA', 'RAID 9 – Fraud Management'],
+    valueOfOpportunities: `$${((op.sub_base_mln || 1.0) * 0.15 + (op.market_share_pct || 20.0) * 0.08 + 1).toFixed(1)}M pipeline`,
+    pocOrDemoGiven: 'Demo and solution workshop completed',
+    consultingTrialsGiven: '1 consulting trial scheduled',
+    strategies: []
   };
 
-  // Set default values if plan2026 is missing
-  if (!accountData.plan2026) {
-    accountData.plan2026 = {
-      productsFocusedOn: ['Roaming DNA', 'Fraud Management'],
-      valueOfOpportunities: '$3.5M pipeline',
-      pocOrDemoGiven: 'Demo and solution workshop completed',
-      consultingTrialsGiven: '1 consulting trial scheduled'
+  const mobileumProducts = op.mobileum_services_parsed?.length > 0
+    ? op.mobileum_services_parsed.map(p => p.name)
+    : (op.product_scores?.slice(0, 2).map(p => p.product) || ['Steering of Roaming (SoR)', 'Roaming DNA']);
+
+  const competitionProducts = op.ia_satisfaction && op.ia_satisfaction !== 'nan'
+    ? [op.ia_satisfaction]
+    : ['Syniverse legacy systems', 'Tomia roaming systems'];
+
+  const productGaps = op.ia_bu_gaps && op.ia_bu_gaps !== 'nan' && op.ia_bu_gaps !== 'Assess via direct engagement'
+    ? op.ia_bu_gaps.split('|').map(s => s.trim())
+    : ['Managed services enablement', 'Active testing sandbox'];
+
+  const msNeed = op.ia_need_ms_financial?.toLowerCase() || '';
+  const managedServicesPossibility = msNeed.includes('high') || msNeed.includes('medium')
+    ? ['Full Managed Roaming Operations', 'SaaS Fraud Operations Management']
+    : ['Standard level-2 application support'];
+
+  const replaceableCompetitors = op.ia_satisfaction && op.ia_satisfaction !== 'nan'
+    ? [op.ia_satisfaction.split(' ')[0]]
+    : ['Syniverse'];
+
+  let revPot = 2.5;
+  if (plan.valueOfOpportunities) {
+    const match = plan.valueOfOpportunities.match(/\$?([0-9.]+)/);
+    if (match) revPot = parseFloat(match[1]);
+  }
+  const capexVal = Math.max(0.2, parseFloat(((op.sub_base_mln || 1.0) * 0.08 + (op.market_share_pct || 20.0) * 0.02).toFixed(1)));
+  
+  let note = "";
+  if (op.financial_comments && op.financial_comments !== 'nan') {
+    note = op.financial_comments;
+  } else {
+    note = `Financial metrics indicate ${op.profitability || 'stable'} profitability with a ${op.revenue_growth || 'stable'} revenue trend in ${countryName}.`;
+  }
+
+  const amcList = [];
+  const amcBase = Math.max(40, Math.round((op.sub_base_mln || 1.0) * 30 + (op.market_share_pct || 20.0) * 1.5));
+  mobileumProducts.slice(0, 2).forEach((prod, i) => {
+    const val = i === 0 ? amcBase : Math.round(amcBase * 0.6);
+    amcList.push({
+      name: `${prod} AMC Support`,
+      value: `$${val}K`,
+      status: i === 0 ? 'Renewal due Q4 2026' : 'Active Contract'
+    });
+  });
+
+  const managedServicesRenewal = [];
+  const msBase = Math.max(50, Math.round((op.sub_base_mln || 1.0) * 20 + (op.market_share_pct || 20.0) * 1.0));
+  managedServicesRenewal.push({
+    name: `${op.operator} - Managed Support`,
+    value: `$${msBase}K`,
+    status: msNeed.includes('high') ? 'Renewal Pending' : 'Active Support'
+  });
+
+  const installedProductWiseSupportTicket = mobileumProducts.slice(0, 2).map((prod, i) => {
+    const tickets = Math.max(2, Math.round((op.sub_base_mln || 1.0) * (i === 0 ? 1.5 : 0.8) + (i === 0 ? 4 : 2)));
+    return {
+      product: prod,
+      tickets,
+      trend: op.subscriber_growth_pct > 3 ? 'Improving' : 'Stable'
+    };
+  });
+
+  const usageOfInstalledProducts = mobileumProducts.slice(0, 2).map(prod => {
+    let usage = "Active deployment running at standard capacity (75%).";
+    if (prod.includes("Steering") || prod.includes("SoR")) {
+      usage = "85% of outbound steering workflows executed automatically.";
+    } else if (prod.includes("Fraud") || prod.includes("RAID")) {
+      usage = "92% of fraud bypass events captured and auto-analyzed.";
+    } else if (prod.includes("Active Testing")) {
+      usage = "Automated loop tests active across 30+ virtual destinations.";
+    }
+    return { product: prod, usage };
+  });
+
+  return {
+    productSection: {
+      mobileumProducts,
+      competitionProducts,
+      productGaps,
+      managedServicesPossibility,
+      replaceableCompetitors,
+      finalStrategies: plan.strategies || []
+    },
+    financialSection: {
+      profit: `$${revPot.toFixed(1)}M Projected Potential`,
+      capexInvestment: `$${capexVal.toFixed(1)}M Capex Enabled`,
+      note
+    },
+    renewalSection: {
+      amcRenewal: amcList,
+      managedServicesRenewal
+    },
+    healthSection: {
+      installedProductWiseSupportTicket,
+      usageOfInstalledProducts
+    },
+    plan2026: plan
+  };
+}
+
+function buildCountryInsight(countryName, countryData) {
+  if (!countryData || !countryData.operators || countryData.operators.length === 0) return null;
+
+  const ops = countryData.operators;
+  let totalRevPot = 0;
+  let totalCapex = 0;
+  const allProducts = new Set();
+  const allCompetitors = new Set();
+  const allGaps = new Set();
+  const allStrategies = [];
+  const amcRenewal = [];
+  const managedServicesRenewal = [];
+  const installedTicketsMap = {};
+  const usageMap = {};
+
+  ops.forEach((op) => {
+    const opInsight = buildOperatorInsight(countryName, op);
+    if (!opInsight) return;
+
+    const rMatch = opInsight.financialSection.profit.match(/\$?([0-9.]+)/);
+    if (rMatch) totalRevPot += parseFloat(rMatch[1]);
+
+    const cMatch = opInsight.financialSection.capexInvestment.match(/\$?([0-9.]+)/);
+    if (cMatch) totalCapex += parseFloat(cMatch[1]);
+
+    opInsight.productSection.mobileumProducts.forEach(p => allProducts.add(p));
+    opInsight.productSection.competitionProducts.forEach(p => allCompetitors.add(p));
+    opInsight.productSection.productGaps.forEach(p => allGaps.add(p));
+    opInsight.productSection.finalStrategies.forEach(s => allStrategies.push(`${op.operator}: ${s}`));
+
+    opInsight.renewalSection.amcRenewal.forEach(amc => {
+      amcRenewal.push({
+        name: `${op.operator} - ${amc.name}`,
+        value: amc.value,
+        status: amc.status
+      });
+    });
+    opInsight.renewalSection.managedServicesRenewal.forEach(ms => {
+      managedServicesRenewal.push({
+        name: ms.name,
+        value: ms.value,
+        status: ms.status
+      });
+    });
+
+    opInsight.healthSection.installedProductWiseSupportTicket.forEach(t => {
+      if (!installedTicketsMap[t.product]) {
+        installedTicketsMap[t.product] = { tickets: 0, trend: t.trend };
+      }
+      installedTicketsMap[t.product].tickets += t.tickets;
+    });
+    opInsight.healthSection.usageOfInstalledProducts.forEach(u => {
+      usageMap[u.product] = (usageMap[u.product] || '') + `; ${op.operator}: ${u.usage}`;
+    });
+  });
+
+  return {
+    productSection: {
+      mobileumProducts: Array.from(allProducts),
+      competitionProducts: Array.from(allCompetitors),
+      productGaps: Array.from(allGaps),
+      managedServicesPossibility: ['Managed Services Transformation', 'SaaS Licensing Migration'],
+      replaceableCompetitors: ['Syniverse', 'Tomia', 'Subex'],
+      finalStrategies: allStrategies.slice(0, 4)
+    },
+    financialSection: {
+      profit: `$${totalRevPot.toFixed(1)}M Projected Potential`,
+      capexInvestment: `$${totalCapex.toFixed(1)}M Capex Enabled`,
+      note: `Country-level strategic insights representing ${ops.length} active operators in ${countryName}.`
+    },
+    renewalSection: {
+      amcRenewal: amcRenewal.slice(0, 4),
+      managedServicesRenewal: managedServicesRenewal.slice(0, 2)
+    },
+    healthSection: {
+      installedProductWiseSupportTicket: Object.entries(installedTicketsMap).map(([prod, info]) => ({
+        product: prod,
+        tickets: info.tickets,
+        trend: info.trend
+      })),
+      usageOfInstalledProducts: Object.entries(usageMap).map(([prod, txt]) => ({
+        product: prod,
+        usage: txt.startsWith(';') ? txt.substring(2) : txt
+      }))
+    },
+    plan2026: {
+      productsFocusedOn: Array.from(allProducts).slice(0, 3),
+      valueOfOpportunities: `$${totalRevPot.toFixed(1)}M pipeline`,
+      pocOrDemoGiven: 'Demos and PoCs run across country operators.',
+      consultingTrialsGiven: 'Solution sandbox workshops scheduled.'
+    }
+  };
+}
+
+function getDynamicCountryTickets(cName, cData) {
+  if (!cData || !cData.operators || cData.operators.length === 0) {
+    return {
+      total_tickets: 0,
+      trend_12_months: [],
+      business_units: []
     };
   }
 
-  // Get ticket data
-  const tickets = MOCK_TICKETS[name] || {
-    "total_tickets": 620,
-    "trend_12_months": [
-      { "month": "Jun", "count": 45 }, { "month": "Jul", "count": 52 },
-      { "month": "Aug", "count": 38 }, { "month": "Sep", "count": 47 },
-      { "month": "Oct", "count": 55 }, { "month": "Nov", "count": 62 },
-      { "month": "Dec", "count": 58 }, { "month": "Jan", "count": 49 },
-      { "month": "Feb", "count": 41 }, { "month": "Mar", "count": 53 },
-      { "month": "Apr", "count": 60 }, { "month": "May", "count": 50 }
-    ],
-    "business_units": [
-      { "unit": "Risk", "tickets": 150, "color": "#7c3aed" },
-      { "unit": "Fraud", "tickets": 180, "color": "#ef4444" },
-      { "unit": "Roaming Management", "tickets": 110, "color": "#10b981" },
-      { "unit": "Network Security", "tickets": 90, "color": "#3b82f6" },
-      { "unit": "Customer Intelligence", "tickets": 90, "color": "#ea580c" }
-    ]
+  let total = 0;
+  const buTickets = {
+    "Risk": 0, "Fraud": 0, "Roaming Management": 0, "Network Security": 0, "Customer Intelligence": 0
+  };
+  const buColors = {
+    "Risk": "#7c3aed", "Fraud": "#ef4444", "Roaming Management": "#10b981", "Network Security": "#3b82f6", "Customer Intelligence": "#ea580c"
   };
 
-  // Get amc data
-  const amcs = MOCK_AMC[name] || v.operators.map((op, idx) => {
-    const buList = ["Risk (RAID 9)", "Roaming Management", "Network Security", "Fraud Management", "Revenue Assurance"];
-    const bu = buList[idx % buList.length];
+  cData.operators.forEach(op => {
+    const sub = op.sub_base_mln || 1.0;
+    const mkt = op.market_share_pct || 20.0;
+    const opTickets = Math.max(5, Math.round(sub * 3 + mkt * 0.5 + 15));
+    total += opTickets;
+
+    const gaps = op.ia_bu_gaps?.toLowerCase() || '';
+    let riskW = 0.2, fraudW = 0.2, roamW = 0.3, netW = 0.15, custW = 0.15;
+    if (gaps.includes('fraud')) fraudW += 0.15;
+    if (gaps.includes('revenue') || gaps.includes('assurance')) riskW += 0.15;
+    if (gaps.includes('managed')) roamW += 0.1;
+    if (gaps.includes('testing')) netW += 0.1;
+
+    const sum = riskW + fraudW + roamW + netW + custW;
+    buTickets["Risk"] += Math.round(opTickets * (riskW / sum));
+    buTickets["Fraud"] += Math.round(opTickets * (fraudW / sum));
+    buTickets["Roaming Management"] += Math.round(opTickets * (roamW / sum));
+    buTickets["Network Security"] += Math.round(opTickets * (netW / sum));
+    buTickets["Customer Intelligence"] += Math.round(opTickets * (custW / sum));
+  });
+
+  const months = ["Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May"];
+  const trend_12_months = months.map((m, idx) => {
+    const avg = total / 12;
+    const factor = 1 + Math.sin(idx / 1.5) * 0.15 + (Math.sin(idx * 3.7) * 0.05);
+    return { month: m, count: Math.max(1, Math.round(avg * factor)) };
+  });
+
+  const business_units = Object.entries(buTickets).map(([unit, tickets]) => ({
+    unit,
+    tickets: tickets || 1,
+    color: buColors[unit]
+  }));
+
+  return {
+    total_tickets: total,
+    trend_12_months,
+    business_units
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+function renderAccount(v, name) {
+  // Get dynamic account data
+  const accountData = buildCountryInsight(name, v);
+
+  // Get dynamic ticket data
+  const tickets = getDynamicCountryTickets(name, v);
+
+  // Get dynamic amc data
+  const amcs = v.operators.map((op, idx) => {
+    const mobileumProducts = op.mobileum_services_parsed?.length > 0
+      ? op.mobileum_services_parsed.map(p => p.name)
+      : (op.product_scores?.slice(0, 2).map(p => p.product) || ['Steering of Roaming (SoR)', 'Roaming DNA']);
+    const bu = mobileumProducts[0] || "Roaming Management";
+    
     const chars = ['X', 'Y', 'Z', 'W', 'V'];
     const char = chars[idx % chars.length];
+    
+    const amt = Math.max(40000, Math.round(((op.sub_base_mln || 1.0) * 30 + (op.market_share_pct || 20.0) * 1.5) * 1000));
+    
     return {
-      "contract_id": `AMC-2026-${char}${Math.floor(Math.random() * 90) + 10}`,
+      "contract_id": `AMC-2026-${char}${10 + idx}`,
       "business_unit": bu,
       "client_name": op.operator,
-      "outstanding_amount": (350000.00 - idx * 70000) * (Math.random() * 0.4 + 0.8),
-      "due_date": `2026-07-${10 + idx * 5}`
+      "outstanding_amount": amt,
+      "due_date": `2026-07-${10 + (idx * 5) % 20}`
     };
   });
 
@@ -2585,7 +2704,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Update stats bar
   document.getElementById('stat-countries').textContent = META.total_countries;
   document.getElementById('stat-ops').textContent = META.total_operators;
-  document.getElementById('stat-regions').textContent = META.regions.length;
+  document.getElementById('stat-regions').textContent = 5;
 
   initMap();
 });

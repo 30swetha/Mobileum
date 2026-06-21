@@ -332,6 +332,57 @@ COORDS = {
     "TRINIDAD & TOBAGO":{"iso":"TTO","lat":10.7,"lng":-61.2},
     "Puerto Rico":{"iso":"PRI","lat":18.2,"lng":-66.6},
     "PUERTO RICO":{"iso":"PRI","lat":18.2,"lng":-66.6},
+    "Canada":{"iso":"CAN","lat":56.1,"lng":-106.3},
+    "United States":{"iso":"USA","lat":37.1,"lng":-95.7},
+    "Angola":{"iso":"AGO","lat":-11.2,"lng":17.8},
+    "Benin":{"iso":"BEN","lat":9.3,"lng":2.3},
+    "Botswana":{"iso":"BWA","lat":-22.3,"lng":24.6},
+    "Burkina Faso":{"iso":"BFA","lat":12.2,"lng":-1.5},
+    "Burundi":{"iso":"BDI","lat":-3.3,"lng":29.9},
+    "Cameroon":{"iso":"CMR","lat":7.3,"lng":12.3},
+    "Cape Verde":{"iso":"CPV","lat":16.0,"lng":-24.0},
+    "Central African Republic":{"iso":"CAF","lat":6.6,"lng":20.4},
+    "Chad":{"iso":"TCD","lat":15.4,"lng":18.7},
+    "Comoros":{"iso":"COM","lat":-11.8,"lng":43.8},
+    "Congo (Brazzaville)":{"iso":"COG","lat":-0.2,"lng":15.8},
+    "Cote d'Ivoire":{"iso":"CIV","lat":7.5,"lng":-5.5},
+    "DR Congo":{"iso":"COD","lat":-4.0,"lng":21.7},
+    "Djibouti":{"iso":"DJI","lat":11.8,"lng":42.5},
+    "Egypt":{"iso":"EGY","lat":26.8,"lng":30.8},
+    "Equatorial Guinea":{"iso":"GNQ","lat":1.6,"lng":10.2},
+    "Eritrea":{"iso":"ERI","lat":15.1,"lng":39.7},
+    "Eswatini":{"iso":"SWZ","lat":-26.5,"lng":31.4},
+    "Ethiopia":{"iso":"ETH","lat":9.14,"lng":40.48},
+    "Gabon":{"iso":"GAB","lat":-0.8,"lng":11.6},
+    "Gambia":{"iso":"GMB","lat":13.4,"lng":-15.3},
+    "Ghana":{"iso":"GHA","lat":7.9,"lng":-1.0},
+    "Guinea":{"iso":"GIN","lat":9.9,"lng":-9.7},
+    "Guinea-Bissau":{"iso":"GNB","lat":11.8,"lng":-15.1},
+    "Kenya":{"iso":"KEN","lat":-1.28,"lng":36.82},
+    "Lesotho":{"iso":"LSO","lat":-29.6,"lng":28.2},
+    "Liberia":{"iso":"LBR","lat":6.4,"lng":-9.4},
+    "Madagascar":{"iso":"MDG","lat":-18.7,"lng":46.8},
+    "Malawi":{"iso":"MWI","lat":-13.25,"lng":34.3},
+    "Mali":{"iso":"MLI","lat":17.5,"lng":-3.99},
+    "Mauritania":{"iso":"MRT","lat":21.0,"lng":-10.9},
+    "Mauritius":{"iso":"MUS","lat":-20.3,"lng":57.5},
+    "Mozambique":{"iso":"MOZ","lat":-18.6,"lng":35.5},
+    "Namibia":{"iso":"NAM","lat":-22.9,"lng":18.49},
+    "Niger":{"iso":"NER","lat":17.6,"lng":8.0},
+    "Nigeria":{"iso":"NGA","lat":9.08,"lng":8.67},
+    "Rwanda":{"iso":"RWA","lat":-1.94,"lng":29.87},
+    "Sao Tome and Principe":{"iso":"STP","lat":0.18,"lng":6.61},
+    "Senegal":{"iso":"SEN","lat":14.49,"lng":-14.45},
+    "Seychelles":{"iso":"SYC","lat":-4.67,"lng":55.49},
+    "Sierra Leone":{"iso":"SLE","lat":8.46,"lng":-11.77},
+    "Somalia":{"iso":"SOM","lat":5.15,"lng":46.19},
+    "South Africa":{"iso":"ZAF","lat":-30.55,"lng":22.93},
+    "South Sudan":{"iso":"SSD","lat":6.87,"lng":31.3},
+    "Tanzania":{"iso":"TZA","lat":-6.36,"lng":34.88},
+    "Togo":{"iso":"TGO","lat":8.61,"lng":0.82},
+    "Uganda":{"iso":"UGA","lat":1.37,"lng":32.29},
+    "Zambia":{"iso":"ZMB","lat":-13.13,"lng":27.84},
+    "Zimbabwe":{"iso":"ZWE","lat":-19.01,"lng":29.15},
 }
 
 # ═══════════════════════════════════════════════════════════════════
@@ -718,7 +769,7 @@ else:
 # BUILD FINAL COUNTRY JSON
 # ═══════════════════════════════════════════════════════════════════
 print("Building final country JSON...")
-country_region_map = {c: items[0]['_row']['Region'] for c, items in country_groups.items()}
+country_region_map = {c: ('LATAM' if c in ['Canada', 'United States'] else items[0]['_row']['Region']) for c, items in country_groups.items()}
 all_regions = list(set(country_region_map.values()))
 
 final_data = {}
@@ -726,6 +777,8 @@ for country, items in country_groups.items():
     row0 = items[0]['_row']
     coords = COORDS.get(country, {"iso": "UNK", "lat": 0, "lng": 0})
     region = str(row0.get('Region','')).strip()
+    if country in ['Canada', 'United States']:
+        region = 'LATAM'
     sub_region = str(row0.get('Sub-Region','')).strip()
     stats = country_stats[country]
 

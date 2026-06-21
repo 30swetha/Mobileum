@@ -196,6 +196,270 @@ export default function App() {
     regions: [...new Set(rawMetadata.regions.map(r => r === 'MECA' ? 'MENA' : r))]
   };
 
+  const buildOperatorInsight = (countryName, op) => {
+    if (!op) return null;
+
+    const plan = op.plan2026 || {
+      productsFocusedOn: ['Steering of Roaming (SoR)', 'Roaming DNA', 'RAID 9 – Fraud Management'],
+      valueOfOpportunities: `$${((op.sub_base_mln || 1.0) * 0.15 + (op.market_share_pct || 20.0) * 0.08 + 1).toFixed(1)}M pipeline`,
+      pocOrDemoGiven: 'Demo and solution workshop completed',
+      consultingTrialsGiven: '1 consulting trial scheduled',
+      strategies: []
+    };
+
+    const mobileumProducts = op.mobileum_services_parsed?.length > 0
+      ? op.mobileum_services_parsed.map(p => p.name)
+      : (op.product_scores?.slice(0, 2).map(p => p.product) || ['Steering of Roaming (SoR)', 'Roaming DNA']);
+
+    const competitionProducts = op.ia_satisfaction && op.ia_satisfaction !== 'nan'
+      ? [op.ia_satisfaction]
+      : ['Syniverse legacy systems', 'Tomia roaming systems'];
+
+    const productGaps = op.ia_bu_gaps && op.ia_bu_gaps !== 'nan' && op.ia_bu_gaps !== 'Assess via direct engagement'
+      ? op.ia_bu_gaps.split('|').map(s => s.trim())
+      : ['Managed services enablement', 'Active testing sandbox'];
+
+    const msNeed = op.ia_need_ms_financial?.toLowerCase() || '';
+    const managedServicesPossibility = msNeed.includes('high') || msNeed.includes('medium')
+      ? ['Full Managed Roaming Operations', 'SaaS Fraud Operations Management']
+      : ['Standard level-2 application support'];
+
+    const replaceableCompetitors = op.ia_satisfaction && op.ia_satisfaction !== 'nan'
+      ? [op.ia_satisfaction.split(' ')[0]]
+      : ['Syniverse'];
+
+    let revPot = 2.5;
+    if (plan.valueOfOpportunities) {
+      const match = plan.valueOfOpportunities.match(/\$?([0-9.]+)/);
+      if (match) revPot = parseFloat(match[1]);
+    }
+    const capexVal = Math.max(0.2, parseFloat(((op.sub_base_mln || 1.0) * 0.08 + (op.market_share_pct || 20.0) * 0.02).toFixed(1)));
+    
+    let note = "";
+    if (op.financial_comments && op.financial_comments !== 'nan') {
+      note = op.financial_comments;
+    } else {
+      note = `Financial metrics indicate ${op.profitability || 'stable'} profitability with a ${op.revenue_growth || 'stable'} revenue trend in ${countryName}.`;
+    }
+
+    const amcList = [];
+    const amcBase = Math.max(40, Math.round((op.sub_base_mln || 1.0) * 30 + (op.market_share_pct || 20.0) * 1.5));
+    mobileumProducts.slice(0, 2).forEach((prod, i) => {
+      const val = i === 0 ? amcBase : Math.round(amcBase * 0.6);
+      amcList.push({
+        name: `${prod} AMC Support`,
+        value: `$${val}K`,
+        status: i === 0 ? 'Renewal due Q4 2026' : 'Active Contract'
+      });
+    });
+
+    const managedServicesRenewal = [];
+    const msBase = Math.max(50, Math.round((op.sub_base_mln || 1.0) * 20 + (op.market_share_pct || 20.0) * 1.0));
+    managedServicesRenewal.push({
+      name: `${op.operator} - Managed Support`,
+      value: `$${msBase}K`,
+      status: msNeed.includes('high') ? 'Renewal Pending' : 'Active Support'
+    });
+
+    const installedProductWiseSupportTicket = mobileumProducts.slice(0, 2).map((prod, i) => {
+      const tickets = Math.max(2, Math.round((op.sub_base_mln || 1.0) * (i === 0 ? 1.5 : 0.8) + (i === 0 ? 4 : 2)));
+      return {
+        product: prod,
+        tickets,
+        trend: op.subscriber_growth_pct > 3 ? 'Improving' : 'Stable'
+      };
+    });
+
+    const usageOfInstalledProducts = mobileumProducts.slice(0, 2).map(prod => {
+      let usage = "Active deployment running at standard capacity (75%).";
+      if (prod.includes("Steering") || prod.includes("SoR")) {
+        usage = "85% of outbound steering workflows executed automatically.";
+      } else if (prod.includes("Fraud") || prod.includes("RAID")) {
+        usage = "92% of fraud bypass events captured and auto-analyzed.";
+      } else if (prod.includes("Active Testing")) {
+        usage = "Automated loop tests active across 30+ virtual destinations.";
+      }
+      return { product: prod, usage };
+    });
+
+    return {
+      productSection: {
+        mobileumProducts,
+        competitionProducts,
+        productGaps,
+        managedServicesPossibility,
+        replaceableCompetitors,
+        finalStrategies: plan.strategies || []
+      },
+      financialSection: {
+        profit: `$${revPot.toFixed(1)}M Projected Potential`,
+        capexInvestment: `$${capexVal.toFixed(1)}M Capex Enabled`,
+        note
+      },
+      renewalSection: {
+        amcRenewal: amcList,
+        managedServicesRenewal
+      },
+      healthSection: {
+        installedProductWiseSupportTicket,
+        usageOfInstalledProducts
+      },
+      plan2026: plan
+    };
+  };
+
+  const buildCountryInsight = (countryName, countryData) => {
+    if (!countryData || !countryData.operators || countryData.operators.length === 0) return null;
+
+    const ops = countryData.operators;
+    let totalRevPot = 0;
+    let totalCapex = 0;
+    const allProducts = new Set();
+    const allCompetitors = new Set();
+    const allGaps = new Set();
+    const allStrategies = [];
+    const amcRenewal = [];
+    const managedServicesRenewal = [];
+    const installedTicketsMap = {};
+    const usageMap = {};
+
+    ops.forEach((op, opIdx) => {
+      const opInsight = buildOperatorInsight(countryName, op);
+      if (!opInsight) return;
+
+      const rMatch = opInsight.financialSection.profit.match(/\$?([0-9.]+)/);
+      if (rMatch) totalRevPot += parseFloat(rMatch[1]);
+
+      const cMatch = opInsight.financialSection.capexInvestment.match(/\$?([0-9.]+)/);
+      if (cMatch) totalCapex += parseFloat(cMatch[1]);
+
+      opInsight.productSection.mobileumProducts.forEach(p => allProducts.add(p));
+      opInsight.productSection.competitionProducts.forEach(p => allCompetitors.add(p));
+      opInsight.productSection.productGaps.forEach(p => allGaps.add(p));
+      opInsight.productSection.finalStrategies.forEach(s => allStrategies.push(`${op.operator}: ${s}`));
+
+      opInsight.renewalSection.amcRenewal.forEach(amc => {
+        amcRenewal.push({
+          name: `${op.operator} - ${amc.name}`,
+          value: amc.value,
+          status: amc.status
+        });
+      });
+      opInsight.renewalSection.managedServicesRenewal.forEach(ms => {
+        managedServicesRenewal.push({
+          name: ms.name,
+          value: ms.value,
+          status: ms.status
+        });
+      });
+
+      opInsight.healthSection.installedProductWiseSupportTicket.forEach(t => {
+        if (!installedTicketsMap[t.product]) {
+          installedTicketsMap[t.product] = { tickets: 0, trend: t.trend };
+        }
+        installedTicketsMap[t.product].tickets += t.tickets;
+      });
+      opInsight.healthSection.usageOfInstalledProducts.forEach(u => {
+        usageMap[u.product] = (usageMap[u.product] || '') + `; ${op.operator}: ${u.usage}`;
+      });
+    });
+
+    return {
+      productSection: {
+        mobileumProducts: Array.from(allProducts),
+        competitionProducts: Array.from(allCompetitors),
+        productGaps: Array.from(allGaps),
+        managedServicesPossibility: ['Managed Services Transformation', 'SaaS Licensing Migration'],
+        replaceableCompetitors: ['Syniverse', 'Tomia', 'Subex'],
+        finalStrategies: allStrategies.slice(0, 4)
+      },
+      financialSection: {
+        profit: `$${totalRevPot.toFixed(1)}M Projected Potential`,
+        capexInvestment: `$${totalCapex.toFixed(1)}M Capex Enabled`,
+        note: `Country-level strategic insights representing ${ops.length} active operators in ${countryName}.`
+      },
+      renewalSection: {
+        amcRenewal: amcRenewal.slice(0, 4),
+        managedServicesRenewal: managedServicesRenewal.slice(0, 2)
+      },
+      healthSection: {
+        installedProductWiseSupportTicket: Object.entries(installedTicketsMap).map(([prod, info]) => ({
+          product: prod,
+          tickets: info.tickets,
+          trend: info.trend
+        })),
+        usageOfInstalledProducts: Object.entries(usageMap).map(([prod, txt]) => ({
+          product: prod,
+          usage: txt.startsWith(';') ? txt.substring(2) : txt
+        }))
+      },
+      plan2026: {
+        productsFocusedOn: Array.from(allProducts).slice(0, 3),
+        valueOfOpportunities: `$${totalRevPot.toFixed(1)}M pipeline`,
+        pocOrDemoGiven: 'Demos and PoCs run across country operators.',
+        consultingTrialsGiven: 'Solution sandbox workshops scheduled.'
+      }
+    };
+  };
+
+  const getDynamicCountryTickets = (cName, cData) => {
+    if (!cData || !cData.operators || cData.operators.length === 0) {
+      return {
+        total_tickets: 0,
+        trend_12_months: [],
+        business_units: []
+      };
+    }
+
+    let total = 0;
+    const buTickets = {
+      "Risk": 0, "Fraud": 0, "Roaming Management": 0, "Network Security": 0, "Customer Intelligence": 0
+    };
+    const buColors = {
+      "Risk": "#7c3aed", "Fraud": "#ef4444", "Roaming Management": "#10b981", "Network Security": "#3b82f6", "Customer Intelligence": "#ea580c"
+    };
+
+    cData.operators.forEach(op => {
+      const sub = op.sub_base_mln || 1.0;
+      const mkt = op.market_share_pct || 20.0;
+      const opTickets = Math.max(5, Math.round(sub * 3 + mkt * 0.5 + 15));
+      total += opTickets;
+
+      const gaps = op.ia_bu_gaps?.toLowerCase() || '';
+      let riskW = 0.2, fraudW = 0.2, roamW = 0.3, netW = 0.15, custW = 0.15;
+      if (gaps.includes('fraud')) fraudW += 0.15;
+      if (gaps.includes('revenue') || gaps.includes('assurance')) riskW += 0.15;
+      if (gaps.includes('managed')) roamW += 0.1;
+      if (gaps.includes('testing')) netW += 0.1;
+
+      const sum = riskW + fraudW + roamW + netW + custW;
+      buTickets["Risk"] += Math.round(opTickets * (riskW / sum));
+      buTickets["Fraud"] += Math.round(opTickets * (fraudW / sum));
+      buTickets["Roaming Management"] += Math.round(opTickets * (roamW / sum));
+      buTickets["Network Security"] += Math.round(opTickets * (netW / sum));
+      buTickets["Customer Intelligence"] += Math.round(opTickets * (custW / sum));
+    });
+
+    const months = ["Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May"];
+    const trend_12_months = months.map((m, idx) => {
+      const avg = total / 12;
+      const factor = 1 + Math.sin(idx / 1.5) * 0.15 + (Math.random() * 0.1 - 0.05);
+      return { month: m, count: Math.max(1, Math.round(avg * factor)) };
+    });
+
+    const business_units = Object.entries(buTickets).map(([unit, tickets]) => ({
+      unit,
+      tickets: tickets || 1,
+      color: buColors[unit]
+    }));
+
+    return {
+      total_tickets: total,
+      trend_12_months,
+      business_units
+    };
+  };
+
   const [theme, setTheme] = useState('light');
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [currentLens, setCurrentLens] = useState('cluster');
@@ -351,163 +615,121 @@ export default function App() {
 
   const getAggregatedAMC = (regionName) => {
     const list = [];
-    Object.entries(MOCK_AMC).forEach(([country, amcs]) => {
-      const cv = countries[country];
-      if (cv && (regionName === 'all' || cv.region === regionName)) {
-        list.push(...amcs);
+    Object.entries(countries).forEach(([cName, cData]) => {
+      if (regionName === 'all' || cData.region === regionName) {
+        cData.operators?.forEach((op, opIdx) => {
+          const opInsight = buildOperatorInsight(cName, op);
+          if (opInsight) {
+            opInsight.renewalSection.amcRenewal.forEach((amc, idx) => {
+              const val = parseFloat(amc.value.replace(/[^0-9.]/g, '')) * 1000;
+              list.push({
+                contract_id: `AMC-2026-${op.operator.substring(0,3).toUpperCase()}-${opIdx}-${idx}`,
+                business_unit: amc.name.replace(' AMC Support', ''),
+                client_name: `${op.operator} (${cName})`,
+                outstanding_amount: val,
+                due_date: `2026-11-${15 + idx * 5}`
+              });
+            });
+          }
+        });
       }
     });
-    
-    if (list.length === 0) {
-      const activeCountriesList = Object.entries(countries).filter(([_, c]) => regionName === 'all' || c.region === regionName);
-      activeCountriesList.slice(0, 5).forEach(([cName, cv]) => {
-        const ops = cv.operators || [];
-        ops.slice(0, 1).forEach((op) => {
-          list.push({
-            "contract_id": `AMC-2026-REG-${op.operator.substring(0,3).toUpperCase()}`,
-            "business_unit": "Risk (RAID 9)",
-            "client_name": `${op.operator} (${cName})`,
-            "outstanding_amount": 250000.00,
-            "due_date": "2026-09-30"
-          });
-        });
-      });
-    }
-
     return list;
   };
 
   const getAggregatedAccountData = (regionName) => {
-    const activeCountries = Object.keys(MOCK_ACCOUNT_INSIGHTS).filter(c => {
-      const cv = countries[c];
-      return cv && (regionName === 'all' || cv.region === regionName);
+    const activeCountriesList = Object.entries(countries).filter(([name, c]) => {
+      return regionName === 'all' || c.region === regionName;
     });
 
-    const mobileumProductsSet = new Set();
-    const competitionProductsSet = new Set();
-    const productGapsSet = new Set();
-    const managedServicesPossibilitySet = new Set();
-    const replaceableCompetitorsSet = new Set();
-    const finalStrategiesSet = new Set();
-
-    activeCountries.forEach(c => {
-      const section = MOCK_ACCOUNT_INSIGHTS[c].productSection;
-      if (section) {
-        section.mobileumProducts?.forEach(p => mobileumProductsSet.add(p));
-        section.competitionProducts?.forEach(p => competitionProductsSet.add(p));
-        section.productGaps?.forEach(p => productGapsSet.add(p));
-        section.managedServicesPossibility?.forEach(p => managedServicesPossibilitySet.add(p));
-        section.replaceableCompetitors?.forEach(p => replaceableCompetitorsSet.add(p));
-        section.finalStrategies?.forEach(p => finalStrategiesSet.add(p));
-      }
-    });
-
-    if (mobileumProductsSet.size === 0) {
-      ['Fraud Management', 'Roaming DNA', 'Steering of Roaming', '5G Active Testing'].forEach(p => mobileumProductsSet.add(p));
-      ['Syniverse clearing', 'Tomia roaming'].forEach(p => competitionProductsSet.add(p));
-      ['Managed services enablement', 'Fast-track onboarding'].forEach(p => productGapsSet.add(p));
-      ['Managed fraud operations', 'Roaming optimization'].forEach(p => managedServicesPossibilitySet.add(p));
-      ['Syniverse'].forEach(p => replaceableCompetitorsSet.add(p));
-      ['Transition operators to SaaS models', 'Target legacy competitor deployments for replacement', 'Establish managed services pilot programs'].forEach(p => finalStrategiesSet.add(p));
+    if (activeCountriesList.length === 0) {
+      return {
+        productSection: { mobileumProducts: [], competitionProducts: [], productGaps: [], managedServicesPossibility: [], replaceableCompetitors: [], finalStrategies: [] },
+        financialSection: { profit: '$0.0M Projected Potential', capexInvestment: '$0.0M Capex Enabled', note: 'No data' },
+        renewalSection: { amcRenewal: [], managedServicesRenewal: [] },
+        healthSection: { installedProductWiseSupportTicket: [], usageOfInstalledProducts: [] },
+        plan2026: { productsFocusedOn: [], valueOfOpportunities: '$0.0M pipeline', pocOrDemoGiven: '', consultingTrialsGiven: '' }
+      };
     }
 
-    let totalProfit = 0;
+    let totalRevPot = 0;
     let totalCapex = 0;
-    activeCountries.forEach(c => {
-      const fin = MOCK_ACCOUNT_INSIGHTS[c].financialSection;
-      if (fin) {
-        const p = parseFloat(fin.profit.replace(/[^0-9.]/g, '')) || 0;
-        const cx = parseFloat(fin.capexInvestment.replace(/[^0-9.]/g, '')) || 0;
-        totalProfit += p;
-        totalCapex += cx;
-      }
-    });
-    if (totalProfit === 0) {
-      totalProfit = 12.5;
-      totalCapex = 4.2;
-    }
-
+    const allProducts = new Set();
+    const allCompetitors = new Set();
+    const allGaps = new Set();
+    const allStrategies = [];
     const amcRenewal = [];
     const managedServicesRenewal = [];
     const installedTicketsMap = {};
     const usageMap = {};
 
-    activeCountries.forEach(c => {
-      const renewal = MOCK_ACCOUNT_INSIGHTS[c].renewalSection;
-      if (renewal) {
-        renewal.amcRenewal?.forEach(r => amcRenewal.push({ ...r, name: `${c} - ${r.name}` }));
-        renewal.managedServicesRenewal?.forEach(r => managedServicesRenewal.push({ ...r, name: `${c} - ${r.name}` }));
-      }
-      const health = MOCK_ACCOUNT_INSIGHTS[c].healthSection;
-      if (health) {
-        health.installedProductWiseSupportTicket?.forEach(h => {
-          if (!installedTicketsMap[h.product]) {
-            installedTicketsMap[h.product] = { tickets: 0, trend: h.trend };
-          }
-          installedTicketsMap[h.product].tickets += h.tickets;
-        });
-        health.usageOfInstalledProducts?.forEach(u => {
-          usageMap[u.product] = (usageMap[u.product] || '') + `; ${c}: ${u.usage}`;
-        });
-      }
-    });
+    activeCountriesList.forEach(([cName, cData]) => {
+      const countryInsight = buildCountryInsight(cName, cData);
+      if (!countryInsight) return;
 
-    if (amcRenewal.length === 0) {
-      amcRenewal.push({ name: 'Primary AMC renewal', value: '$850K', status: 'Renewal due Q4' });
-      managedServicesRenewal.push({ name: 'Managed Roaming Support', value: '$450K', status: 'Renewal due Q3' });
-      installedTicketsMap['Core Platform'] = { tickets: 24, trend: 'Stable' };
-      usageMap['Core Platform'] = 'High usage across regional operators';
-    }
+      const rMatch = countryInsight.financialSection.profit.match(/\$?([0-9.]+)/);
+      if (rMatch) totalRevPot += parseFloat(rMatch[1]);
 
-    let totalPipeline = 0;
-    const allProductsFocused = new Set();
-    activeCountries.forEach(c => {
-      const plan = MOCK_ACCOUNT_INSIGHTS[c].plan2026;
-      if (plan) {
-        const pip = parseFloat(plan.valueOfOpportunities.replace(/[^0-9.]/g, '')) || 0;
-        totalPipeline += pip;
-        plan.productsFocusedOn?.forEach(p => allProductsFocused.add(p));
-      }
+      const cMatch = countryInsight.financialSection.capexInvestment.match(/\$?([0-9.]+)/);
+      if (cMatch) totalCapex += parseFloat(cMatch[1]);
+
+      countryInsight.productSection.mobileumProducts.forEach(p => allProducts.add(p));
+      countryInsight.productSection.competitionProducts.forEach(p => allCompetitors.add(p));
+      countryInsight.productSection.productGaps.forEach(p => allGaps.add(p));
+      countryInsight.productSection.finalStrategies.forEach(s => allStrategies.push(s));
+
+      countryInsight.renewalSection.amcRenewal.forEach(amc => {
+        amcRenewal.push(amc);
+      });
+      countryInsight.renewalSection.managedServicesRenewal.forEach(ms => {
+        managedServicesRenewal.push(ms);
+      });
+
+      countryInsight.healthSection.installedProductWiseSupportTicket.forEach(t => {
+        if (!installedTicketsMap[t.product]) {
+          installedTicketsMap[t.product] = { tickets: 0, trend: t.trend };
+        }
+        installedTicketsMap[t.product].tickets += t.tickets;
+      });
+      countryInsight.healthSection.usageOfInstalledProducts.forEach(u => {
+        usageMap[u.product] = (usageMap[u.product] || '') + `; ${u.product}: ${u.usage}`;
+      });
     });
-    if (totalPipeline === 0) {
-      totalPipeline = 18.4;
-      ['Roaming DNA', 'Fraud Management', 'Steering of Roaming'].forEach(p => allProductsFocused.add(p));
-    }
 
     return {
       productSection: {
-        mobileumProducts: Array.from(mobileumProductsSet),
-        competitionProducts: Array.from(competitionProductsSet),
-        productGaps: Array.from(productGapsSet),
-        managedServicesPossibility: Array.from(managedServicesPossibilitySet),
-        replaceableCompetitors: Array.from(replaceableCompetitorsSet),
-        finalStrategies: Array.from(finalStrategiesSet)
+        mobileumProducts: Array.from(allProducts).slice(0, 6),
+        competitionProducts: Array.from(allCompetitors).slice(0, 4),
+        productGaps: Array.from(allGaps).slice(0, 4),
+        managedServicesPossibility: ['Managed Services Transformation', 'SaaS Licensing Migration'],
+        replaceableCompetitors: ['Syniverse', 'Tomia', 'Subex'],
+        finalStrategies: allStrategies.slice(0, 5)
       },
       financialSection: {
-        profit: `$${totalProfit.toFixed(1)}M ARR Potential`,
-        capexInvestment: `$${totalCapex.toFixed(1)}M Total Capex`,
-        note: `Overall growth and renewal strategy for the ${regionName === 'all' ? 'global' : regionName} markets.`
+        profit: `$${totalRevPot.toFixed(1)}M Projected Potential`,
+        capexInvestment: `$${totalCapex.toFixed(1)}M Capex Enabled`,
+        note: `Aggregated regional financial plan for the ${regionName === 'all' ? 'global' : regionName} markets.`
       },
       renewalSection: {
-        amcRenewal,
-        managedServicesRenewal
+        amcRenewal: amcRenewal.slice(0, 5),
+        managedServicesRenewal: managedServicesRenewal.slice(0, 3)
       },
       healthSection: {
-        installedProductWiseSupportTicket: Object.entries(installedTicketsMap).map(([prod, info]) => ({
+        installedProductWiseSupportTicket: Object.entries(installedTicketsMap).slice(0, 5).map(([prod, info]) => ({
           product: prod,
           tickets: info.tickets,
           trend: info.trend
         })),
-        usageOfInstalledProducts: Object.entries(usageMap).map(([prod, txt]) => ({
+        usageOfInstalledProducts: Object.entries(usageMap).slice(0, 5).map(([prod, txt]) => ({
           product: prod,
-          usage: typeof txt === 'string' && txt.startsWith(';') ? txt.substring(2) : txt
+          usage: 'Aggregated regional solution usage'
         }))
       },
       plan2026: {
-        productsFocusedOn: Array.from(allProductsFocused),
-        valueOfOpportunities: `$${totalPipeline.toFixed(1)}M pipeline in 2026`,
-        pocOrDemoGiven: `Demonstrations completed across active regional accounts.`,
-        consultingTrialsGiven: `Active consulting engagements and pilot evaluations running across the region.`
+        productsFocusedOn: Array.from(allProducts).slice(0, 4),
+        valueOfOpportunities: `$${totalRevPot.toFixed(1)}M pipeline`,
+        pocOrDemoGiven: 'Demos and PoCs run across region operators.',
+        consultingTrialsGiven: 'Solution sandbox workshops scheduled.'
       }
     };
   };
@@ -516,7 +738,6 @@ export default function App() {
     setIsDataLoading(true);
     const timer = setTimeout(() => {
       if (!selectedCountry) {
-        // Aggregated region mode loading
         const tickets = getAggregatedTickets(activeRegion);
         const amcs = getAggregatedAMC(activeRegion);
         const accountInsight = getAggregatedAccountData(activeRegion);
@@ -529,130 +750,31 @@ export default function App() {
         return;
       }
 
-      const tickets = MOCK_TICKETS[selectedCountry] || {
-        "total_tickets": 620,
-        "trend_12_months": [
-          { "month": "Jun", "count": 45 }, { "month": "Jul", "count": 52 },
-          { "month": "Aug", "count": 38 }, { "month": "Sep", "count": 47 },
-          { "month": "Oct", "count": 55 }, { "month": "Nov", "count": 62 },
-          { "month": "Dec", "count": 58 }, { "month": "Jan", "count": 49 },
-          { "month": "Feb", "count": 41 }, { "month": "Mar", "count": 53 },
-          { "month": "Apr", "count": 60 }, { "month": "May", "count": 50 }
-        ],
-        "business_units": [
-          { "unit": "Risk", "tickets": 150, "color": "#7c3aed" },
-          { "unit": "Fraud", "tickets": 180, "color": "#ef4444" },
-          { "unit": "Roaming Management", "tickets": 110, "color": "#10b981" },
-          { "unit": "Network Security", "tickets": 90, "color": "#3b82f6" },
-          { "unit": "Customer Intelligence", "tickets": 90, "color": "#ea580c" }
-        ]
-      };
+      const cData = countries[selectedCountry];
+      const tickets = getDynamicCountryTickets(selectedCountry, cData);
 
-      const ops = countries[selectedCountry]?.operators || [];
-      const amcs = MOCK_AMC[selectedCountry] || ops.map((op, idx) => {
-        const buList = ["Risk (RAID 9)", "Roaming Management", "Network Security", "Fraud Management", "Revenue Assurance"];
-        const bu = buList[idx % buList.length];
-        const chars = ['X', 'Y', 'Z', 'W', 'V'];
-        const char = chars[idx % chars.length];
-        return {
-          "contract_id": `AMC-2026-${char}${Math.floor(Math.random() * 90) + 10}`,
-          "business_unit": bu,
-          "client_name": op.operator,
-          "outstanding_amount": (350000.00 - idx * 70000) * (Math.random() * 0.4 + 0.8),
-          "due_date": `2026-07-${10 + idx * 5}`
-        };
+      const ops = cData?.operators || [];
+      const amcs = [];
+      ops.forEach((op, opIdx) => {
+        const opInsight = buildOperatorInsight(selectedCountry, op);
+        if (opInsight) {
+          opInsight.renewalSection.amcRenewal.forEach((amc, idx) => {
+            const val = parseFloat(amc.value.replace(/[^0-9.]/g, '')) * 1000;
+            amcs.push({
+              contract_id: `AMC-2026-OP${opIdx}-${idx}`,
+              business_unit: amc.name.replace(' AMC Support', ''),
+              client_name: op.operator,
+              outstanding_amount: val,
+              due_date: `2026-11-${15 + idx * 5}`
+            });
+          });
+        }
       });
 
-      // Base account insights
-      const baseInsight = MOCK_ACCOUNT_INSIGHTS[selectedCountry] || {
-        productSection: {
-          mobileumProducts: ['Fraud Management', 'Roaming DNA'],
-          competitionProducts: ['Syniverse clearing', 'Tomia roaming'],
-          productGaps: ['Managed services enablement', 'Fast-track onboarding'],
-          managedServicesPossibility: ['Managed fraud operations', 'Roaming optimization'],
-          replaceableCompetitors: ['Syniverse'],
-          finalStrategies: ['Upsell core platforms to SaaS models', 'Target legacy competitor deployments for replacement', 'Establish managed services pilot programs']
-        },
-        financialSection: {
-          profit: '$2.5M projected value',
-          capexInvestment: '$0.8M deployment investment',
-          note: 'A strong 2026 growth path through upsell and managed services.'
-        },
-        renewalSection: {
-          amcRenewal: [{ name: 'Primary AMC contract', value: '$200K', status: 'Renewal in plan' }],
-          managedServicesRenewal: [{ name: 'Managed support service', value: '$150K', status: 'Renewal opportunity' }]
-        },
-        healthSection: {
-          installedProductWiseSupportTicket: [{ product: 'Core Platform', tickets: 9, trend: 'Stable' }],
-          usageOfInstalledProducts: [{ product: 'Core Platform', usage: 'High usage across the account' }]
-        },
-        plan2026: {
-          productsFocusedOn: ['Roaming DNA', 'Fraud Management'],
-          valueOfOpportunities: '$3.5M pipeline',
-          pocOrDemoGiven: 'Demo and solution workshop completed',
-          consultingTrialsGiven: '1 consulting trial scheduled'
-        }
-      };
-
-      let opInsight = { ...baseInsight };
-
+      let opInsight = buildCountryInsight(selectedCountry, cData);
       if (selectedOperator) {
         const opData = ops.find(o => o.operator === selectedOperator);
-        const plan = opData?.plan2026 || {
-          productsFocusedOn: baseInsight.plan2026.productsFocusedOn,
-          valueOfOpportunities: `$2.5M pipeline for ${selectedOperator}`,
-          pocOrDemoGiven: `PoC successfully showcased to ${selectedOperator} team`,
-          consultingTrialsGiven: baseInsight.plan2026.consultingTrialsGiven,
-          strategies: [
-            `Target ${selectedOperator} for full RAID 9 Fraud Management migration`,
-            `Position modern Steering of Roaming solutions`,
-            `Conduct sandbox onboarding workshops`
-          ]
-        };
-
-        // Find if there are specific AMCs for this operator
-        const opAmcs = amcs.filter(row => {
-          const client = row.client_name.toLowerCase();
-          const op = selectedOperator.toLowerCase();
-          return client.includes(op) || op.includes(client);
-        });
-        
-        const amcList = opAmcs.length > 0 
-          ? opAmcs.map(row => ({ name: `AMC - ${row.business_unit}`, value: `$${(row.outstanding_amount / 1000).toFixed(0)}K`, status: 'Renewal Pending' }))
-          : [{ name: `Primary AMC contract for ${selectedOperator}`, value: '$150K', status: 'Active Support' }];
-
-        opInsight = {
-          productSection: {
-            mobileumProducts: plan.productsFocusedOn,
-            competitionProducts: baseInsight.productSection.competitionProducts,
-            productGaps: baseInsight.productSection.productGaps,
-            managedServicesPossibility: baseInsight.productSection.managedServicesPossibility,
-            replaceableCompetitors: baseInsight.productSection.replaceableCompetitors,
-            finalStrategies: plan.strategies
-          },
-          financialSection: {
-            profit: `$${(Math.random() * 1.5 + 1).toFixed(1)}M ARR for ${selectedOperator}`,
-            capexInvestment: `$${(Math.random() * 0.4 + 0.2).toFixed(1)}M enabled capex for ${selectedOperator}`,
-            note: `Strategic financial plan customized for ${selectedOperator}: focus on upsell to RAID 9 SaaS.`
-          },
-          renewalSection: {
-            amcRenewal: amcList,
-            managedServicesRenewal: [
-              { name: `${selectedOperator} - Managed Support`, value: '$120K', status: 'Renewal ready' }
-            ]
-          },
-          healthSection: {
-            installedProductWiseSupportTicket: baseInsight.healthSection.installedProductWiseSupportTicket.map(h => ({
-              ...h,
-              product: `${h.product} (${selectedOperator})`
-            })),
-            usageOfInstalledProducts: baseInsight.healthSection.usageOfInstalledProducts.map(u => ({
-              ...u,
-              product: `${u.product} (${selectedOperator})`
-            }))
-          },
-          plan2026: plan
-        };
+        opInsight = buildOperatorInsight(selectedCountry, opData);
       }
 
       setTicketData(tickets);
@@ -737,7 +859,7 @@ export default function App() {
         <div className="stats-bar">
           <div className="stat-pill">Countries <span>{metadata.total_countries}</span></div>
           <div className="stat-pill">Operators <span>{metadata.total_operators}</span></div>
-          <div className="stat-pill">Regions <span>{metadata.regions?.length || 5}</span></div>
+          <div className="stat-pill">Regions <span>5</span></div>
         </div>
 
         <button className="theme-toggle-btn" onClick={toggleTheme} title="Toggle Dark/Light Mode">
@@ -794,7 +916,7 @@ export default function App() {
         <div className="filter-sep"></div>
 
         <span className="lens-label">REGION:</span>
-        {['all', 'MENA', 'Europe', 'APAC', 'LATAM'].map(region => (
+        {['all', 'MENA', 'Europe', 'APAC', 'LATAM', 'Africa'].map(region => (
           <button
             key={region}
             className={`filter-btn ${activeRegion === region ? 'active' : ''}`}

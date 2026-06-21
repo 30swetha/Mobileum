@@ -1133,9 +1133,73 @@ export default function DynamicCenterDashboard({
 
               {activeSubTab === 'profile' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', animation: 'fadeIn 0.25s ease-out' }}>
+                  
+                  {/* Sticky Index Navigation Bar */}
+                  <div style={{
+                    position: 'sticky',
+                    top: '40px',
+                    background: 'var(--bg-card)',
+                    borderBottom: '1px solid var(--border)',
+                    padding: '10px 0',
+                    display: 'flex',
+                    gap: '12px',
+                    alignItems: 'center',
+                    zIndex: 9,
+                    marginTop: '-12px',
+                    marginBottom: '8px',
+                    overflowX: 'auto'
+                  }} className="hide-scrollbar">
+                    <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginRight: '4px' }}>
+                      Jump To:
+                    </span>
+                    {[
+                      { id: 'product-section', label: 'Product Section', color: 'var(--blue)' },
+                      { id: 'financial-section', label: 'Financial Section', color: 'var(--teal)' },
+                      { id: 'renewal-section', label: 'Renewal Section', color: 'var(--purple)' },
+                      { id: 'health-section', label: 'Health of Solution', color: 'var(--red)' }
+                    ].map(sec => (
+                      <button
+                        key={sec.id}
+                        onClick={() => {
+                          const el = document.getElementById(sec.id);
+                          if (el) {
+                            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }
+                        }}
+                        style={{
+                          background: 'var(--bg-card2)',
+                          border: '1px solid var(--border)',
+                          borderRadius: '6px',
+                          padding: '5px 12px',
+                          fontSize: '10px',
+                          fontWeight: '600',
+                          color: 'var(--text-secondary)',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          transition: 'all 0.15s ease',
+                          whiteSpace: 'nowrap'
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.borderColor = sec.color;
+                          e.currentTarget.style.color = sec.color;
+                          e.currentTarget.style.background = 'var(--bg-card3)';
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.borderColor = 'var(--border)';
+                          e.currentTarget.style.color = 'var(--text-secondary)';
+                          e.currentTarget.style.background = 'var(--bg-card2)';
+                        }}
+                      >
+                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: sec.color }}></span>
+                        {sec.label}
+                      </button>
+                    ))}
+                  </div>
 
               {/* Product Section */}
-              <div className="section" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', margin: '0 0 4px 0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+              <div id="product-section" className="section" style={{ scrollMarginTop: '90px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', margin: '0 0 4px 0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                 <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--blue)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   Product Section
                 </div>
@@ -1241,7 +1305,7 @@ export default function DynamicCenterDashboard({
               </div>
 
               {/* Financial Section */}
-              <div className="section" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', margin: '0 0 4px 0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+              <div id="financial-section" className="section" style={{ scrollMarginTop: '90px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', margin: '0 0 4px 0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                 <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--teal)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   Financial Section
                 </div>
@@ -1271,7 +1335,7 @@ export default function DynamicCenterDashboard({
               </div>
 
               {/* Renewal Section */}
-              <div className="section" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', margin: '0 0 4px 0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+              <div id="renewal-section" className="section" style={{ scrollMarginTop: '90px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', margin: '0 0 4px 0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                 <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--purple)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   Renewal Section
                 </div>
@@ -1344,7 +1408,7 @@ export default function DynamicCenterDashboard({
               </div>
 
               {/* Health of Solution Section */}
-              <div className="section" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', margin: '0 0 4px 0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+              <div id="health-section" className="section" style={{ scrollMarginTop: '90px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', margin: '0 0 4px 0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                 <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--red)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   Health of Solution Section
                 </div>

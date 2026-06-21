@@ -26,11 +26,17 @@ export default function StaticCountrySidebar({
 
   return (
     <div className="static-context-sidebar">
-      {/* Back to Map Button at the Top */}
-      <div style={{ marginBottom: '10px' }}>
+      {/* Back Button(s) at the Top */}
+      <div style={{ marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <button
           className="filter-btn"
-          onClick={onClose}
+          onClick={() => {
+            if (selectedOperator) {
+              onSelectOperator(null);
+            } else {
+              onClose();
+            }
+          }}
           style={{
             width: '100%',
             padding: '10px',
@@ -48,8 +54,31 @@ export default function StaticCountrySidebar({
           onMouseOver={(e) => e.currentTarget.style.background = 'var(--blue-light)'}
           onMouseOut={(e) => e.currentTarget.style.background = 'var(--blue)'}
         >
-          ← Back to Global Map
+          {selectedOperator ? `← Back to ${selectedCountry}` : '← Back to Map'}
         </button>
+
+        {selectedOperator && (
+          <button
+            onClick={onClose}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--text-muted)',
+              fontSize: '11px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              textDecoration: 'underline',
+              textAlign: 'center',
+              width: '100%',
+              padding: '2px 0',
+              transition: 'color 0.15s ease'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.color = 'var(--blue-light)'}
+            onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+          >
+            ← Back to Map
+          </button>
+        )}
       </div>
 
       {/* Sidebar Header */}

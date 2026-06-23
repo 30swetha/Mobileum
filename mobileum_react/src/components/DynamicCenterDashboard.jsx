@@ -6,17 +6,16 @@ import CompetitorsTable from './CompetitorsTable';
 import FinancialReports from './FinancialReports';
 
 const CLUSTER_COLORS = {
-  'Ultra-Premium Roaming Hub': '#9B59B6',
-  'Mature Mid-Tier': '#4A90D9',
-  'High Growth Corridor': '#F39C12',
-  'Emerging Mid-Tier': '#1ABC9C',
-  'Small Wealthy Market': '#2ECC71',
-  'Frontier Market': '#E74C3C',
-  'Regulatory Transition': '#7F8C8D',
+  'Frontier': '#E74C3C',
+  'Emerging': '#F39C12',
+  'Growth': '#1ABC9C',
+  'Mature': '#4A90D9',
+  'Advanced': '#9B59B6',
   'Mature & Saturated': '#9B59B6',
   'High Growth Exposed': '#F39C12',
   'Roaming Hub': '#1ABC9C',
   'Emerging Opportunity': '#2ECC71',
+  'Regulatory Transition': '#7F8C8D',
   'Unknown': '#7F8C8D'
 };
 
@@ -1768,7 +1767,12 @@ export default function DynamicCenterDashboard({
                     )}
                     
                     {/* Render Financial Reports below the Strategic Plan */}
-                    <FinancialReports operator={selectedOperator || selectedCountry || 'Global Market'} />
+                    <FinancialReports
+                      operator={selectedOperator || selectedCountry || 'Global Market'}
+                      country={selectedCountry}
+                      operators={countryData?.operators}
+                      operatorSelected={!!selectedOperator}
+                    />
                   </div>
                 )}
             </div>

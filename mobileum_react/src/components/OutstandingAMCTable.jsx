@@ -14,7 +14,7 @@ export default function OutstandingAMCTable({ amcData, isLoading }) {
   return (
     <div className="section outstanding-amc-section" style={{ marginTop: '12px' }}>
       <div className="section-title" style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
-        Outstanding AMC Table
+        Outstanding AMC Table<span style={{ fontSize: '9px', fontWeight: 700, color: 'var(--yellow)', background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.35)', padding: '2px 7px', borderRadius: '20px', marginLeft: '8px' }}>⚠ Illustrative sample — not real figures</span>
       </div>
       <div style={{ overflowX: 'auto', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '6px' }}>
         <table className="op-table amc-table" style={{ width: '100%', borderCollapse: 'collapse' }}>

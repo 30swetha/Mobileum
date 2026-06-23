@@ -79,7 +79,7 @@ export default function CustomerServiceTickets({ ticketData, isLoading }) {
   return (
     <div className="chart-wrap ticket-dashboard-card" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
       <div className="chart-title" style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
-        🎟️ Customer Service Tickets (Past 12 Months)
+        🎟️ Customer Service Tickets (Past 12 Months)<span style={{ fontSize: '9px', fontWeight: 700, color: 'var(--yellow)', background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.35)', padding: '2px 7px', borderRadius: '20px', marginLeft: '8px' }}>⚠ Illustrative sample — not real figures</span>
       </div>
       <div style={{ display: 'flex', gap: '20px', height: '180px', flexWrap: 'wrap' }}>
         <div style={{ flex: 1.6, minWidth: '220px', height: '100%', position: 'relative' }}>

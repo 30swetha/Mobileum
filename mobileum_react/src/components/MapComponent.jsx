@@ -3,17 +3,16 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 const CLUSTER_COLORS = {
-  'Ultra-Premium Roaming Hub': '#9B59B6',
-  'Mature Mid-Tier': '#4A90D9',
-  'High Growth Corridor': '#F39C12',
-  'Emerging Mid-Tier': '#1ABC9C',
-  'Small Wealthy Market': '#2ECC71',
-  'Frontier Market': '#E74C3C',
-  'Regulatory Transition': '#7F8C8D',
+  'Frontier': '#E74C3C',
+  'Emerging': '#F39C12',
+  'Growth': '#1ABC9C',
+  'Mature': '#4A90D9',
+  'Advanced': '#9B59B6',
   'Mature & Saturated': '#9B59B6',
   'High Growth Exposed': '#F39C12',
   'Roaming Hub': '#1ABC9C',
   'Emerging Opportunity': '#2ECC71',
+  'Regulatory Transition': '#7F8C8D',
   'Unknown': '#7F8C8D'
 };
 
@@ -86,16 +85,49 @@ export default function MapComponent({
     }
   };
 
-  const findCountryName = (props) => {
-    const candidates = [props.NAME, props.ADMIN, props.NAME_LONG, props.SOVEREIGNT];
-    for (const c of candidates) {
-      if (!c) continue;
-      if (countries[c]) return c;
-      const upper = c.toUpperCase();
-      if (countries[upper]) return upper;
+  // Geojson NAME (often abbreviated) -> the key actually used in our data.
+  const NAME_ALIASES = {
+    'dem. rep. congo': 'DR Congo', 'democratic republic of the congo': 'DR Congo',
+    'congo': 'Congo (Brazzaville)', 'republic of the congo': 'Congo (Brazzaville)',
+    "côte d'ivoire": "Cote d'Ivoire", 'ivory coast': "Cote d'Ivoire",
+    'central african rep.': 'Central African Republic',
+    's. sudan': 'South Sudan', 'eq. guinea': 'Equatorial Guinea',
+    'eswatini': 'Eswatini', 'swaziland': 'Eswatini',
+    'são tomé and principe': 'Sao Tome and Principe', 'são tomé and príncipe': 'Sao Tome and Principe',
+    'russia': 'Russia', 'russian federation': 'Russia',
+    'united states of america': 'United States', 'united states': 'United States',
+    'czechia': 'Czech Republic', 'czech rep.': 'Czech Republic',
+    'bosnia and herz.': 'Bosnia and Herzegovina', 'dominican rep.': 'Dominican Republic',
+    'south korea': 'South Korea', 'republic of korea': 'South Korea',
+    'north korea': 'North Korea', 'dem. rep. korea': 'North Korea',
+    'macedonia': 'North Macedonia', 'lao pdr': 'Laos', 'burma': 'Myanmar',
+    'viet nam': 'Vietnam', 'united republic of tanzania': 'Tanzania',
+    'w. sahara': 'Western Sahara', 'solomon is.': 'Solomon Islands',
+  };
+
+  const resolveKey = (raw) => {
+    if (!raw) return null;
+    if (countries[raw]) return raw;
+    const up = raw.toUpperCase();
+    if (countries[up]) return up;
+    for (const key of Object.keys(countries)) {
+      if (key.toUpperCase() === up) return key;
+    }
+    const alias = NAME_ALIASES[raw.toLowerCase().trim()];
+    if (alias) {
+      if (countries[alias]) return alias;
       for (const key of Object.keys(countries)) {
-        if (key.toUpperCase() === c.toUpperCase()) return key;
+        if (key.toUpperCase() === alias.toUpperCase()) return key;
       }
+    }
+    return null;
+  };
+
+  const findCountryName = (props) => {
+    const candidates = [props.NAME, props.ADMIN, props.NAME_LONG, props.SOVEREIGNT, props.NAME_EN, props.BRK_NAME];
+    for (const c of candidates) {
+      const k = resolveKey(c);
+      if (k) return k;
     }
     return null;
   };

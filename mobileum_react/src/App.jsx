@@ -6,7 +6,21 @@ import ComparisonModal from './components/ComparisonModal';
 import { exportReport, getFlagEmoji } from './utils/exportReport';
 import TELECOM_DATA from './data/master_telecom.json';
 
-// Mock datasets for tickets, amc, and competitors
+// =====================================================================
+// ILLUSTRATIVE / SYNTHETIC SAMPLE DATA — NOT REAL.
+// The datasets below (support tickets, AMC contracts, account insights,
+// 2026 pipeline values, competitor replace-lists) are demo/sample data.
+// They are NOT sourced and do NOT represent real commercial figures —
+// per-operator AMC values, ticket counts and pipeline numbers are private
+// commercial data that is not publicly available. They are kept purely to
+// demonstrate how a real CRM/commercial layer would slot into the dashboard.
+// Real, sourced financials live in src/data/operator_financials.json and are
+// rendered (group-level, labelled) by FinancialReports.jsx.
+// Surface this in any sub-tab that renders the data below with:
+//     <span className="sample-badge">{SAMPLE_DATA_NOTICE}</span>
+// =====================================================================
+export const SAMPLE_DATA_NOTICE = 'Illustrative sample data — not real reported figures';
+
 const MOCK_TICKETS = {
   "Saudi Arabia": {
     "total_tickets": 1420,
@@ -163,20 +177,22 @@ const MOCK_ACCOUNT_INSIGHTS = {
   }
 };
 
+// Development-tier clusters (Frontier -> Advanced), gradient red -> purple.
 const CLUSTER_COLORS = {
-  'Ultra-Premium Roaming Hub': '#9B59B6',
-  'Mature Mid-Tier': '#4A90D9',
-  'High Growth Corridor': '#F39C12',
-  'Emerging Mid-Tier': '#1ABC9C',
-  'Small Wealthy Market': '#2ECC71',
-  'Frontier Market': '#E74C3C',
-  'Regulatory Transition': '#7F8C8D',
+  'Frontier': '#E74C3C',
+  'Emerging': '#F39C12',
+  'Growth': '#1ABC9C',
+  'Mature': '#4A90D9',
+  'Advanced': '#9B59B6',
+  // legacy names kept so an older master_telecom.json still colours
   'Mature & Saturated': '#9B59B6',
   'High Growth Exposed': '#F39C12',
   'Roaming Hub': '#1ABC9C',
   'Emerging Opportunity': '#2ECC71',
+  'Regulatory Transition': '#7F8C8D',
   'Unknown': '#7F8C8D'
 };
+const TIER_ORDER = { Frontier: 0, Emerging: 1, Growth: 2, Mature: 3, Advanced: 4 };
 
 export default function App() {
   const { countries: rawCountries, metadata: rawMetadata } = TELECOM_DATA;
@@ -1108,16 +1124,12 @@ export default function App() {
                       </h4>
                       <div id="legend-items">
                         {currentLens === 'cluster' ? (
-                          Object.entries({
-                            'Mature & Saturated': '#9B59B6',
-                            'High Growth Corridor': '#F39C12',
-                            'Emerging Mid-Tier': '#1ABC9C',
-                            'Small Wealthy Market': '#2ECC71',
-                            'Frontier Market': '#E74C3C',
-                            'Regulatory Transition': '#7F8C8D',
-                          }).map(([name, color]) => (
+                          [...new Set(Object.values(countries).map(c => c.cluster_name))]
+                            .filter(name => CLUSTER_COLORS[name])
+                            .sort((a, b) => (TIER_ORDER[a] ?? 99) - (TIER_ORDER[b] ?? 99))
+                            .map(name => (
                             <div className="legend-row" key={name}>
-                              <div className="legend-dot" style={{ background: color }}></div>
+                              <div className="legend-dot" style={{ background: CLUSTER_COLORS[name] }}></div>
                               {name}
                             </div>
                           ))

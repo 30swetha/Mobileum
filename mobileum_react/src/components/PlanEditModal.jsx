@@ -1,10 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 export default function PlanEditModal({ isOpen, onClose, accountData, countryName, onSave }) {
-  const [formData, setFormData] = useState(null);
+  const [formData, setFormData] = useState(() => {
+    if (accountData?.plan2026) {
+      return {
+        productsFocusedOn: [...(accountData.plan2026.productsFocusedOn || [])],
+        valueOfOpportunities: accountData.plan2026.valueOfOpportunities || '',
+        pocOrDemoGiven: accountData.plan2026.pocOrDemoGiven || '',
+        consultingTrialsGiven: accountData.plan2026.consultingTrialsGiven || '',
+        winProbability: accountData.plan2026.winProbability || '',
+        weightedPipelineValue: accountData.plan2026.weightedPipelineValue || '',
+        quarterlyMilestoneBreakdown: accountData.plan2026.quarterlyMilestoneBreakdown || '',
+        topTargetAccounts: [...(accountData.plan2026.topTargetAccounts || [])]
+      };
+    }
+    return null;
+  });
+
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
-    if (isOpen && accountData?.plan2026) {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    if (accountData?.plan2026) {
       setFormData({
         productsFocusedOn: [...(accountData.plan2026.productsFocusedOn || [])],
         valueOfOpportunities: accountData.plan2026.valueOfOpportunities || '',
@@ -16,7 +36,7 @@ export default function PlanEditModal({ isOpen, onClose, accountData, countryNam
         topTargetAccounts: [...(accountData.plan2026.topTargetAccounts || [])]
       });
     }
-  }, [isOpen, accountData]);
+  }, [accountData]);
 
   if (!isOpen || !formData) return null;
 

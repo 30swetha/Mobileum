@@ -1,20 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 export default function ProductEditModal({ isOpen, onClose, accountData, countryName, onSave }) {
-  const [formData, setFormData] = useState(null);
+  const [formData, setFormData] = useState(() => {
+    if (accountData?.productSection) {
+      return {
+        mobileumProducts: [...(accountData.productSection.mobileumProducts || [])],
+        productGaps: [...(accountData.productSection.productGaps || [])],
+        competitionProducts: [...(accountData.productSection.competitionProducts || [])],
+        replaceableCompetitors: [...(accountData.productSection.replaceableCompetitors || [])],
+        managedServicesPossibility: [...(accountData.productSection.managedServicesPossibility || [])],
+        finalStrategies: (accountData.productSection.finalStrategies || []).map(s => typeof s === 'string' ? { text: s, rtpStatus: 'Not Requested', engagementType: 'Product' } : { ...s })
+      };
+    }
+    return null;
+  });
+
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
-    if (isOpen && accountData?.productSection) {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    if (accountData?.productSection) {
       setFormData({
-        mobileumProducts: [...accountData.productSection.mobileumProducts],
-        productGaps: [...accountData.productSection.productGaps],
-        competitionProducts: [...accountData.productSection.competitionProducts],
-        replaceableCompetitors: [...accountData.productSection.replaceableCompetitors],
-        managedServicesPossibility: [...accountData.productSection.managedServicesPossibility],
-        finalStrategies: accountData.productSection.finalStrategies.map(s => typeof s === 'string' ? { text: s, rtpStatus: 'Not Requested', engagementType: 'Product' } : { ...s })
+        mobileumProducts: [...(accountData.productSection.mobileumProducts || [])],
+        productGaps: [...(accountData.productSection.productGaps || [])],
+        competitionProducts: [...(accountData.productSection.competitionProducts || [])],
+        replaceableCompetitors: [...(accountData.productSection.replaceableCompetitors || [])],
+        managedServicesPossibility: [...(accountData.productSection.managedServicesPossibility || [])],
+        finalStrategies: (accountData.productSection.finalStrategies || []).map(s => typeof s === 'string' ? { text: s, rtpStatus: 'Not Requested', engagementType: 'Product' } : { ...s })
       });
     }
-  }, [isOpen, accountData]);
+  }, [accountData]);
 
   if (!isOpen || !formData) return null;
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 export default function GenericFormModal({
   isOpen,
@@ -7,27 +7,31 @@ export default function GenericFormModal({
   title = "Form Submission",
   initialData = {}
 }) {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    companyName: '',
-    requirements: ''
-  });
+  const [formData, setFormData] = useState(() => ({
+    name: initialData?.name || '',
+    email: initialData?.email || '',
+    phone: initialData?.phone || '',
+    companyName: initialData?.companyName || '',
+    requirements: initialData?.requirements || ''
+  }));
   const [errors, setErrors] = useState({});
 
+  const isFirstRender = useRef(true);
+
   useEffect(() => {
-    if (isOpen) {
-      setFormData({
-        name: initialData?.name || '',
-        email: initialData?.email || '',
-        phone: initialData?.phone || '',
-        companyName: initialData?.companyName || '',
-        requirements: initialData?.requirements || ''
-      });
-      setErrors({});
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
     }
-  }, [isOpen]);
+    setFormData({
+      name: initialData?.name || '',
+      email: initialData?.email || '',
+      phone: initialData?.phone || '',
+      companyName: initialData?.companyName || '',
+      requirements: initialData?.requirements || ''
+    });
+    setErrors({});
+  }, [initialData]);
 
   if (!isOpen) return null;
 

@@ -89,10 +89,7 @@ export default function DynamicCenterDashboard({
   const chartRefs = useRef({});
   const [activeSubTab, setActiveSubTab] = useState('profile');
   const [productStates, setProductStates] = useState({});
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
-  const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
-  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [activeModal, setActiveModal] = useState(null); // null | 'product' | 'plan' | 'genericPlan' | 'history'
   const [formTitle, setFormTitle] = useState('');
   const [formType, setFormType] = useState(''); // 'plan' or 'product'
 
@@ -595,6 +592,10 @@ export default function DynamicCenterDashboard({
       });
     };
   }, [selectedCountry, countryData, activeTab, activeSubTab, theme]);
+
+  useEffect(() => {
+    setActiveModal(null);
+  }, [selectedCountry, selectedOperator]);
 
   if (!countryData) return null;
 
@@ -1317,7 +1318,7 @@ export default function DynamicCenterDashboard({
                   <span>Product Section</span>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button
-                      onClick={() => setIsHistoryModalOpen(true)}
+                      onClick={() => setActiveModal('history')}
                       className="form-trigger-btn"
                       style={{ background: 'var(--bg-card2)', color: 'var(--text-secondary)' }}
                     >
@@ -1325,9 +1326,11 @@ export default function DynamicCenterDashboard({
                     </button>
                     <button
                       onClick={() => {
-                        setIsProductModalOpen(true);
+                        setActiveModal('product');
                       }}
                       className="form-trigger-btn"
+                      disabled={isDataLoading}
+                      style={{ opacity: isDataLoading ? 0.5 : 1, cursor: isDataLoading ? 'not-allowed' : 'pointer' }}
                     >
                       📝 Form
                     </button>
@@ -1866,7 +1869,7 @@ export default function DynamicCenterDashboard({
                           </div>
                           <div style={{ display: 'flex', gap: '8px' }}>
                             <button
-                              onClick={() => setIsHistoryModalOpen(true)}
+                              onClick={() => setActiveModal('history')}
                               className="form-trigger-btn"
                               style={{ background: 'var(--bg-card2)', color: 'var(--text-secondary)' }}
                             >
@@ -1874,9 +1877,11 @@ export default function DynamicCenterDashboard({
                             </button>
                             <button
                               onClick={() => {
-                                setIsPlanModalOpen(true);
+                                setActiveModal('plan');
                               }}
                               className="form-trigger-btn"
+                              disabled={isDataLoading}
+                              style={{ opacity: isDataLoading ? 0.5 : 1, cursor: isDataLoading ? 'not-allowed' : 'pointer' }}
                             >
                               📝 Form
                             </button>
@@ -2080,9 +2085,11 @@ export default function DynamicCenterDashboard({
                             onClick={() => {
                               setFormType('plan');
                               setFormTitle('Submit 2026 Plan Details');
-                              setIsFormOpen(true);
+                              setActiveModal('genericPlan');
                             }}
                             className="form-trigger-btn"
+                            disabled={isDataLoading}
+                            style={{ opacity: isDataLoading ? 0.5 : 1, cursor: isDataLoading ? 'not-allowed' : 'pointer' }}
                           >
                             📝 Form
                           </button>
@@ -2380,41 +2387,49 @@ export default function DynamicCenterDashboard({
       </div>
 
       {/* Reusable Form Modal */}
-      <GenericFormModal
-        isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
-        onSubmit={handleFormSubmit}
-        title={formTitle}
-      />
-      <ProductEditModal
-        isOpen={isProductModalOpen}
-        onClose={() => setIsProductModalOpen(false)}
-        accountData={accountData}
-        countryName={selectedCountry}
-        onSave={(newData) => handleModalSave('productSection', newData)}
-      />
-      <PlanEditModal
-        isOpen={isPlanModalOpen}
-        onClose={() => setIsPlanModalOpen(false)}
-        accountData={accountData}
-        countryName={selectedCountry}
-        onSave={(newData) => handleModalSave('plan2026', newData)}
-      />
-      <HistoryModal
-        isOpen={isHistoryModalOpen}
-        onClose={() => setIsHistoryModalOpen(false)}
-        countryName={selectedCountry}
-        operatorName={selectedOperator}
-        onRestore={(section, fieldName, valueToRestore) => {
-          if (section && fieldName) {
-            const currentSectionData = accountData[section] || {};
-            const updatedSectionData = { ...currentSectionData, [fieldName]: valueToRestore };
-            onUpdateAccountData(selectedCountry, { ...accountData, [section]: updatedSectionData });
-          } else {
-            onUpdateAccountData(selectedCountry, { ...accountData, _forceRefresh: Date.now() });
-          }
-        }}
-      />
+      {activeModal === 'genericPlan' && (
+        <GenericFormModal
+          isOpen={activeModal === 'genericPlan'}
+          onClose={() => setActiveModal(null)}
+          onSubmit={handleFormSubmit}
+          title={formTitle}
+        />
+      )}
+      {activeModal === 'product' && (
+        <ProductEditModal
+          isOpen={activeModal === 'product'}
+          onClose={() => setActiveModal(null)}
+          accountData={accountData}
+          countryName={selectedCountry}
+          onSave={(newData) => handleModalSave('productSection', newData)}
+        />
+      )}
+      {activeModal === 'plan' && (
+        <PlanEditModal
+          isOpen={activeModal === 'plan'}
+          onClose={() => setActiveModal(null)}
+          accountData={accountData}
+          countryName={selectedCountry}
+          onSave={(newData) => handleModalSave('plan2026', newData)}
+        />
+      )}
+      {activeModal === 'history' && (
+        <HistoryModal
+          isOpen={activeModal === 'history'}
+          onClose={() => setActiveModal(null)}
+          countryName={selectedCountry}
+          operatorName={selectedOperator}
+          onRestore={(section, fieldName, valueToRestore) => {
+            if (section && fieldName) {
+              const currentSectionData = accountData[section] || {};
+              const updatedSectionData = { ...currentSectionData, [fieldName]: valueToRestore };
+              onUpdateAccountData(selectedCountry, { ...accountData, [section]: updatedSectionData });
+            } else {
+              onUpdateAccountData(selectedCountry, { ...accountData, _forceRefresh: Date.now() });
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

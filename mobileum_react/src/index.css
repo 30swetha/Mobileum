@@ -902,12 +902,11 @@ html, body {
 #modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.4);
+  background: rgba(13, 22, 40, 0.85);
   z-index: 2000;
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(4px);
 }
 #modal {
   background: var(--bg-card);
@@ -1097,12 +1096,11 @@ html, body {
 #modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.4);
+  background: rgba(13, 22, 40, 0.85);
   z-index: 2000;
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(4px);
 }
 #modal {
   background: var(--bg-card);
@@ -1676,13 +1674,11 @@ html, body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(15, 23, 42, 0.5);
-  backdrop-filter: blur(4px);
+  background: rgba(13, 22, 40, 0.85);
   z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: fadeIn 0.25s ease-out;
 }
 
 .generic-modal-card {
@@ -1872,7 +1868,7 @@ html, body {
   height: 40px;
   border-radius: 50%;
   background: var(--blue);
-  color: #white;
+  color: white;
   border: 1px solid rgba(255, 255, 255, 0.1);
   cursor: pointer;
   display: flex;

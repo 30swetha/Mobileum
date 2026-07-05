@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import MapComponent from './components/MapComponent';
 import StaticCountrySidebar from './components/StaticCountrySidebar';
 import DynamicCenterDashboard from './components/DynamicCenterDashboard';
@@ -198,19 +198,25 @@ export default function App() {
   const { countries: rawCountries, metadata: rawMetadata } = TELECOM_DATA;
 
   // Map MECA to MENA dynamically
-  const countries = {};
-  Object.entries(rawCountries).forEach(([name, c]) => {
-    countries[name] = {
-      ...c,
-      region: c.region ? c.region.replace(/MECA/g, 'MENA') : c.region,
-      sub_region: c.sub_region ? c.sub_region.replace(/MECA/g, 'MENA') : c.sub_region,
-      cluster_name: c.cluster_name ? c.cluster_name.replace(/MECA/g, 'MENA') : c.cluster_name
+  const countries = useMemo(() => {
+    const result = {};
+    Object.entries(rawCountries).forEach(([name, c]) => {
+      result[name] = {
+        ...c,
+        region: c.region ? c.region.replace(/MECA/g, 'MENA') : c.region,
+        sub_region: c.sub_region ? c.sub_region.replace(/MECA/g, 'MENA') : c.sub_region,
+        cluster_name: c.cluster_name ? c.cluster_name.replace(/MECA/g, 'MENA') : c.cluster_name
+      };
+    });
+    return result;
+  }, [rawCountries]);
+
+  const metadata = useMemo(() => {
+    return {
+      ...rawMetadata,
+      regions: [...new Set(rawMetadata.regions.map(r => r === 'MECA' ? 'MENA' : r))]
     };
-  });
-  const metadata = {
-    ...rawMetadata,
-    regions: [...new Set(rawMetadata.regions.map(r => r === 'MECA' ? 'MENA' : r))]
-  };
+  }, [rawMetadata]);
 
   const buildOperatorInsight = (countryName, op) => {
     if (!op) return null;
@@ -866,11 +872,7 @@ export default function App() {
       setAccountData(mergedInsight);
       setIsDataLoading(false);
       
-      console.log("App.jsx merge complete for", selectedCountry, {
-        backendOverrides,
-        localOverrides: accountDataOverrides[selectedCountry],
-        mergedStrategies: mergedInsight.productSection?.finalStrategies
-      });
+      // Merge complete
     };
 
     // Add a slight artificial delay for UI smoothness if desired, or just call immediately

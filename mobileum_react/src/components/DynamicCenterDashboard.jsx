@@ -4,6 +4,7 @@ import CustomerServiceTickets from './CustomerServiceTickets';
 import OutstandingAMCTable from './OutstandingAMCTable';
 import CompetitorsTable from './CompetitorsTable';
 import FinancialReports from './FinancialReports';
+import GenericFormModal from './GenericFormModal';
 
 const CLUSTER_COLORS = {
   'Frontier': '#E74C3C',
@@ -19,14 +20,21 @@ const CLUSTER_COLORS = {
   'Unknown': '#7F8C8D'
 };
 
-const trendToScore = (val) => {
-  if (!val || val === 'nan') return 3;
-  const v = val.toLowerCase();
-  if (v.includes('very high') || v.includes('world highest') || v.includes('major') || v.includes('strongly') || v.includes('extreme')) return 5;
-  if (v.includes('high') || v.includes('growing') || v.includes('up') || v.includes('increasing') || v.includes('active') || v.includes('strong') || v.includes('positive') || v.includes('significant')) return 4;
+const TIER_ORDER = {
+  'Advanced': 1, 'Mature & Saturated': 2, 'Mature': 3, 'Growth': 4,
+  'High Growth Exposed': 5, 'Emerging Opportunity': 6, 'Roaming Hub': 7,
+  'Regulatory Transition': 8, 'Emerging': 9, 'Frontier': 10
+};
+
+// Heuristic to map trend strength (Low -> High)
+function trendToScore(val) {
+  if (!val) return 3;
+  const v = String(val).toLowerCase();
+  if (v.includes('unstable') || v.includes('high pressure') || v.includes('severe') || v.includes('critical')) return 1;
+  if (v.includes('pressure') || v.includes('negative') || v.includes('declining') || v.includes('weak')) return 2;
   if (v.includes('moderate') || v.includes('stable') || v.includes('flat') || v.includes('neutral') || v.includes('marginal') || v.includes('mixed') || v.includes('seasonal')) return 3;
-  if (v.includes('low') || v.includes('declining') || v.includes('down') || v.includes('decreasing') || v.includes('weak') || v.includes('marginal down')) return 2;
-  if (v.includes('very low') || v.includes('none') || v.includes('minimal') || v.includes('absent') || v.includes('nil')) return 1;
+  if (v.includes('strong') || v.includes('positive') || v.includes('growth') || v.includes('growing') || v.includes('healthy')) return 4;
+  if (v.includes('advanced') || v.includes('leader') || v.includes('exceptional') || v.includes('dominant')) return 5;
   return 3;
 };
 
@@ -69,11 +77,25 @@ export default function DynamicCenterDashboard({
   setSelectedOperator,
   setSelectedCountry,
   activeRegion,
-  onCloseOverview
+  onCloseOverview,
+  submissions = [],
+  onAddSubmission
 }) {
   const chartRefs = useRef({});
   const [activeSubTab, setActiveSubTab] = useState('profile');
   const [productStates, setProductStates] = useState({});
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [formTitle, setFormTitle] = useState('');
+  const [formType, setFormType] = useState(''); // 'plan' or 'product'
+
+  const handleFormSubmit = (formData) => {
+    if (onAddSubmission) {
+      onAddSubmission({
+        ...formData,
+        type: formType
+      });
+    }
+  };
 
   const getProductState = (productName) => {
     const key = `${selectedCountry || 'global'}_${selectedOperator || 'none'}_${productName}`;
@@ -720,7 +742,7 @@ export default function DynamicCenterDashboard({
             </div>
           )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px', marginTop: '10px' }}>
+          <div className="responsive-grid-12" style={{ marginTop: '10px' }}>
             {countryData.top_product && (
               <div className="section" style={{ marginBottom: '0' }}>
                 <div className="section-title">Primary Strategic Recommendation</div>
@@ -887,7 +909,7 @@ export default function DynamicCenterDashboard({
                   </button>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '20px' }}>
+                <div className="responsive-grid-21">
                   {/* Column 1: AMC Contracts */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
@@ -966,7 +988,7 @@ export default function DynamicCenterDashboard({
           })()}
 
           {/* Charts displayed below Heatmap */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+          <div className="responsive-grid-2" style={{ marginBottom: '20px' }}>
             <div className="chart-wrap">
               <div className="chart-title">Market Share Distribution</div>
               <div style={{ height: '180px' }}>
@@ -1199,11 +1221,21 @@ export default function DynamicCenterDashboard({
 
               {/* Product Section */}
               <div id="product-section" className="section" style={{ scrollMarginTop: '90px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', margin: '0 0 4px 0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-                <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--blue)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  Product Section
+                <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--blue)', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                  <span>Product Section</span>
+                  <button
+                    onClick={() => {
+                      setFormType('product');
+                      setFormTitle('Submit Product Request Details');
+                      setIsFormOpen(true);
+                    }}
+                    className="form-trigger-btn"
+                  >
+                    📝 Form
+                  </button>
                 </div>
                 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div className="responsive-grid-2">
                   {/* LEFT COLUMN */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     {/* 1. Mobileum products */}
@@ -1301,6 +1333,44 @@ export default function DynamicCenterDashboard({
                     </div>
                   </div>
                 )}
+
+                {/* Dynamic Product Submissions Section */}
+                {(() => {
+                  const currentProductSubmissions = (submissions || []).filter(sub => 
+                    sub.type === 'product' && 
+                    sub.country === (selectedCountry || 'Global') && 
+                    sub.operator === (selectedOperator || 'Global')
+                  );
+                  if (currentProductSubmissions.length === 0) return null;
+                  return (
+                    <div style={{ marginTop: '24px', borderTop: '1px solid var(--border)', paddingTop: '20px' }}>
+                      <h4 style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.05em' }}>
+                        Submitted Product Requests ({currentProductSubmissions.length})
+                      </h4>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
+                        {currentProductSubmissions.map(sub => (
+                          <div key={sub.id} className="submission-card" style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '14px', position: 'relative' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px' }}>
+                              <span style={{ fontWeight: '700', color: 'var(--blue-light)' }}>{sub.companyName}</span>
+                              <span>{sub.timestamp}</span>
+                            </div>
+                            <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '4px' }}>
+                              {sub.name} <span style={{ fontWeight: '400', color: 'var(--text-muted)', fontSize: '11px' }}>({sub.email})</span>
+                            </div>
+                            {sub.phone && (
+                              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px' }}>
+                                📞 {sub.phone}
+                              </div>
+                            )}
+                            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', background: 'var(--bg-card3)', padding: '8px', borderRadius: '6px', whiteSpace: 'pre-wrap' }}>
+                              {sub.requirements}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Financial Section */}
@@ -1460,7 +1530,7 @@ export default function DynamicCenterDashboard({
           )}
               {activeSubTab === 'impact' && (
                 <div style={{ animation: 'fadeIn 0.25s ease-out' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+                    <div className="responsive-grid-2" style={{ marginBottom: '20px' }}>
                       <div className="chart-wrap">
                         <div className="chart-title">Impact Radar — Country vs Regional Average</div>
                         <div className="chart-canvas-wrap" style={{ height: '240px' }}>
@@ -1486,7 +1556,7 @@ export default function DynamicCenterDashboard({
                       </div>
                     </div>
           
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '20px' }}>
+                    <div className="responsive-grid-21">
                       <div className="section">
                         <div className="section-title">Seasonal Roaming Calendar</div>
                         <div className="cal-grid" style={{ gap: '4px' }}>
@@ -1564,7 +1634,7 @@ export default function DynamicCenterDashboard({
                 )}
               {activeSubTab === 'products' && (
                 <div style={{ animation: 'fadeIn 0.25s ease-out' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px' }}>
+                    <div className="responsive-grid-12">
                       <div className="chart-wrap">
                         <div className="chart-title">Product Fit Score — All Mobileum Solutions</div>
                         <div className="chart-canvas-wrap" style={{ height: '260px' }}>
@@ -1655,8 +1725,18 @@ export default function DynamicCenterDashboard({
                 <div style={{ animation: 'fadeIn 0.25s ease-out' }}>
                     {accountData?.plan2026 ? (
                       <div className="section" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-                        <div style={{ fontSize: '15px', fontWeight: '800', color: 'var(--blue)', marginBottom: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          Mobileum 2026 Strategic Plan
+                        <div style={{ fontSize: '15px', fontWeight: '800', color: 'var(--blue)', marginBottom: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                          <span>Mobileum 2026 Strategic Plan</span>
+                          <button
+                            onClick={() => {
+                              setFormType('plan');
+                              setFormTitle('Submit 2026 Plan Details');
+                              setIsFormOpen(true);
+                            }}
+                            className="form-trigger-btn"
+                          >
+                            📝 Form
+                          </button>
                         </div>
                         
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -1760,10 +1840,101 @@ export default function DynamicCenterDashboard({
                               {accountData.plan2026.consultingTrialsGiven}
                             </div>
                           </div>
+
+                          {/* Plan Submissions Section for populated case */}
+                          {(() => {
+                            const currentPlanSubmissions = (submissions || []).filter(sub => 
+                              sub.type === 'plan' && 
+                              sub.country === (selectedCountry || 'Global') && 
+                              sub.operator === (selectedOperator || 'Global')
+                            );
+                            if (currentPlanSubmissions.length === 0) return null;
+                            return (
+                              <div style={{ marginTop: '24px', borderTop: '1px solid var(--border)', paddingTop: '20px' }}>
+                                <h4 style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.05em' }}>
+                                  Submitted 2026 Plan Requests ({currentPlanSubmissions.length})
+                                </h4>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
+                                  {currentPlanSubmissions.map(sub => (
+                                    <div key={sub.id} className="submission-card" style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '14px', position: 'relative' }}>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px' }}>
+                                        <span style={{ fontWeight: '700', color: 'var(--blue-light)' }}>{sub.companyName}</span>
+                                        <span>{sub.timestamp}</span>
+                                      </div>
+                                      <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '4px' }}>
+                                        {sub.name} <span style={{ fontWeight: '400', color: 'var(--text-muted)', fontSize: '11px' }}>({sub.email})</span>
+                                      </div>
+                                      {sub.phone && (
+                                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px' }}>
+                                          📞 {sub.phone}
+                                        </div>
+                                      )}
+                                      <div style={{ fontSize: '11px', color: 'var(--text-secondary)', background: 'var(--bg-card3)', padding: '8px', borderRadius: '6px', whiteSpace: 'pre-wrap' }}>
+                                        {sub.requirements}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })()}
                         </div>
                       </div>
                     ) : (
-                      <div className="section"><div className="section-title">2026 plan</div><div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>No 2026 plan details are available for this account yet.</div></div>
+                      <div className="section" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                        <div style={{ fontSize: '15px', fontWeight: '800', color: 'var(--blue)', marginBottom: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                          <span>2026 Strategic Plan</span>
+                          <button
+                            onClick={() => {
+                              setFormType('plan');
+                              setFormTitle('Submit 2026 Plan Details');
+                              setIsFormOpen(true);
+                            }}
+                            className="form-trigger-btn"
+                          >
+                            📝 Form
+                          </button>
+                        </div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '12px' }}>No 2026 plan details are available for this account yet.</div>
+                        
+                        {/* Plan Submissions Section for empty case */}
+                        {(() => {
+                          const currentPlanSubmissions = (submissions || []).filter(sub => 
+                            sub.type === 'plan' && 
+                            sub.country === (selectedCountry || 'Global') && 
+                            sub.operator === (selectedOperator || 'Global')
+                          );
+                          if (currentPlanSubmissions.length === 0) return null;
+                          return (
+                            <div style={{ marginTop: '24px', borderTop: '1px solid var(--border)', paddingTop: '20px' }}>
+                              <h4 style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.05em' }}>
+                                Submitted 2026 Plan Requests ({currentPlanSubmissions.length})
+                              </h4>
+                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
+                                {currentPlanSubmissions.map(sub => (
+                                  <div key={sub.id} className="submission-card" style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '14px', position: 'relative' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px' }}>
+                                      <span style={{ fontWeight: '700', color: 'var(--blue-light)' }}>{sub.companyName}</span>
+                                      <span>{sub.timestamp}</span>
+                                    </div>
+                                    <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '4px' }}>
+                                      {sub.name} <span style={{ fontWeight: '400', color: 'var(--text-muted)', fontSize: '11px' }}>({sub.email})</span>
+                                    </div>
+                                    {sub.phone && (
+                                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px' }}>
+                                        📞 {sub.phone}
+                                      </div>
+                                    )}
+                                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', background: 'var(--bg-card3)', padding: '8px', borderRadius: '6px', whiteSpace: 'pre-wrap' }}>
+                                      {sub.requirements}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </div>
                     )}
                     
                     {/* Render Financial Reports below the Strategic Plan */}
@@ -1785,7 +1956,7 @@ export default function DynamicCenterDashboard({
       {/* ── TAB: STATS PROFILE ── */}
       {activeTab === 'stats' && (
         <div className="tab-content active" style={{ padding: '12px 0 0 0', display: 'block' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px' }}>
+          <div className="responsive-grid-12">
             <div className="chart-wrap">
               <div className="chart-title">Position vs Region Peers Bubble Chart</div>
               <div style={{ height: '220px' }}>
@@ -1838,7 +2009,7 @@ export default function DynamicCenterDashboard({
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '20px' }}>
+          <div className="responsive-grid-2" style={{ marginTop: '20px' }}>
             {(() => {
               const peers = Object.entries(allCountries)
                 .filter(([k, cv]) => cv.cluster_name === countryData.cluster_name && k !== selectedCountry)
@@ -2012,6 +2183,34 @@ export default function DynamicCenterDashboard({
         </div>
       )}
       </div>
+
+      {/* ── Scroll Navigation Controls for Account Section (third tab) ── */}
+      {activeTab === 'account' && (
+        <>
+          <button 
+            className="scroll-nav-arrow scroll-up" 
+            onClick={() => panelRef.current?.scrollBy({ top: -300, behavior: 'smooth' })}
+            title="Scroll Up"
+          >
+            ▲
+          </button>
+          <button 
+            className="scroll-nav-arrow scroll-down" 
+            onClick={() => panelRef.current?.scrollBy({ top: 300, behavior: 'smooth' })}
+            title="Scroll Down"
+          >
+            ▼
+          </button>
+        </>
+      )}
+
+      {/* Reusable Form Modal */}
+      <GenericFormModal
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        onSubmit={handleFormSubmit}
+        title={formTitle}
+      />
     </div>
   );
 }

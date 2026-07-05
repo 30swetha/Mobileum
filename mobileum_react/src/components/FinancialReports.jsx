@@ -88,7 +88,7 @@ export default function FinancialReports({ operator, country, operators, operato
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '20px' }}>
 
       {/* ---- Real group-level financials, or honest empty state ---- */}
-      <div className="section" style={card}>
+      <div className="financial-card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '16px', marginBottom: '20px', flexWrap: 'wrap', gap: '8px' }}>
           <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--blue)' }}>
             {title} — Financial Snapshot
@@ -144,7 +144,7 @@ export default function FinancialReports({ operator, country, operators, operato
       </div>
 
       {/* ---- Illustrative quarterly trend (clearly marked sample data) ---- */}
-      <div className="section" style={card}>
+      <div className="financial-card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
           <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)' }}>
             Quarterly Trend

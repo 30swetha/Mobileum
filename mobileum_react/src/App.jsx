@@ -490,6 +490,20 @@ export default function App() {
   const [amcData, setAmcData] = useState([]);
   const [competitorData, setCompetitorData] = useState([]);
   const [accountData, setAccountData] = useState(null);
+  const [submissions, setSubmissions] = useState([]);
+
+  const handleAddSubmission = (formData) => {
+    setSubmissions(prev => [
+      ...prev,
+      {
+        ...formData,
+        id: Date.now(),
+        country: selectedCountry || 'Global',
+        operator: selectedOperator || 'Global',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }
+    ]);
+  };
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('operators');
   const [selectedOperator, setSelectedOperator] = useState(null);
@@ -967,7 +981,7 @@ export default function App() {
 
       {/* MAIN APP CONTAINER */}
       <div id="app">
-        <div style={{ display: 'flex', width: '100%', height: '100%', gap: '20px', padding: '16px', overflow: 'hidden' }}>
+        <div className="app-main-layout">
           
           {selectedCountry ? (
             // SIDE-BY-SIDE VIEW: Country Context Sidebar & Dynamic Operator Details (No Map)
@@ -993,7 +1007,7 @@ export default function App() {
               />
 
               {/* Right Panel: Dynamic Operator Details Dashboard */}
-              <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
+              <div className="dashboard-wrapper">
                 <DynamicCenterDashboard
                   selectedCountry={selectedCountry}
                   countryData={countries[selectedCountry]}
@@ -1011,6 +1025,8 @@ export default function App() {
                   selectedOperator={selectedOperator}
                   setSelectedOperator={setSelectedOperator}
                   setSelectedCountry={setSelectedCountry}
+                  submissions={submissions}
+                  onAddSubmission={handleAddSubmission}
                   activeRegion={activeRegion}
                   setActiveRegion={setActiveRegion}
                   onCloseOverview={() => {}}
@@ -1021,8 +1037,8 @@ export default function App() {
             // MAP VIEW: Show map when no country is selected
             <>
               {/* Left panel: Map */}
-              <div style={{ display: showGlobalOverview ? 'none' : 'flex', flex: 1.2, height: '100%', overflow: 'hidden', position: 'relative' }}>
-                <div style={{ display: 'flex', width: '100%', height: '100%', overflow: 'hidden', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px' }}>
+              <div style={{ display: showGlobalOverview ? 'none' : 'flex' }} className="map-view-wrapper">
+                <div className="map-view-container">
                   {activeRegion !== 'all' && (
                     <div className="region-sidebar" style={{
                       width: '320px',
@@ -1099,7 +1115,7 @@ export default function App() {
                     </div>
                   )}
 
-                  <div id="map-container" style={{ flex: 1, position: 'relative' }}>
+                  <div id="map-container">
                     <MapComponent
                       countries={countries}
                       currentLens={currentLens}
@@ -1193,7 +1209,7 @@ export default function App() {
 
               {/* Right panel: Dynamic Dashboard (Global / Regional Overview) */}
               {!selectedCountry && showGlobalOverview && (
-                <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
+                <div className="dashboard-wrapper">
                   <DynamicCenterDashboard
                     selectedCountry={null}
                     countryData={aggregateRegionData(activeRegion)}
@@ -1211,6 +1227,8 @@ export default function App() {
                     selectedOperator={selectedOperator}
                     setSelectedOperator={setSelectedOperator}
                     setSelectedCountry={setSelectedCountry}
+                    submissions={submissions}
+                    onAddSubmission={handleAddSubmission}
                     activeRegion={activeRegion}
                     setActiveRegion={setActiveRegion}
                     onCloseOverview={() => setShowGlobalOverview(false)}

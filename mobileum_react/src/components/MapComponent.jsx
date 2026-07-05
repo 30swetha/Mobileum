@@ -360,6 +360,14 @@ export default function MapComponent({
     } else if (mapInstanceRef.current && activeRegion === 'all') {
       mapInstanceRef.current.setView([20, 10], 2.5);
     }
+
+    if (mapInstanceRef.current) {
+      setTimeout(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+        }
+      }, 250);
+    }
   }, [currentLens, activeRegion]);
 
   return <div id="map" ref={mapRef} style={{ height: '100%', width: '100%' }}></div>;

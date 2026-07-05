@@ -780,12 +780,15 @@ export default function App() {
 
   useEffect(() => {
     setIsDataLoading(true);
-    const timer = setTimeout(() => {
+    let isMounted = true;
+
+    const loadData = async () => {
       if (!selectedCountry) {
         const tickets = getAggregatedTickets(activeRegion);
         const amcs = getAggregatedAMC(activeRegion);
         const accountInsight = getAggregatedAccountData(activeRegion);
 
+        if (!isMounted) return;
         setTicketData(tickets);
         setAmcData(amcs);
         setCompetitorData(MOCK_COMPETITORS);
@@ -821,19 +824,64 @@ export default function App() {
         opInsight = buildOperatorInsight(selectedCountry, opData);
       }
 
+      // Fetch overrides from backend
+      let backendOverrides = {};
+      try {
+        const res = await fetch(`/api/get-overrides?countryId=${encodeURIComponent(selectedCountry)}&operatorId=${encodeURIComponent(selectedOperator || 'Global')}`);
+        if (res.ok) {
+          backendOverrides = await res.json();
+        }
+      } catch (err) {
+        console.warn("Could not fetch overrides from backend; falling back to local state.", err);
+      }
+
+      if (!isMounted) return;
+
       setTicketData(tickets);
       setAmcData(amcs);
       setCompetitorData(MOCK_COMPETITORS);
       
-      const mergedInsight = accountDataOverrides[selectedCountry]
-        ? { ...opInsight, ...accountDataOverrides[selectedCountry] }
-        : opInsight;
+      // Merge backend overrides onto opInsight
+      let mergedInsight = { ...opInsight };
+      if (backendOverrides && Object.keys(backendOverrides).length > 0) {
+        for (const section in backendOverrides) {
+          if (!mergedInsight[section]) mergedInsight[section] = {};
+          // track which fields are edited
+          mergedInsight[section]._editedFields = mergedInsight[section]._editedFields || {};
+          for (const fieldName in backendOverrides[section]) {
+            mergedInsight[section][fieldName] = backendOverrides[section][fieldName];
+            mergedInsight[section]._editedFields[fieldName] = true;
+          }
+        }
+      }
+
+      // Then merge local unsaved overrides (if any, e.g., from immediate saves)
+      if (accountDataOverrides[selectedCountry]) {
+        for (const section in accountDataOverrides[selectedCountry]) {
+          if (!mergedInsight[section]) mergedInsight[section] = {};
+          mergedInsight[section] = { ...mergedInsight[section], ...accountDataOverrides[selectedCountry][section] };
+        }
+      }
       
       setAccountData(mergedInsight);
       setIsDataLoading(false);
+      
+      console.log("App.jsx merge complete for", selectedCountry, {
+        backendOverrides,
+        localOverrides: accountDataOverrides[selectedCountry],
+        mergedStrategies: mergedInsight.productSection?.finalStrategies
+      });
+    };
+
+    // Add a slight artificial delay for UI smoothness if desired, or just call immediately
+    const timer = setTimeout(() => {
+      loadData();
     }, 250);
 
-    return () => clearTimeout(timer);
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
   }, [selectedCountry, selectedOperator, activeRegion, accountDataOverrides]);
 
   // Reset tab and operator on country change

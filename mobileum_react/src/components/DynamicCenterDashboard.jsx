@@ -7,6 +7,7 @@ import FinancialReports from './FinancialReports';
 import GenericFormModal from './GenericFormModal';
 import ProductEditModal from './ProductEditModal';
 import PlanEditModal from './PlanEditModal';
+import HistoryModal from './HistoryModal';
 
 const CLUSTER_COLORS = {
   'Frontier': '#E74C3C',
@@ -91,8 +92,20 @@ export default function DynamicCenterDashboard({
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [formTitle, setFormTitle] = useState('');
   const [formType, setFormType] = useState(''); // 'plan' or 'product'
+
+  const renderEditedBadge = (fieldName, section) => {
+    if (section?._editedFields?.[fieldName]) {
+      return (
+        <span style={{ fontSize: '9px', fontWeight: 700, color: 'var(--blue)', background: 'rgba(37,99,235,0.12)', border: '1px solid rgba(37,99,235,0.35)', padding: '2px 7px', borderRadius: '20px', marginLeft: '8px', whiteSpace: 'nowrap' }}>
+          ✎ Edited
+        </span>
+      );
+    }
+    return null;
+  };
 
   const handleFormSubmit = (formData) => {
     if (onAddSubmission) {
@@ -584,6 +597,31 @@ export default function DynamicCenterDashboard({
   }, [selectedCountry, countryData, activeTab, activeSubTab, theme]);
 
   if (!countryData) return null;
+
+  const handleModalSave = (sectionName, newData) => {
+    const currentSection = accountData[sectionName] || {};
+    const newSection = newData[sectionName] || {};
+    
+    Object.keys(newSection).forEach(fieldName => {
+      if (JSON.stringify(currentSection[fieldName]) !== JSON.stringify(newSection[fieldName])) {
+        fetch('/api/save-override', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            countryId: selectedCountry,
+            operatorId: selectedOperator || 'Global',
+            section: sectionName,
+            fieldName,
+            value: newSection[fieldName],
+            updatedBy: 'Local User',
+            baselineValue: currentSection[fieldName]
+          })
+        }).catch(err => console.error("Failed to save override", err));
+      }
+    });
+
+    onUpdateAccountData(selectedCountry, newData);
+  };
 
   const clr = CLUSTER_COLORS[countryData.cluster_name] || '#4A90D9';
 
@@ -1276,14 +1314,23 @@ export default function DynamicCenterDashboard({
               <div id="product-section" className="section" style={{ scrollMarginTop: '90px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', margin: '0 0 4px 0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                 <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--blue)', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
                   <span>Product Section</span>
-                  <button
-                    onClick={() => {
-                      setIsProductModalOpen(true);
-                    }}
-                    className="form-trigger-btn"
-                  >
-                    📝 Form
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      onClick={() => setIsHistoryModalOpen(true)}
+                      className="form-trigger-btn"
+                      style={{ background: 'var(--bg-card2)', color: 'var(--text-secondary)' }}
+                    >
+                      🕒 History
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsProductModalOpen(true);
+                      }}
+                      className="form-trigger-btn"
+                    >
+                      📝 Form
+                    </button>
+                  </div>
                 </div>
                 
                 <div className="responsive-grid-2">
@@ -1293,6 +1340,7 @@ export default function DynamicCenterDashboard({
                     <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', height: '100%', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
                       <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         Mobileum Products
+                        {renderEditedBadge('mobileumProducts', accountData.productSection)}
                       </div>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                         {(accountData.productSection?.mobileumProducts || []).map(item => (
@@ -1307,6 +1355,7 @@ export default function DynamicCenterDashboard({
                     <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', height: '100%', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
                       <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         Product Gaps
+                        {renderEditedBadge('productGaps', accountData.productSection)}
                       </div>
                       <ul style={{ margin: '0', paddingLeft: '18px', color: 'var(--text-secondary)', fontSize: '11px', lineHeight: '1.6' }}>
                         {(accountData.productSection?.productGaps || []).map(item => <li key={item}>{item}</li>)}
@@ -1317,6 +1366,7 @@ export default function DynamicCenterDashboard({
                     <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', height: '100%', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
                       <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         Managed Services Possibility
+                        {renderEditedBadge('managedServicesPossibility', accountData.productSection)}
                       </div>
                       <ul style={{ margin: '0', paddingLeft: '18px', color: 'var(--text-secondary)', fontSize: '11px', lineHeight: '1.6' }}>
                         {(accountData.productSection?.managedServicesPossibility || []).map(item => <li key={item}>{item}</li>)}
@@ -1330,6 +1380,7 @@ export default function DynamicCenterDashboard({
                     <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', height: '100%', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
                       <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         Competition Products
+                        {renderEditedBadge('competitionProducts', accountData.productSection)}
                       </div>
                       <ul style={{ margin: '0', paddingLeft: '18px', color: 'var(--text-secondary)', fontSize: '11px', lineHeight: '1.6' }}>
                         {(accountData.productSection?.competitionProducts || []).map(item => <li key={item}>{item}</li>)}
@@ -1340,6 +1391,7 @@ export default function DynamicCenterDashboard({
                     <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', height: '100%', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
                       <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         Competitors to Replace
+                        {renderEditedBadge('replaceableCompetitors', accountData.productSection)}
                       </div>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                         {(accountData.productSection?.replaceableCompetitors || []).map(item => (
@@ -1354,6 +1406,7 @@ export default function DynamicCenterDashboard({
                     <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', height: '100%', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
                       <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         Final Strategies
+                        {renderEditedBadge('finalStrategies', accountData.productSection)}
                       </div>
                       <ul style={{ margin: '0', paddingLeft: '18px', color: 'var(--text-secondary)', fontSize: '11px', lineHeight: '1.6', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         {(accountData.productSection?.finalStrategies || []).map((item, idx) => (
@@ -1804,14 +1857,23 @@ export default function DynamicCenterDashboard({
                               </div>
                             )}
                           </div>
-                          <button
-                            onClick={() => {
-                              setIsPlanModalOpen(true);
-                            }}
-                            className="form-trigger-btn"
-                          >
-                            📝 Form
-                          </button>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button
+                              onClick={() => setIsHistoryModalOpen(true)}
+                              className="form-trigger-btn"
+                              style={{ background: 'var(--bg-card2)', color: 'var(--text-secondary)' }}
+                            >
+                              🕒 History
+                            </button>
+                            <button
+                              onClick={() => {
+                                setIsPlanModalOpen(true);
+                              }}
+                              className="form-trigger-btn"
+                            >
+                              📝 Form
+                            </button>
+                          </div>
                         </div>
                         
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -1819,6 +1881,7 @@ export default function DynamicCenterDashboard({
                           <div>
                             <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>
                               Recommended Products & Revenue Distribution
+                              {renderEditedBadge('productsFocusedOn', accountData.plan2026)}
                             </div>
                             <div style={{ overflowX: 'auto', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--bg-card)' }}>
                               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
@@ -1882,6 +1945,7 @@ export default function DynamicCenterDashboard({
                           <div>
                             <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.05em' }}>
                               Total Value of Opportunities
+                              {renderEditedBadge('valueOfOpportunities', accountData.plan2026)}
                             </div>
                             <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px 16px', display: 'inline-block' }}>
                               <strong style={{ fontSize: '15px', color: 'var(--green)' }}>{accountData.plan2026.valueOfOpportunities}</strong>
@@ -1892,6 +1956,7 @@ export default function DynamicCenterDashboard({
                           <div>
                             <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.05em' }}>
                               PoC or Demo Delivered
+                              {renderEditedBadge('pocOrDemoGiven', accountData.plan2026)}
                             </div>
                             <div className="product-card" style={{ padding: '12px 16px', margin: 0, cursor: 'default', fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.6', borderRadius: '8px', background: 'var(--bg-card2)', border: '1px solid var(--border)' }}>
                               {accountData.plan2026.pocOrDemoGiven}
@@ -1902,6 +1967,7 @@ export default function DynamicCenterDashboard({
                           <div>
                             <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.05em' }}>
                               Consulting Trials Given & Next Steps
+                              {renderEditedBadge('consultingTrialsGiven', accountData.plan2026)}
                             </div>
                             <div className="product-card hoverable-card" style={{ padding: '12px 16px', margin: 0, cursor: 'default', fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.6', borderRadius: '8px', background: 'var(--bg-card2)', border: '1px solid var(--border)' }}>
                               {accountData.plan2026.consultingTrialsGiven}
@@ -1913,6 +1979,7 @@ export default function DynamicCenterDashboard({
                             <div>
                               <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.05em' }}>
                                 Win Probability (%)
+                                {renderEditedBadge('winProbability', accountData.plan2026)}
                               </div>
                               <div className="product-card hoverable-card" style={{ padding: '12px 16px', margin: 0, cursor: 'default', fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.6', borderRadius: '8px', background: 'var(--bg-card2)', border: '1px solid var(--border)' }}>
                                 {accountData.plan2026.winProbability}
@@ -1923,6 +1990,7 @@ export default function DynamicCenterDashboard({
                             <div>
                               <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.05em' }}>
                                 Weighted Pipeline Value
+                                {renderEditedBadge('weightedPipelineValue', accountData.plan2026)}
                               </div>
                               <div className="product-card hoverable-card" style={{ padding: '12px 16px', margin: 0, cursor: 'default', fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.6', borderRadius: '8px', background: 'var(--bg-card2)', border: '1px solid var(--border)' }}>
                                 {accountData.plan2026.weightedPipelineValue}
@@ -1933,6 +2001,7 @@ export default function DynamicCenterDashboard({
                             <div>
                               <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.05em' }}>
                                 Quarterly Milestone Breakdown
+                                {renderEditedBadge('quarterlyMilestoneBreakdown', accountData.plan2026)}
                               </div>
                               <div className="product-card hoverable-card" style={{ padding: '12px 16px', margin: 0, cursor: 'default', fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.6', borderRadius: '8px', background: 'var(--bg-card2)', border: '1px solid var(--border)' }}>
                                 {accountData.plan2026.quarterlyMilestoneBreakdown}
@@ -1943,6 +2012,7 @@ export default function DynamicCenterDashboard({
                             <div>
                               <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.05em' }}>
                                 Top Target Accounts
+                                {renderEditedBadge('topTargetAccounts', accountData.plan2026)}
                               </div>
                               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                                 {accountData.plan2026.topTargetAccounts.map(item => (
@@ -2309,14 +2379,29 @@ export default function DynamicCenterDashboard({
         onClose={() => setIsProductModalOpen(false)}
         accountData={accountData}
         countryName={selectedCountry}
-        onSave={(newData) => onUpdateAccountData(selectedCountry, newData)}
+        onSave={(newData) => handleModalSave('productSection', newData)}
       />
       <PlanEditModal
         isOpen={isPlanModalOpen}
         onClose={() => setIsPlanModalOpen(false)}
         accountData={accountData}
         countryName={selectedCountry}
-        onSave={(newData) => onUpdateAccountData(selectedCountry, newData)}
+        onSave={(newData) => handleModalSave('plan2026', newData)}
+      />
+      <HistoryModal
+        isOpen={isHistoryModalOpen}
+        onClose={() => setIsHistoryModalOpen(false)}
+        countryName={selectedCountry}
+        operatorName={selectedOperator}
+        onRestore={(section, fieldName, valueToRestore) => {
+          if (section && fieldName) {
+            const currentSectionData = accountData[section] || {};
+            const updatedSectionData = { ...currentSectionData, [fieldName]: valueToRestore };
+            onUpdateAccountData(selectedCountry, { ...accountData, [section]: updatedSectionData });
+          } else {
+            onUpdateAccountData(selectedCountry, { ...accountData, _forceRefresh: Date.now() });
+          }
+        }}
       />
     </div>
   );

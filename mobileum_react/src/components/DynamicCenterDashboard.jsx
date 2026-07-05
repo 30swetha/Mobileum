@@ -634,6 +634,15 @@ export default function DynamicCenterDashboard({
     return 'rgba(16, 185, 129, 0.25)';
   };
 
+  const getBadgeColor = (score) => {
+    const s = Math.max(0, Math.min(100, score || 0));
+    if (s < 20) return { border: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)', text: '#ef4444' };
+    if (s < 40) return { border: '#f59e0b', bg: 'rgba(245, 158, 11, 0.15)', text: '#d97706' };
+    if (s < 60) return { border: '#3b82f6', bg: 'rgba(59, 130, 246, 0.15)', text: '#2563eb' };
+    if (s < 80) return { border: '#10b981', bg: 'rgba(16, 185, 129, 0.15)', text: '#059669' };
+    return { border: '#10b981', bg: 'rgba(16, 185, 129, 0.25)', text: '#059669' };
+  };
+
   const trendToScore = (val) => {
     if (!val || val === 'nan') return 3;
     const v = val.toLowerCase();
@@ -781,7 +790,7 @@ export default function DynamicCenterDashboard({
       </div>
 
       {/* Tabs list matching SidePanel but centered and responsive */}
-      <div id="panel-tabs" style={{ padding: '4px 0', borderBottom: '1px solid var(--border)', background: 'var(--bg-card)', zIndex: 10, flexShrink: 0, animation: 'none', opacity: 1, transform: 'none' }}>
+      <div id="panel-tabs" style={{ padding: '4px 0', background: 'var(--bg-card)', zIndex: 10, flexShrink: 0, animation: 'none', opacity: 1, transform: 'none' }}>
         {[
           { key: 'operators', label: 'Operator Details' },
           { key: 'overview', label: 'Market Overview' },
@@ -793,7 +802,6 @@ export default function DynamicCenterDashboard({
             key={tab.key}
             className={`tab-btn ${activeTab === tab.key ? 'active' : ''}`}
             onClick={() => setActiveTab(tab.key)}
-            style={{ fontSize: '12px', padding: '12px 16px' }}
           >
             {tab.label}
           </button>
@@ -873,9 +881,10 @@ export default function DynamicCenterDashboard({
           
           {/* Heatmap displayed first */}
           <div className="section">
-            <div className="section-title">Operator Performance Heatmap (Click any row for details)</div>
-            <div className="heatmap-wrap" style={{ border: '1px solid var(--border)', borderRadius: '10px', background: 'var(--bg-card)', padding: '6px' }}>
-              <table className="heatmap-table" style={{ width: '100%' }}>
+            <div className="heatmap-wrap" style={{ border: '1px solid var(--border)', borderRadius: '10px', background: 'var(--bg-card)', padding: '16px' }}>
+              <div className="section-title" style={{ marginBottom: '16px' }}>Operator Performance Heatmap (Click any row for details)</div>
+              <div style={{ overflowX: 'auto' }}>
+                <table className="heatmap-table" style={{ width: '100%' }}>
                 <thead>
                   <tr>
                     <th style={{ textAlign: 'left' }}>Operator</th>
@@ -943,6 +952,7 @@ export default function DynamicCenterDashboard({
                   })}
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
 
@@ -1128,17 +1138,17 @@ export default function DynamicCenterDashboard({
                       <div
                         className="score-circle"
                         style={{
-                          borderColor: hmColor(op.profitability_score * 20),
-                          color: hmColor(op.profitability_score * 20),
-                          fontSize: '9px',
-                          width: '40px',
-                          height: '40px',
+                          borderColor: getBadgeColor(op.profitability_score * 20).border,
+                          backgroundColor: getBadgeColor(op.profitability_score * 20).bg,
+                          color: getBadgeColor(op.profitability_score * 20).text,
+                          width: '44px',
+                          height: '44px',
                           flexDirection: 'column',
-                          gap: '1px'
+                          gap: '2px'
                         }}
                       >
-                        <div>{op.profitability_score}/5</div>
-                        <div style={{ fontSize: '7px' }}>HLTH</div>
+                        <div style={{ fontSize: '13px' }}>{op.profitability_score}/5</div>
+                        <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>HLTH</div>
                       </div>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '10px', fontSize: '10px', color: 'var(--text-secondary)' }}>
@@ -1159,9 +1169,9 @@ export default function DynamicCenterDashboard({
 
       {/* ── TAB: IMPACT ── */}
       {activeTab === 'account' && (
-        <div className="tab-content active" style={{ padding: '12px 0 0 0', display: 'block' }}>
+        <div className="tab-content active" style={{ padding: '0', display: 'block' }}>
           {accountData ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
               
               {selectedOperator && (
                 <div style={{ 
@@ -1169,6 +1179,7 @@ export default function DynamicCenterDashboard({
                   border: '1px solid var(--blue)', 
                   borderRadius: '10px', 
                   padding: '12px 16px', 
+                  margin: '12px 20px 0 20px',
                   display: 'flex', 
                   justifyContent: 'space-between', 
                   alignItems: 'center', 
@@ -1208,7 +1219,7 @@ export default function DynamicCenterDashboard({
                 display: 'flex', 
                 gap: '8px', 
                 borderBottom: '1px solid var(--border)', 
-                padding: '4px 0 10px 0', 
+                padding: '12px 20px 10px 20px', 
                 position: 'sticky',
                 top: 0,
                 background: 'var(--bg-card)',
@@ -1225,18 +1236,8 @@ export default function DynamicCenterDashboard({
                 ].map(subTab => (
                   <button
                     key={subTab.key}
-                    className={`tab-btn ${activeSubTab === subTab.key ? 'active' : ''}`}
+                    className={`tab-btn sm ${activeSubTab === subTab.key ? 'active' : ''}`}
                     onClick={() => setActiveSubTab(subTab.key)}
-                    style={{ 
-                      fontSize: '11px', 
-                      padding: '8px 12px',
-                      background: activeSubTab === subTab.key ? 'rgba(37, 99, 235, 0.15)' : 'transparent',
-                      border: '1px solid var(--border)',
-                      borderRadius: '6px',
-                      color: activeSubTab === subTab.key ? 'var(--blue-light)' : 'var(--text-muted)',
-                      cursor: 'pointer',
-                      fontWeight: '600'
-                    }}
                   >
                     {subTab.label}
                   </button>
@@ -1244,7 +1245,7 @@ export default function DynamicCenterDashboard({
               </div>
 
               {activeSubTab === 'profile' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', animation: 'fadeIn 0.25s ease-out' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', animation: 'fadeIn 0.25s ease-out', padding: '20px' }}>
                   
                   {/* Sticky Index Navigation Bar */}
                   <div style={{
@@ -1265,10 +1266,10 @@ export default function DynamicCenterDashboard({
                       Jump To:
                     </span>
                     {[
-                      { id: 'product-section', label: 'Product Section', color: 'var(--blue)' },
-                      { id: 'financial-section', label: 'Financial Section', color: 'var(--teal)' },
-                      { id: 'renewal-section', label: 'Renewal Section', color: 'var(--purple)' },
-                      { id: 'health-section', label: 'Health of Solution', color: 'var(--red)' }
+                      { id: 'product-section', label: 'Product Section' },
+                      { id: 'financial-section', label: 'Financial Section' },
+                      { id: 'renewal-section', label: 'Renewal Section' },
+                      { id: 'health-section', label: 'Health of Solution' }
                     ].map(sec => (
                       <button
                         key={sec.id}
@@ -1279,11 +1280,11 @@ export default function DynamicCenterDashboard({
                           }
                         }}
                         style={{
-                          background: 'var(--bg-card2)',
+                          background: 'var(--bg-card)',
                           border: '1px solid var(--border)',
-                          borderRadius: '6px',
-                          padding: '5px 12px',
-                          fontSize: '10px',
+                          borderRadius: '20px',
+                          padding: '6px 14px',
+                          fontSize: '11px',
                           fontWeight: '600',
                           color: 'var(--text-secondary)',
                           cursor: 'pointer',
@@ -1294,17 +1295,17 @@ export default function DynamicCenterDashboard({
                           whiteSpace: 'nowrap'
                         }}
                         onMouseOver={(e) => {
-                          e.currentTarget.style.borderColor = sec.color;
-                          e.currentTarget.style.color = sec.color;
-                          e.currentTarget.style.background = 'var(--bg-card3)';
+                          e.currentTarget.style.borderColor = 'var(--blue)';
+                          e.currentTarget.style.color = 'var(--blue)';
+                          e.currentTarget.style.background = 'rgba(37, 99, 235, 0.08)';
                         }}
                         onMouseOut={(e) => {
                           e.currentTarget.style.borderColor = 'var(--border)';
                           e.currentTarget.style.color = 'var(--text-secondary)';
-                          e.currentTarget.style.background = 'var(--bg-card2)';
+                          e.currentTarget.style.background = 'var(--bg-card)';
                         }}
                       >
-                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: sec.color }}></span>
+                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--blue)' }}></span>
                         {sec.label}
                       </button>
                     ))}
@@ -1673,77 +1674,81 @@ export default function DynamicCenterDashboard({
                     </div>
           
                     <div className="responsive-grid-21">
-                      <div className="section">
-                        <div className="section-title">Seasonal Roaming Calendar</div>
-                        <div className="cal-grid" style={{ gap: '4px' }}>
-                          {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m, i) => {
-                            const intensity = countryData.seasonal_roaming?.[i + 1] || 1;
-                            const colors = ['var(--bg-card3)', 'var(--bg-card3)', '#1e4080', '#1a5276', '#1abc9c'];
-                            const textColors = ['var(--text-secondary)', 'var(--text-secondary)', '#7fb3d3', '#fff', '#fff'];
-                            return (
-                              <div
-                                key={m}
-                                className="cal-month"
-                                style={{
-                                  background: colors[intensity - 1] || colors[0],
-                                  color: textColors[intensity - 1] || textColors[0],
-                                  fontWeight: intensity >= 3 ? '600' : 'normal',
-                                  padding: '8px 2px'
-                                }}
-                                title={`${m}: ${['No data', 'Minimal', 'Low', 'Moderate', 'High', 'Peak'][intensity] || 'Normal'} roaming`}
-                              >
-                                {m}
-                              </div>
-                            );
-                          })}
-                        </div>
-                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '10px' }}>
-                          {['No data', 'Minimal', 'Moderate', 'High', 'Peak'].map((l, i) => {
-                            const c = ['var(--bg-card3)', 'var(--bg-card3)', '#1e4080', '#1a5276', '#1abc9c'][i];
-                            return (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '9px', color: 'var(--text-muted)' }} key={l}>
-                                <div style={{ width: '8px', height: '8px', background: c, borderRadius: '2px' }}></div>
-                                {l}
-                              </div>
-                            );
-                          })}
+                      <div className="section" style={{ marginBottom: 0 }}>
+                        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px', height: '100%', boxSizing: 'border-box' }}>
+                          <div className="section-title" style={{ marginBottom: '16px' }}>Seasonal Roaming Calendar</div>
+                          <div className="cal-grid" style={{ gap: '4px' }}>
+                            {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m, i) => {
+                              const intensity = countryData.seasonal_roaming?.[i + 1] || 1;
+                              const colors = ['var(--bg-card3)', 'var(--bg-card3)', '#1e4080', '#1a5276', '#1abc9c'];
+                              const textColors = ['var(--text-secondary)', 'var(--text-secondary)', '#7fb3d3', '#fff', '#fff'];
+                              return (
+                                <div
+                                  key={m}
+                                  className="cal-month"
+                                  style={{
+                                    background: colors[intensity - 1] || colors[0],
+                                    color: textColors[intensity - 1] || textColors[0],
+                                    fontWeight: intensity >= 3 ? '600' : 'normal',
+                                    padding: '8px 2px'
+                                  }}
+                                  title={`${m}: ${['No data', 'Minimal', 'Low', 'Moderate', 'High', 'Peak'][intensity] || 'Normal'} roaming`}
+                                >
+                                  {m}
+                                </div>
+                              );
+                            })}
+                          </div>
+                          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '10px' }}>
+                            {['No data', 'Minimal', 'Moderate', 'High', 'Peak'].map((l, i) => {
+                              const c = ['var(--bg-card3)', 'var(--bg-card3)', '#1e4080', '#1a5276', '#1abc9c'][i];
+                              return (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '9px', color: 'var(--text-muted)' }} key={l}>
+                                  <div style={{ width: '8px', height: '8px', background: c, borderRadius: '2px' }}></div>
+                                  {l}
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
                       </div>
           
-                      <div className="section">
-                        <div className="section-title">Impact Analysis Dimensions</div>
-                        {(() => {
-                          const dims = [
-                            { label: 'Outbound Roaming Impact', key: 'ia_outbound_impact' },
-                            { label: 'Inbound Roaming Impact', key: 'ia_inbound_impact' },
-                            { label: 'ARPU Impact', key: 'ia_arpu_impact' },
-                            { label: 'App/OTT Substitution', key: 'ia_apps' },
-                            { label: 'Revenue Growth Outlook', key: 'ia_rev_growth' },
-                            { label: 'Profitability Outlook', key: 'ia_profitability' }
-                          ];
-          
-                          const op0 = (countryData.operators && countryData.operators[0]) || {};
-                          return dims.map(d => {
-                            const val = op0[d.key] || '—';
-                            const score = trendToScore(val);
-                            const barClr = ['#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#10b981'][score - 1] || '#3b82f6';
-                            if (val === '—' || val === 'nan' || val === '') return null;
-                            return (
-                              <div key={d.key} style={{ marginBottom: '8px' }}>
-                                <div className="percentile-row" style={{ marginBottom: '2px' }}>
-                                  <div className="perc-label" style={{ fontSize: '10px' }}>{d.label}</div>
-                                  <div className="perc-bar" style={{ height: '4px' }}>
-                                    <div className="perc-fill" style={{ width: `${(score / 5) * 100}%`, background: barClr }}></div>
+                      <div className="section" style={{ marginBottom: 0 }}>
+                        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px', height: '100%', boxSizing: 'border-box' }}>
+                          <div className="section-title" style={{ marginBottom: '16px' }}>Impact Analysis Dimensions</div>
+                          {(() => {
+                            const dims = [
+                              { label: 'Outbound Roaming Impact', key: 'ia_outbound_impact' },
+                              { label: 'Inbound Roaming Impact', key: 'ia_inbound_impact' },
+                              { label: 'ARPU Impact', key: 'ia_arpu_impact' },
+                              { label: 'App/OTT Substitution', key: 'ia_apps' },
+                              { label: 'Revenue Growth Outlook', key: 'ia_rev_growth' },
+                              { label: 'Profitability Outlook', key: 'ia_profitability' }
+                            ];
+            
+                            const op0 = (countryData.operators && countryData.operators[0]) || {};
+                            return dims.map(d => {
+                              const val = op0[d.key] || '—';
+                              const score = trendToScore(val);
+                              const barClr = ['#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#10b981'][score - 1] || '#3b82f6';
+                              if (val === '—' || val === 'nan' || val === '') return null;
+                              return (
+                                <div key={d.key} style={{ marginBottom: '8px' }}>
+                                  <div className="percentile-row" style={{ marginBottom: '2px' }}>
+                                    <div className="perc-label" style={{ fontSize: '10px' }}>{d.label}</div>
+                                    <div className="perc-bar" style={{ height: '4px' }}>
+                                      <div className="perc-fill" style={{ width: `${(score / 5) * 100}%`, background: barClr }}></div>
+                                    </div>
+                                    <div className="perc-value" style={{ color: barClr, fontSize: '10px' }}>{score}/5</div>
                                   </div>
-                                  <div className="perc-value" style={{ color: barClr, fontSize: '10px' }}>{score}/5</div>
+                                  <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginLeft: '128px' }}>
+                                    {val.substring(0, 120)}
+                                  </div>
                                 </div>
-                                <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginLeft: '128px' }}>
-                                  {val.substring(0, 120)}
-                                </div>
-                              </div>
-                            );
-                          });
-                        })()}
+                              );
+                            });
+                          })()}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1786,9 +1791,10 @@ export default function DynamicCenterDashboard({
                     </div>
           
                     <div className="section" style={{ marginTop: '20px' }}>
-                      <div className="section-title">Full Product Ranking Table</div>
-                      <div style={{ overflowX: 'auto', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '6px' }}>
-                        <table className="op-table" style={{ width: '100%' }}>
+                      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px' }}>
+                        <div className="section-title" style={{ marginBottom: '16px' }}>Full Product Ranking Table</div>
+                        <div style={{ overflowX: 'auto' }}>
+                          <table className="op-table" style={{ width: '100%' }}>
                           <thead>
                             <tr>
                               <th style={{ width: '40px' }}>#</th>
@@ -1822,6 +1828,7 @@ export default function DynamicCenterDashboard({
                             })}
                           </tbody>
                         </table>
+                        </div>
                       </div>
                     </div>
                 </div>
@@ -1879,18 +1886,19 @@ export default function DynamicCenterDashboard({
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                           {/* Recommended Products Table */}
                           <div>
-                            <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>
-                              Recommended Products & Revenue Distribution
-                              {renderEditedBadge('productsFocusedOn', accountData.plan2026)}
-                            </div>
-                            <div style={{ overflowX: 'auto', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--bg-card)' }}>
-                              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px' }}>
+                              <div className="section-title" style={{ marginBottom: '16px' }}>
+                                Recommended Products & Revenue Distribution
+                                {renderEditedBadge('productsFocusedOn', accountData.plan2026)}
+                              </div>
+                              <div style={{ overflowX: 'auto' }}>
+                                <table className="op-table" style={{ width: '100%' }}>
                                 <thead>
-                                  <tr style={{ background: 'var(--bg-card2)', borderBottom: '1px solid var(--border)' }}>
-                                    <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: '700', color: 'var(--text-primary)', width: '160px' }}>MOBILEUM PRODUCT USED</th>
-                                    <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: '700', color: 'var(--text-primary)' }}>PRODUCT NAME</th>
-                                    <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: '700', color: 'var(--text-primary)', width: '120px' }}>VALUE</th>
-                                    <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: '700', color: 'var(--text-primary)', width: '180px' }}>TYPE OF CHANNEL</th>
+                                  <tr>
+                                    <th style={{ width: '160px' }}>MOBILEUM PRODUCT USED</th>
+                                    <th>PRODUCT NAME</th>
+                                    <th style={{ width: '120px' }}>VALUE</th>
+                                    <th style={{ width: '180px' }}>TYPE OF CHANNEL</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -1938,6 +1946,7 @@ export default function DynamicCenterDashboard({
                                   })}
                                 </tbody>
                               </table>
+                              </div>
                             </div>
                           </div>
           
@@ -2139,19 +2148,22 @@ export default function DynamicCenterDashboard({
       {/* ── TAB: STATS PROFILE ── */}
       {activeTab === 'stats' && (
         <div className="tab-content active" style={{ padding: '12px 0 0 0', display: 'block' }}>
-          <div className="responsive-grid-12">
-            <div className="chart-wrap">
-              <div className="chart-title">Position vs Region Peers Bubble Chart</div>
-              <div style={{ height: '220px' }}>
-                <canvas ref={statsBubbleRef} id="stats_bubble"></canvas>
-              </div>
-              <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginTop: '6px', textAlign: 'center' }}>
-                X: Mobile Penetration · Y: GDP Growth · Size: Population · Color: Cluster
+          <div className="responsive-grid-2">
+            <div className="section" style={{ marginBottom: 0 }}>
+              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
+                <div className="section-title" style={{ marginBottom: '16px' }}>Position vs Region Peers Bubble Chart</div>
+                <div style={{ flex: 1, position: 'relative', minHeight: '220px' }}>
+                  <canvas ref={statsBubbleRef} id="stats_bubble" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}></canvas>
+                </div>
+                <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginTop: '10px', textAlign: 'center' }}>
+                  X: Mobile Penetration · Y: GDP Growth · Size: Population · Color: Cluster
+                </div>
               </div>
             </div>
 
-            <div className="section">
-              <div className="section-title">Global Percentile Rankings</div>
+            <div className="section" style={{ marginBottom: 0 }}>
+              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
+                <div className="section-title" style={{ marginBottom: '16px' }}>Global Percentile Rankings</div>
               {(() => {
                 const p = countryData.percentiles || {};
                 const ga = metadata.global_averages || {};
@@ -2170,29 +2182,25 @@ export default function DynamicCenterDashboard({
                   if (perc === null || perc === undefined) return null;
                   const barClr = perc > 75 ? '#10b981' : perc > 50 ? '#3b82f6' : perc > 25 ? '#f59e0b' : '#ef4444';
                   return (
-                    <div style={{ marginBottom: '10px' }} key={m.key}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
-                        <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{m.label}</span>
-                        <span style={{ fontSize: '10px', color: 'var(--text-primary)', fontWeight: '600' }}>
-                          {typeof m.val === 'number' ? m.val.toFixed(0) + (m.unit === 'USD' ? ' USD' : '%') : '—'}
-                        </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }} key={m.key}>
+                      <div style={{ fontSize: '9px', color: 'var(--text-muted)', width: '130px', flexShrink: 0, textAlign: 'left' }}>
+                        {m.label}
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div className="perc-bar" style={{ flex: 1, height: '4px' }}>
-                          <div className="perc-fill" style={{ width: `${perc}%`, background: barClr, height: '100%' }}></div>
-                        </div>
-                        <span style={{ fontSize: '10px', fontWeight: '600', color: barClr, width: '35px', textAlign: 'right' }}>
-                          {perc}th
-                        </span>
+                      <div className="perc-bar" style={{ flex: 1, height: '4px', background: 'var(--bg-card3)', borderRadius: '2px' }}>
+                        <div className="perc-fill" style={{ width: `${perc}%`, background: barClr, height: '100%', borderRadius: '2px' }}></div>
+                      </div>
+                      <div style={{ fontSize: '9px', color: 'var(--text-primary)', fontWeight: '600', width: '70px', textAlign: 'right', flexShrink: 0 }}>
+                        {typeof m.val === 'number' ? m.val.toFixed(0) + (m.unit === 'USD' ? ' USD' : '%') : '—'}
+                      </div>
+                      <div style={{ fontSize: '9px', fontWeight: '600', color: barClr, width: '30px', textAlign: 'right', flexShrink: 0 }}>
+                        {perc}th
                       </div>
                     </div>
                   );
                 });
               })()}
+              </div>
             </div>
-          </div>
-
-          <div className="responsive-grid-2" style={{ marginTop: '20px' }}>
             {(() => {
               const peers = Object.entries(allCountries)
                 .filter(([k, cv]) => cv.cluster_name === countryData.cluster_name && k !== selectedCountry)
@@ -2200,10 +2208,11 @@ export default function DynamicCenterDashboard({
 
               if (peers.length > 0) {
                 return (
-                  <div className="section">
-                    <div className="section-title">Cluster Peers — {countryData.cluster_name}</div>
-                    <div style={{ overflowX: 'auto', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '6px' }}>
-                      <table className="op-table" style={{ width: '100%' }}>
+                  <div className="section" style={{ marginBottom: 0 }}>
+                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
+                      <div className="section-title" style={{ marginBottom: '16px' }}>Cluster Peers — {countryData.cluster_name}</div>
+                      <div style={{ overflowX: 'auto' }}>
+                        <table className="op-table" style={{ width: '100%' }}>
                         <thead>
                           <tr>
                             <th>Country</th>
@@ -2223,14 +2232,16 @@ export default function DynamicCenterDashboard({
                           ))}
                         </tbody>
                       </table>
+                      </div>
                     </div>
                   </div>
                 );
               }
             })()}
 
-            <div className="section">
-              <div className="section-title">Fraud Risk Decomposition</div>
+            <div className="section" style={{ marginBottom: 0 }}>
+              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <div className="section-title" style={{ marginBottom: '16px' }}>Fraud Risk Decomposition</div>
               {(() => {
                 const op0 = (countryData.operators && countryData.operators[0]) || {};
                 const fraudDims = [
@@ -2246,30 +2257,30 @@ export default function DynamicCenterDashboard({
                 const color = fraudPct > 70 ? 'var(--red)' : fraudPct > 50 ? 'var(--yellow)' : 'var(--green)';
 
                 return (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ textAlign: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flex: 1, padding: '10px 0' }}>
+                    <div style={{ textAlign: 'center', width: '80px', flexShrink: 0, paddingRight: '20px', borderRight: '1px solid var(--border)' }}>
                       <div style={{ fontSize: '26px', fontWeight: '800', color }}>
                         {fraudPct}%
                       </div>
-                      <div style={{ fontSize: '8px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                      <div style={{ fontSize: '8px', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '4px' }}>
                         Index
                       </div>
                     </div>
-                    <div style={{ flex: 1 }}>
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px', justifyContent: 'center' }}>
                       {fraudDims.map(d => {
                         const w = (d.score / 5) * 100;
                         const c = d.score >= 4 ? 'var(--red)' : d.score >= 3 ? 'var(--yellow)' : 'var(--green)';
                         return (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }} key={d.label}>
-                            <span style={{ fontSize: '9px', color: 'var(--text-muted)', width: '120px', flexShrink: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }} key={d.label}>
+                            <div style={{ fontSize: '9px', color: 'var(--text-muted)', width: '130px', flexShrink: 0, textAlign: 'left' }}>
                               {d.label}
-                            </span>
-                            <div className="perc-bar" style={{ flex: 1, height: '3px' }}>
-                              <div className="perc-fill" style={{ width: `${w}%`, background: c, height: '100%' }}></div>
                             </div>
-                            <span style={{ fontSize: '9px', fontWeight: '600', color: c, width: '15px', textAlign: 'right' }}>
+                            <div className="perc-bar" style={{ flex: 1, height: '4px', background: 'var(--bg-card3)', borderRadius: '2px' }}>
+                              <div className="perc-fill" style={{ width: `${w}%`, background: c, height: '100%', borderRadius: '2px' }}></div>
+                            </div>
+                            <div style={{ fontSize: '9px', fontWeight: '600', color: c, width: '20px', textAlign: 'right', flexShrink: 0 }}>
                               {d.score}
-                            </span>
+                            </div>
                           </div>
                         );
                       })}
@@ -2277,6 +2288,7 @@ export default function DynamicCenterDashboard({
                   </div>
                 );
               })()}
+              </div>
             </div>
           </div>
         </div>

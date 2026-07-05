@@ -146,7 +146,7 @@ export default function FinancialReports({ operator, country, operators, operato
       {/* ---- Illustrative quarterly trend (clearly marked sample data) ---- */}
       <div className="financial-card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
-          <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)' }}>
+          <div className="section-title">
             Quarterly Trend
           </div>
           <div style={badge('rgba(245,158,11,0.1)', 'var(--yellow)', 'rgba(245,158,11,0.3)')}>
@@ -157,12 +157,12 @@ export default function FinancialReports({ operator, country, operators, operato
           Operators do not publish per-quarter standalone splits. The shape below is synthetic demo
           data showing how reported quarterly data would render — it is not a real financial figure.
         </div>
-        <div style={{ overflowX: 'auto', borderRadius: '8px', border: '1px solid var(--border)' }}>
-          <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="op-table" style={{ width: '100%' }}>
             <thead>
-              <tr style={{ background: 'var(--bg-card2)' }}>
+              <tr>
                 {['Quarter', 'Index (sample)', 'QoQ', 'Status'].map((h) => (
-                  <th key={h} style={{ padding: '12px 16px', fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '1px solid var(--border)' }}>{h}</th>
+                  <th key={h}>{h}</th>
                 ))}
               </tr>
             </thead>

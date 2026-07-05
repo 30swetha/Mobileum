@@ -183,19 +183,11 @@ export default function ComparisonModal({
             </>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
+              <div style={{ overflowX: 'auto', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '6px' }}>
+                <table className="op-table" style={{ width: '100%' }}>
                   <thead>
                     <tr>
-                      <th style={{
-                        textAlign: 'left',
-                        padding: '8px 10px',
-                        color: 'var(--text-muted)',
-                        fontSize: '9px',
-                        textTransform: 'uppercase',
-                        borderBottom: '1px solid var(--border)',
-                        width: '20%'
-                      }}>
+                      <th style={{ width: '20%' }}>
                         Metric
                       </th>
                       {selectedCountriesData.map(c => (
@@ -203,10 +195,6 @@ export default function ComparisonModal({
                           key={c.name}
                           style={{
                             textAlign: 'center',
-                            padding: '8px 10px',
-                            fontSize: '13px',
-                            fontWeight: '700',
-                            borderBottom: '1px solid var(--border)',
                             width: colW,
                             color: 'var(--text-primary)'
                           }}

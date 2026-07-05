@@ -417,10 +417,19 @@ export default function SidePanel({
   const hmColor = (score) => {
     const s = Math.max(0, Math.min(100, score || 0));
     if (s < 20) return '#ef4444';
-    if (s < 40) return '#f59e0b';
-    if (s < 60) return '#3b82f6';
-    if (s < 80) return '#10b981';
-    return '#06d6a0';
+    if (s < 40) return 'rgba(245, 158, 11, 0.15)';
+    if (s < 60) return 'rgba(59, 130, 246, 0.15)';
+    if (s < 80) return 'rgba(16, 185, 129, 0.15)';
+    return 'rgba(16, 185, 129, 0.25)';
+  };
+
+  const getBadgeColor = (score) => {
+    const s = Math.max(0, Math.min(100, score || 0));
+    if (s < 20) return { border: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)', text: '#ef4444' };
+    if (s < 40) return { border: '#f59e0b', bg: 'rgba(245, 158, 11, 0.15)', text: '#d97706' };
+    if (s < 60) return { border: '#3b82f6', bg: 'rgba(59, 130, 246, 0.15)', text: '#2563eb' };
+    if (s < 80) return { border: '#10b981', bg: 'rgba(16, 185, 129, 0.15)', text: '#059669' };
+    return { border: '#10b981', bg: 'rgba(16, 185, 129, 0.25)', text: '#059669' };
   };
 
   return (
@@ -589,9 +598,10 @@ export default function SidePanel({
           </div>
 
           <div className="section">
-            <div className="section-title">Operator Health Matrix</div>
-            <div className="heatmap-wrap">
-              <table className="heatmap-table">
+            <div className="heatmap-wrap" style={{ border: '1px solid var(--border)', borderRadius: '10px', background: 'var(--bg-card)', padding: '16px' }}>
+              <div className="section-title" style={{ marginBottom: '16px' }}>Operator Health Matrix</div>
+              <div style={{ overflowX: 'auto' }}>
+                <table className="heatmap-table" style={{ width: '100%' }}>
                 <thead>
                   <tr>
                     <th style={{ textAlign: 'left' }}>Operator</th>
@@ -646,6 +656,7 @@ export default function SidePanel({
                   })}
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
 
@@ -666,17 +677,17 @@ export default function SidePanel({
                     <div
                       className="score-circle"
                       style={{
-                        borderColor: hmColor(op.profitability_score * 20),
-                        color: hmColor(op.profitability_score * 20),
-                        fontSize: '9px',
-                        width: '44px',
-                        height: '44px',
+                        borderColor: getBadgeColor(op.profitability_score * 20).border,
+                        backgroundColor: getBadgeColor(op.profitability_score * 20).bg,
+                        color: getBadgeColor(op.profitability_score * 20).text,
+                        width: '48px',
+                        height: '48px',
                         flexDirection: 'column',
-                        gap: '1px'
+                        gap: '2px'
                       }}
                     >
-                      <div>{op.profitability_score}/5</div>
-                      <div style={{ fontSize: '8px' }}>HLTH</div>
+                      <div style={{ fontSize: '13px' }}>{op.profitability_score}/5</div>
+                      <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>HLTH</div>
                     </div>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginTop: '8px', fontSize: '10px', color: 'var(--text-secondary)' }}>
@@ -951,7 +962,8 @@ export default function SidePanel({
           )}
 
           <div className="section">
-            <div className="section-title">Global Percentile Rankings</div>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px' }}>
+              <div className="section-title" style={{ marginBottom: '16px' }}>Global Percentile Rankings</div>
             {(() => {
               const p = countryData.percentiles || {};
               const ga = metadata.global_averages || {};
@@ -994,6 +1006,7 @@ export default function SidePanel({
                 );
               });
             })()}
+            </div>
           </div>
 
           <div className="chart-wrap">

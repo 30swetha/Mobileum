@@ -5,6 +5,8 @@ import OutstandingAMCTable from './OutstandingAMCTable';
 import CompetitorsTable from './CompetitorsTable';
 import FinancialReports from './FinancialReports';
 import GenericFormModal from './GenericFormModal';
+import ProductEditModal from './ProductEditModal';
+import PlanEditModal from './PlanEditModal';
 
 const CLUSTER_COLORS = {
   'Frontier': '#E74C3C',
@@ -79,12 +81,16 @@ export default function DynamicCenterDashboard({
   activeRegion,
   onCloseOverview,
   submissions = [],
-  onAddSubmission
+  onAddSubmission,
+  onExportReport,
+  onUpdateAccountData
 }) {
   const chartRefs = useRef({});
   const [activeSubTab, setActiveSubTab] = useState('profile');
   const [productStates, setProductStates] = useState({});
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
   const [formTitle, setFormTitle] = useState('');
   const [formType, setFormType] = useState(''); // 'plan' or 'product'
 
@@ -436,6 +442,24 @@ export default function DynamicCenterDashboard({
           options: {
             responsive: true,
             maintainAspectRatio: false,
+            animation: {
+              onComplete: (context) => {
+                const chart = context.chart;
+                const ctx = chart.ctx;
+                ctx.font = '10px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-primary') || '#333';
+                chart.data.datasets.forEach((dataset, i) => {
+                  const meta = chart.getDatasetMeta(i);
+                  meta.data.forEach((bar, index) => {
+                    const data = rawVals[index];
+                    const text = `${data >= 0 ? '+' : ''}${data}%`;
+                    ctx.fillText(text, bar.x, bar.y - 5);
+                  });
+                });
+              }
+            },
             plugins: {
               legend: { display: false },
               tooltip: {
@@ -675,17 +699,46 @@ export default function DynamicCenterDashboard({
           )}
         </div>
 
-        <div id="panel-title" style={{ fontSize: '24px', fontWeight: '800' }}>
-          {selectedCountry 
-            ? <>{getFlagEmoji(countryData.iso)} {selectedCountry} Operator Details</>
-            : <>🌍 {activeRegion === 'all' ? 'Global Overview' : `${activeRegion} Regional Overview`}</>
-          }
-        </div>
-        <div id="panel-subtitle" style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-          {selectedCountry 
-            ? 'Active intelligence, operator benchmarks, support service levels, and competitor analytics.'
-            : 'Aggregated regional telecom statistics, operator distributions, and market benchmarks.'
-          }
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '20px' }}>
+          <div>
+            <div id="panel-title" style={{ fontSize: '24px', fontWeight: '800', marginTop: '10px' }}>
+              {selectedCountry 
+                ? <>{getFlagEmoji(countryData.iso)} {selectedCountry} Operator Details</>
+                : <>🌍 {activeRegion === 'all' ? 'Global Overview' : `${activeRegion} Regional Overview`}</>
+              }
+            </div>
+            <div id="panel-subtitle" style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+              {selectedCountry 
+                ? 'Active intelligence, operator benchmarks, support service levels, and competitor analytics.'
+                : 'Aggregated regional telecom statistics, operator distributions, and market benchmarks.'
+              }
+            </div>
+          </div>
+          {onExportReport && selectedCountry && (
+            <button
+              onClick={onExportReport}
+              style={{
+                background: 'var(--blue)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '8px 14px',
+                fontSize: '11px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 4px 12px rgba(37,99,235,0.2)',
+                whiteSpace: 'nowrap',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
+              onMouseOut={(e) => e.currentTarget.style.transform = 'none'}
+            >
+              ↓ Export Report
+            </button>
+          )}
         </div>
       </div>
 
@@ -1225,9 +1278,7 @@ export default function DynamicCenterDashboard({
                   <span>Product Section</span>
                   <button
                     onClick={() => {
-                      setFormType('product');
-                      setFormTitle('Submit Product Request Details');
-                      setIsFormOpen(true);
+                      setIsProductModalOpen(true);
                     }}
                     className="form-trigger-btn"
                   >
@@ -1304,8 +1355,20 @@ export default function DynamicCenterDashboard({
                       <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         Final Strategies
                       </div>
-                      <ul style={{ margin: '0', paddingLeft: '18px', color: 'var(--text-secondary)', fontSize: '11px', lineHeight: '1.6' }}>
-                        {(accountData.productSection?.finalStrategies || []).map(item => <li key={item}>{item}</li>)}
+                      <ul style={{ margin: '0', paddingLeft: '18px', color: 'var(--text-secondary)', fontSize: '11px', lineHeight: '1.6', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {(accountData.productSection?.finalStrategies || []).map((item, idx) => (
+                          <li key={idx} className="strategy-row">
+                            <div style={{ marginBottom: '6px' }}>{item.text || item}</div>
+                            {item.rtpStatus && (
+                              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px' }}>
+                                <span className={`chip-rtp chip-rtp-${item.rtpStatus.replace(/\s+/g, '').toLowerCase()}`}>
+                                  {item.rtpStatus}
+                                </span>
+                                <span className="badge-engagement">{item.engagementType}</span>
+                              </div>
+                            )}
+                          </li>
+                        ))}
                       </ul>
                     </div>
                   </div>
@@ -1726,12 +1789,24 @@ export default function DynamicCenterDashboard({
                     {accountData?.plan2026 ? (
                       <div className="section" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                         <div style={{ fontSize: '15px', fontWeight: '800', color: 'var(--blue)', marginBottom: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
-                          <span>Mobileum 2026 Strategic Plan</span>
+                          <div>
+                            <span>Mobileum 2026 Strategic Plan</span>
+                            {accountData.productSection?.finalStrategies && (
+                              <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'normal', marginTop: '4px' }}>
+                                RTP Status: {
+                                  (() => {
+                                    const strats = accountData.productSection.finalStrategies;
+                                    const granted = strats.filter(s => s.rtpStatus === 'Granted').length;
+                                    const pending = strats.filter(s => s.rtpStatus === 'Pending').length;
+                                    return `${granted} Granted, ${pending} Pending`;
+                                  })()
+                                }
+                              </div>
+                            )}
+                          </div>
                           <button
                             onClick={() => {
-                              setFormType('plan');
-                              setFormTitle('Submit 2026 Plan Details');
-                              setIsFormOpen(true);
+                              setIsPlanModalOpen(true);
                             }}
                             className="form-trigger-btn"
                           >
@@ -1784,24 +1859,16 @@ export default function DynamicCenterDashboard({
                                           {val}
                                         </td>
                                         <td style={{ padding: '10px 12px' }}>
-                                          <select
-                                            value={state.channel}
-                                            onChange={(e) => setProductStateValue(product, 'channel', e.target.value)}
-                                            style={{
-                                              background: 'var(--bg-card2)',
-                                              border: '1px solid var(--border)',
-                                              borderRadius: '6px',
-                                              color: 'var(--text-primary)',
-                                              padding: '4px 8px',
-                                              fontSize: '11px',
-                                              outline: 'none',
-                                              cursor: 'pointer',
-                                              width: '100%'
-                                            }}
-                                          >
-                                            <option value="Licensed">Licensed</option>
-                                            <option value="Mobileum Service">Mobileum Service</option>
-                                          </select>
+                                          <div className="custom-select-wrapper">
+                                            <select
+                                              value={state.channel}
+                                              onChange={(e) => setProductStateValue(product, 'channel', e.target.value)}
+                                              className="custom-channel-select"
+                                            >
+                                              <option value="Licensed">Licensed</option>
+                                              <option value="Mobileum Service">Mobileum Service</option>
+                                            </select>
+                                          </div>
                                         </td>
                                       </tr>
                                     );
@@ -1836,10 +1903,56 @@ export default function DynamicCenterDashboard({
                             <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.05em' }}>
                               Consulting Trials Given & Next Steps
                             </div>
-                            <div className="product-card" style={{ padding: '12px 16px', margin: 0, cursor: 'default', fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.6', borderRadius: '8px', background: 'var(--bg-card2)', border: '1px solid var(--border)' }}>
+                            <div className="product-card hoverable-card" style={{ padding: '12px 16px', margin: 0, cursor: 'default', fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.6', borderRadius: '8px', background: 'var(--bg-card2)', border: '1px solid var(--border)' }}>
                               {accountData.plan2026.consultingTrialsGiven}
                             </div>
                           </div>
+
+                          {/* 5. New Fields if they exist */}
+                          {accountData.plan2026.winProbability && (
+                            <div>
+                              <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.05em' }}>
+                                Win Probability (%)
+                              </div>
+                              <div className="product-card hoverable-card" style={{ padding: '12px 16px', margin: 0, cursor: 'default', fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.6', borderRadius: '8px', background: 'var(--bg-card2)', border: '1px solid var(--border)' }}>
+                                {accountData.plan2026.winProbability}
+                              </div>
+                            </div>
+                          )}
+                          {accountData.plan2026.weightedPipelineValue && (
+                            <div>
+                              <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.05em' }}>
+                                Weighted Pipeline Value
+                              </div>
+                              <div className="product-card hoverable-card" style={{ padding: '12px 16px', margin: 0, cursor: 'default', fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.6', borderRadius: '8px', background: 'var(--bg-card2)', border: '1px solid var(--border)' }}>
+                                {accountData.plan2026.weightedPipelineValue}
+                              </div>
+                            </div>
+                          )}
+                          {accountData.plan2026.quarterlyMilestoneBreakdown && (
+                            <div>
+                              <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.05em' }}>
+                                Quarterly Milestone Breakdown
+                              </div>
+                              <div className="product-card hoverable-card" style={{ padding: '12px 16px', margin: 0, cursor: 'default', fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.6', borderRadius: '8px', background: 'var(--bg-card2)', border: '1px solid var(--border)' }}>
+                                {accountData.plan2026.quarterlyMilestoneBreakdown}
+                              </div>
+                            </div>
+                          )}
+                          {accountData.plan2026.topTargetAccounts?.length > 0 && (
+                            <div>
+                              <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.05em' }}>
+                                Top Target Accounts
+                              </div>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                {accountData.plan2026.topTargetAccounts.map(item => (
+                                  <span key={item} className="target-account-tag">
+                                    {item}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
 
                           {/* Plan Submissions Section for populated case */}
                           {(() => {
@@ -2184,32 +2297,26 @@ export default function DynamicCenterDashboard({
       )}
       </div>
 
-      {/* ── Scroll Navigation Controls for Account Section (third tab) ── */}
-      {activeTab === 'account' && (
-        <>
-          <button 
-            className="scroll-nav-arrow scroll-up" 
-            onClick={() => panelRef.current?.scrollBy({ top: -300, behavior: 'smooth' })}
-            title="Scroll Up"
-          >
-            ▲
-          </button>
-          <button 
-            className="scroll-nav-arrow scroll-down" 
-            onClick={() => panelRef.current?.scrollBy({ top: 300, behavior: 'smooth' })}
-            title="Scroll Down"
-          >
-            ▼
-          </button>
-        </>
-      )}
-
       {/* Reusable Form Modal */}
       <GenericFormModal
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
         onSubmit={handleFormSubmit}
         title={formTitle}
+      />
+      <ProductEditModal
+        isOpen={isProductModalOpen}
+        onClose={() => setIsProductModalOpen(false)}
+        accountData={accountData}
+        countryName={selectedCountry}
+        onSave={(newData) => onUpdateAccountData(selectedCountry, newData)}
+      />
+      <PlanEditModal
+        isOpen={isPlanModalOpen}
+        onClose={() => setIsPlanModalOpen(false)}
+        accountData={accountData}
+        countryName={selectedCountry}
+        onSave={(newData) => onUpdateAccountData(selectedCountry, newData)}
       />
     </div>
   );

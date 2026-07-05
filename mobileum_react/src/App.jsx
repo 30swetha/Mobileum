@@ -89,9 +89,9 @@ const MOCK_ACCOUNT_INSIGHTS = {
       managedServicesPossibility: ['24x7 operations support', 'Fraud analytics tuning', 'Roaming performance managed service'],
       replaceableCompetitors: ['Syniverse', 'Subex'],
       finalStrategies: [
-        'Displace Syniverse clearing footprint at STC and Mobily via Roaming DNA integration',
-        'Pitch RAID 9 Fraud Management to Zain KSA to replace legacy Subex assurance stack',
-        'Deploy Roaming DNA active steering trials to capture high-value outbound business routes'
+        { text: 'Displace Syniverse clearing footprint at STC and Mobily via Roaming DNA integration', rtpStatus: 'Not Requested', engagementType: 'Product' },
+        { text: 'Pitch RAID 9 Fraud Management to Zain KSA to replace legacy Subex assurance stack', rtpStatus: 'Not Requested', engagementType: 'Product' },
+        { text: 'Deploy Roaming DNA active steering trials to capture high-value outbound business routes', rtpStatus: 'Not Requested', engagementType: 'Product' }
       ]
     },
     financialSection: {
@@ -136,9 +136,9 @@ const MOCK_ACCOUNT_INSIGHTS = {
       managedServicesPossibility: ['Managed QA and incident response', 'Roaming performance optimization service'],
       replaceableCompetitors: ['BICS', 'Tomia'],
       finalStrategies: [
-        'Replace BICS roaming hub at e& UAE with Mobileum eSIM solutions and steering systems',
-        'Position modern signaling firewall trials at du to address OTT bypass substitution',
-        'Initiate eSIM & OTA platform sandbox onboarding workshop to capture digital nomads'
+        { text: 'Replace BICS roaming hub at e& UAE with Mobileum eSIM solutions and steering systems', rtpStatus: 'Not Requested', engagementType: 'Product' },
+        { text: 'Position modern signaling firewall trials at du to address OTT bypass substitution', rtpStatus: 'Not Requested', engagementType: 'Product' },
+        { text: 'Initiate eSIM & OTA platform sandbox onboarding workshop to capture digital nomads', rtpStatus: 'Not Requested', engagementType: 'Product' }
       ]
     },
     financialSection: {
@@ -352,7 +352,13 @@ export default function App() {
       opInsight.productSection.mobileumProducts.forEach(p => allProducts.add(p));
       opInsight.productSection.competitionProducts.forEach(p => allCompetitors.add(p));
       opInsight.productSection.productGaps.forEach(p => allGaps.add(p));
-      opInsight.productSection.finalStrategies.forEach(s => allStrategies.push(`${op.operator}: ${s}`));
+      opInsight.productSection.finalStrategies.forEach(s => {
+        if (typeof s === 'object') {
+          allStrategies.push({ text: `${op.operator}: ${s.text}`, rtpStatus: s.rtpStatus, engagementType: s.engagementType });
+        } else {
+          allStrategies.push({ text: `${op.operator}: ${s}`, rtpStatus: 'Not Requested', engagementType: 'Product' });
+        }
+      });
 
       opInsight.renewalSection.amcRenewal.forEach(amc => {
         amcRenewal.push({
@@ -490,6 +496,7 @@ export default function App() {
   const [amcData, setAmcData] = useState([]);
   const [competitorData, setCompetitorData] = useState([]);
   const [accountData, setAccountData] = useState(null);
+  const [accountDataOverrides, setAccountDataOverrides] = useState({});
   const [submissions, setSubmissions] = useState([]);
 
   const handleAddSubmission = (formData) => {
@@ -507,6 +514,13 @@ export default function App() {
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('operators');
   const [selectedOperator, setSelectedOperator] = useState(null);
+
+  const handleUpdateAccountData = (country, newData) => {
+    setAccountDataOverrides(prev => ({
+      ...prev,
+      [country]: newData
+    }));
+  };
 
   const aggregateRegionData = (regionName) => {
     const activeCountriesList = Object.entries(countries).filter(([name, c]) => {
@@ -781,8 +795,8 @@ export default function App() {
       }
 
       const cData = countries[selectedCountry];
-      const tickets = getDynamicCountryTickets(selectedCountry, cData);
-
+      let tickets = getDynamicCountryTickets(selectedCountry, cData);
+      
       const ops = cData?.operators || [];
       const amcs = [];
       ops.forEach((op, opIdx) => {
@@ -810,12 +824,17 @@ export default function App() {
       setTicketData(tickets);
       setAmcData(amcs);
       setCompetitorData(MOCK_COMPETITORS);
-      setAccountData(opInsight);
+      
+      const mergedInsight = accountDataOverrides[selectedCountry]
+        ? { ...opInsight, ...accountDataOverrides[selectedCountry] }
+        : opInsight;
+      
+      setAccountData(mergedInsight);
       setIsDataLoading(false);
     }, 250);
 
     return () => clearTimeout(timer);
-  }, [selectedCountry, selectedOperator, activeRegion]);
+  }, [selectedCountry, selectedOperator, activeRegion, accountDataOverrides]);
 
   // Reset tab and operator on country change
   useEffect(() => {
@@ -857,7 +876,7 @@ export default function App() {
 
   const handleSelectSearchItem = (name) => {
     setSelectedCountry(name);
-    setSearchQuery(name);
+    setSearchQuery('');
     setSearchResults([]);
   };
 
@@ -1027,9 +1046,11 @@ export default function App() {
                   setSelectedCountry={setSelectedCountry}
                   submissions={submissions}
                   onAddSubmission={handleAddSubmission}
+                  onUpdateAccountData={handleUpdateAccountData}
                   activeRegion={activeRegion}
                   setActiveRegion={setActiveRegion}
                   onCloseOverview={() => {}}
+                  onExportReport={() => exportReport(selectedCountry, countries[selectedCountry], metadata)}
                 />
               </div>
             </>
@@ -1229,6 +1250,7 @@ export default function App() {
                     setSelectedCountry={setSelectedCountry}
                     submissions={submissions}
                     onAddSubmission={handleAddSubmission}
+                    onUpdateAccountData={handleUpdateAccountData}
                     activeRegion={activeRegion}
                     setActiveRegion={setActiveRegion}
                     onCloseOverview={() => setShowGlobalOverview(false)}
@@ -1267,15 +1289,6 @@ export default function App() {
         </div>
       )}
 
-      {/* EXPORT FLOATING REPORT BUTTON */}
-      {selectedCountry && (
-        <button
-          id="export-btn"
-          onClick={() => exportReport(selectedCountry, countries[selectedCountry], metadata)}
-        >
-          ↓ Export Report
-        </button>
-      )}
 
       {/* SIDE-BY-SIDE COMPARISON MODAL */}
       <ComparisonModal

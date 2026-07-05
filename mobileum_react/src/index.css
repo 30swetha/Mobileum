@@ -902,7 +902,7 @@ html, body {
 #export-btn {
   position: fixed;
   bottom: 20px;
-  right: 20px;
+  right: 60px;
   z-index: 999;
   background: var(--blue);
   color: #fff;
@@ -1097,7 +1097,7 @@ html, body {
 #export-btn {
   position: fixed;
   bottom: 20px;
-  right: 20px;
+  right: 60px;
   z-index: 999;
   background: var(--blue);
   color: #fff;
@@ -1174,6 +1174,30 @@ html, body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-secondary);
+}
+::-webkit-scrollbar-button:single-button {
+  background: transparent;
+  display: block;
+  height: 12px;
+  width: 12px;
+}
+::-webkit-scrollbar-button:single-button:vertical:decrement {
+  background: transparent url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="%2364748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>') no-repeat center center;
+}
+::-webkit-scrollbar-button:single-button:vertical:increment {
+  background: transparent url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="%2364748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>') no-repeat center center;
+}
+::-webkit-scrollbar-button:single-button:horizontal:decrement {
+  background: transparent url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="%2364748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>') no-repeat center center;
+}
+::-webkit-scrollbar-button:single-button:horizontal:increment {
+  background: transparent url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="%2364748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>') no-repeat center center;
+}
+::-webkit-scrollbar-button:vertical:start:increment,
+::-webkit-scrollbar-button:vertical:end:decrement,
+::-webkit-scrollbar-button:horizontal:start:increment,
+::-webkit-scrollbar-button:horizontal:end:decrement {
+  display: none;
 }
 
 /* ── RESPONSIVE ── */
@@ -1829,4 +1853,121 @@ html, body {
 .submission-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.04);
+}
+
+/* ── FINAL STRATEGIES CHIPS & BADGES ── */
+.strategy-row {
+  margin-bottom: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.strategy-row:hover {
+  background: var(--bg-card2);
+  transform: translateX(4px);
+  border-color: var(--blue-light);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.chip-rtp {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid;
+  display: inline-flex;
+  align-items: center;
+}
+.chip-rtp-granted {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--green);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+.chip-rtp-pending {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--amber);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+.chip-rtp-notrequested {
+  background: rgba(156, 163, 175, 0.1);
+  color: var(--text-muted);
+  border-color: rgba(156, 163, 175, 0.3);
+}
+
+.badge-engagement {
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--blue);
+  border: 1px solid rgba(37, 99, 235, 0.3);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── TARGET ACCOUNT TAGS ── */
+.target-account-tag {
+  background: var(--bg-card3);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.target-account-tag:hover {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+
+/* ── CUSTOM SELECT ── */
+.custom-select-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+.custom-select-wrapper::after {
+  content: '▼';
+  font-size: 8px;
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--text-muted);
+}
+.custom-channel-select {
+  appearance: none;
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  padding: 6px 24px 6px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  width: 100%;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.custom-channel-select:hover, .custom-channel-select:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+/* ── HOVERABLE CARDS ── */
+.hoverable-card {
+  transition: all 0.2s ease;
+}
+.hoverable-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-color: var(--blue-light);
 }

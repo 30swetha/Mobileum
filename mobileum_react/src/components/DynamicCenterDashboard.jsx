@@ -1186,14 +1186,13 @@ export default function DynamicCenterDashboard({
                     border: '1px solid var(--blue)',
                     borderRadius: '10px',
                     padding: '12px 16px',
-                    margin: '12px 20px 0 20px',
+                    margin: '0 20px 10px 20px',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     animation: 'fadeIn 0.25s ease-out'
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '16px' }}>💼</span>
                       <div>
                         <div style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-primary)' }}>
                           Operator Specific View: <span style={{ color: 'var(--blue)' }}>{selectedOperator}</span>
@@ -1226,7 +1225,7 @@ export default function DynamicCenterDashboard({
                   display: 'flex',
                   gap: '6px',
                   borderBottom: '1px solid var(--border)',
-                  padding: '6px 12px 6px 12px',
+                  padding: '6px 20px 6px 20px',
                   position: 'sticky',
                   top: 0,
                   background: 'var(--bg-card)',
@@ -1374,94 +1373,127 @@ export default function DynamicCenterDashboard({
                           <span style={{ fontSize: '9px', fontWeight: '600', color: 'var(--text-muted)' }}>Mobileum vs Market Competitors</span>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, auto) 1fr 1fr', gap: '10px' }}>
-                          {/* 1A. Mobileum Products (Fit Content - No Empty Gap!) */}
-                          <div style={{ background: 'var(--bg-card3)', border: '1px solid var(--border)', borderRadius: '6px', padding: '10px' }}>
-                            <div style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}>
-                              Mobileum Products
-                              {renderEditedBadge('mobileumProducts', accountData.productSection)}
-                            </div>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
-                              {(accountData.productSection?.mobileumProducts || []).map(item => (
-                                <span key={item} style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--blue)', border: '1px solid rgba(37, 99, 235, 0.2)', borderRadius: '5px', padding: '3px 7px', fontSize: '10px', fontWeight: '600', whiteSpace: 'nowrap' }}>
-                                  {item}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
+                        {(() => {
+                          const mobProds = accountData.productSection?.mobileumProducts || [];
+                          const compProds = accountData.productSection?.competitionProducts || [];
+                          const repComps = accountData.productSection?.replaceableCompetitors || [];
+                          
+                          // Condition: Mobileum products count is high and competition/replaceable competitors are low in count
+                          const isHighMobileumLowCompetitors = mobProds.length >= 6 && (compProds.length + repComps.length <= 4);
 
-                          {/* 1B. Competition Products */}
-                          <div style={{ background: 'var(--bg-card3)', border: '1px solid var(--border)', borderRadius: '6px', padding: '10px' }}>
-                            <div style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              Competition Products
-                              {renderEditedBadge('competitionProducts', accountData.productSection)}
+                          const renderMobileumBox = () => (
+                            <div style={{ background: 'var(--bg-card3)', border: '1px solid var(--border)', borderRadius: '6px', padding: '10px', height: '100%' }}>
+                              <div style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}>
+                                Mobileum Products
+                                {renderEditedBadge('mobileumProducts', accountData.productSection)}
+                              </div>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                                {mobProds.map(item => (
+                                  <span key={item} style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--blue)', border: '1px solid rgba(37, 99, 235, 0.2)', borderRadius: '5px', padding: '3px 7px', fontSize: '10px', fontWeight: '600', whiteSpace: 'nowrap' }}>
+                                    {item}
+                                  </span>
+                                ))}
+                              </div>
                             </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                              {(accountData.productSection?.competitionProducts || []).map((item, idx) => {
-                                const name = typeof item === 'object' ? (item.name || '') : String(item);
-                                const isSelected = typeof item === 'object' ? item.selected !== false : true;
-                                return (
-                                  <div
-                                    key={idx}
-                                    style={{
-                                      fontSize: '10px',
-                                      fontWeight: '700',
-                                      color: isSelected ? '#b45309' : 'var(--red)',
-                                      background: isSelected ? 'rgba(245, 158, 11, 0.15)' : 'rgba(239, 68, 68, 0.1)',
-                                      border: `1px solid ${isSelected ? 'rgba(245, 158, 11, 0.35)' : 'rgba(239, 68, 68, 0.25)'}`,
-                                      borderRadius: '6px',
-                                      padding: '5px 10px',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'space-between',
-                                      gap: '8px'
-                                    }}
-                                  >
-                                    <span>{name}</span>
-                                    {/* Square Tick Box on the right side */}
+                          );
+
+                          const renderCompetitionBox = (flexStyle = {}) => (
+                            <div style={{ background: 'var(--bg-card3)', border: '1px solid var(--border)', borderRadius: '6px', padding: '10px', ...flexStyle }}>
+                              <div style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                Competition Products
+                                {renderEditedBadge('competitionProducts', accountData.productSection)}
+                              </div>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                {compProds.map((item, idx) => {
+                                  const name = typeof item === 'object' ? (item.name || '') : String(item);
+                                  const isSelected = typeof item === 'object' ? item.selected !== false : true;
+                                  return (
                                     <div
+                                      key={idx}
                                       style={{
-                                        width: '16px',
-                                        height: '16px',
-                                        borderRadius: '4px',
-                                        border: `1.5px solid ${isSelected ? '#b45309' : 'var(--red)'}`,
-                                        background: isSelected ? '#b45309' : 'transparent',
-                                        color: '#ffffff',
-                                        fontSize: '11px',
-                                        fontWeight: '900',
+                                        fontSize: '10px',
+                                        fontWeight: '700',
+                                        color: isSelected ? '#b45309' : 'var(--red)',
+                                        background: isSelected ? 'rgba(245, 158, 11, 0.15)' : 'rgba(239, 68, 68, 0.1)',
+                                        border: `1px solid ${isSelected ? 'rgba(245, 158, 11, 0.35)' : 'rgba(239, 68, 68, 0.25)'}`,
+                                        borderRadius: '6px',
+                                        padding: '5px 10px',
                                         display: 'flex',
                                         alignItems: 'center',
-                                        justifyContent: 'center',
-                                        flexShrink: 0
+                                        justifyContent: 'space-between',
+                                        gap: '8px'
                                       }}
                                     >
-                                      {isSelected ? '✓' : ''}
+                                      <span>{name}</span>
+                                      <div
+                                        style={{
+                                          width: '16px',
+                                          height: '16px',
+                                          borderRadius: '4px',
+                                          border: `1.5px solid ${isSelected ? '#b45309' : 'var(--red)'}`,
+                                          background: isSelected ? '#b45309' : 'transparent',
+                                          color: '#ffffff',
+                                          fontSize: '11px',
+                                          fontWeight: '900',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          flexShrink: 0
+                                        }}
+                                      >
+                                        {isSelected ? '✓' : ''}
+                                      </div>
                                     </div>
-                                  </div>
-                                );
-                              })}
+                                  );
+                                })}
+                              </div>
                             </div>
-                          </div>
+                          );
 
-                          {/* 1C. Competitors to Replace (Heading in BLACK) */}
-                          <div style={{ background: 'var(--bg-card3)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '6px', padding: '10px' }}>
-                            <div style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              Competitors to Replace
-                              {renderEditedBadge('replaceableCompetitors', accountData.productSection)}
+                          const renderReplaceableBox = (flexStyle = {}) => (
+                            <div style={{ background: 'var(--bg-card3)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '6px', padding: '10px', ...flexStyle }}>
+                              <div style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                Competitors to Replace
+                                {renderEditedBadge('replaceableCompetitors', accountData.productSection)}
+                              </div>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                {repComps.map((item, idx) => {
+                                  const raw = typeof item === 'object' ? (item.name || item.text || '') : String(item || '');
+                                  const shortName = raw.includes('—') ? raw.split('—')[0].trim() : raw.includes('-') ? raw.split('-')[0].trim() : raw.split(' ')[0].trim();
+                                  return (
+                                    <div key={idx} style={{ background: 'rgba(239, 68, 68, 0.08)', color: 'var(--red)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '5px', padding: '4px 8px', fontSize: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                      <span style={{ fontSize: '11px', color: 'var(--red)' }}>•</span> {shortName}
+                                    </div>
+                                  );
+                                })}
+                              </div>
                             </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                              {(accountData.productSection?.replaceableCompetitors || []).map((item, idx) => {
-                                const raw = typeof item === 'object' ? (item.name || item.text || '') : String(item || '');
-                                const shortName = raw.includes('—') ? raw.split('—')[0].trim() : raw.includes('-') ? raw.split('-')[0].trim() : raw.split(' ')[0].trim();
-                                return (
-                                  <div key={idx} style={{ background: 'rgba(239, 68, 68, 0.08)', color: 'var(--red)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '5px', padding: '4px 8px', fontSize: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                    <span style={{ fontSize: '11px', color: 'var(--red)' }}>•</span> {shortName}
-                                  </div>
-                                );
-                              })}
+                          );
+
+                          if (isHighMobileumLowCompetitors) {
+                            return (
+                              <div style={{ display: 'grid', gridTemplateColumns: '65% calc(35% - 10px)', gap: '10px' }}>
+                                {/* Left: 65% Mobileum Products */}
+                                {renderMobileumBox()}
+
+                                {/* Right: 35% Stacked Competition Products (Above) & Competitors to Replace (Below) */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                  {renderCompetitionBox()}
+                                  {renderReplaceableBox()}
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          // Default 3-column layout when competitor count is normal
+                          return (
+                            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.8fr) minmax(200px, 1fr) minmax(150px, 1fr)', gap: '10px' }}>
+                              {renderMobileumBox()}
+                              {renderCompetitionBox()}
+                              {renderReplaceableBox()}
                             </div>
-                          </div>
-                        </div>
+                          );
+                        })()}
                       </div>
 
                       {/* 2. STRATEGIC SALES ANGLE & RISK ASSESSMENT TILE (Placed directly below Products Landscape!) */}
@@ -1693,14 +1725,56 @@ export default function DynamicCenterDashboard({
                           </div>
                         </div>
 
-                         <div className="product-card" style={{ padding: '10px 12px', margin: 0, cursor: 'default', gridColumn: '1 / -1' }}>
-                          <div style={{ fontSize: '9px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>3. Strategic Notes & Outlook (xxxx)</div>
-                          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px', lineHeight: '1.4' }}>
-                            {accountData.financialSection?.note || '—'}
-                          </div>
-                        </div>
+                        {(() => {
+                          const cName = typeof selectedCountry === 'object' ? (selectedCountry?.country_name || '') : String(selectedCountry || '');
+                          const isIndiaCountry = cName.toLowerCase().includes('india');
+                          const targetOpStr = String(selectedOperator || accountData?.name || '').toLowerCase();
+                          const isAirtelOp = targetOpStr.includes('airtel') || targetOpStr.includes('bharti');
+                          const showTrackerOption = isIndiaCountry && isAirtelOp;
 
-                        {/* 4. Live Investor Results & 3-Year Web Intelligence Banner */}
+                          return (
+                            <>
+                              {showTrackerOption && (
+                                <div
+                                  className="product-card"
+                                  onClick={() => {
+                                    setFinancialModalType('tracker');
+                                    setFinancialModalOpen(true);
+                                  }}
+                                  style={{
+                                    padding: '10px 12px',
+                                    margin: 0,
+                                    cursor: 'pointer',
+                                    transition: 'all 0.15s ease',
+                                    border: '1px solid rgba(124, 58, 237, 0.35)',
+                                    background: 'rgba(124, 58, 237, 0.05)'
+                                  }}
+                                  title="Click to view 3-Year Bharti Airtel Performance Tracker & CSV export"
+                                >
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div style={{ fontSize: '9px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>3. Performance Tracker (Bharti Airtel)</div>
+                                    <span style={{ fontSize: '9px', fontWeight: '800', color: '#7c3aed', background: 'rgba(124, 58, 237, 0.15)', padding: '1px 6px', borderRadius: '4px' }}>🟢 Open Tracker & Export</span>
+                                  </div>
+                                  <div style={{ fontSize: '14px', fontWeight: '900', color: '#7c3aed', marginTop: '4px' }}>
+                                    6 Key Metrics (2022–2024)
+                                  </div>
+                                  <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginTop: '2px', fontStyle: 'italic' }}>
+                                    Click for Bharti Airtel 3-Yr YoY report →
+                                  </div>
+                                </div>
+                              )}
+
+                              <div className="product-card" style={{ padding: '10px 12px', margin: 0, cursor: 'default', gridColumn: '1 / -1' }}>
+                                <div style={{ fontSize: '9px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{showTrackerOption ? '4. Strategic Notes & Outlook (xxxx)' : '3. Strategic Notes & Outlook (xxxx)'}</div>
+                                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px', lineHeight: '1.4' }}>
+                                  {accountData.financialSection?.note || '—'}
+                                </div>
+                              </div>
+                            </>
+                          );
+                        })()}
+
+                        {/* Live Investor Results & 3-Year Web Intelligence Banner */}
                         {(() => {
                           const targetName = selectedOperator || accountData?.name || (typeof selectedCountry === 'object' ? selectedCountry?.country_name : selectedCountry) || 'Operator';
                           const grpKey = FIN.operator_to_group[targetName];
@@ -1715,9 +1789,14 @@ export default function DynamicCenterDashboard({
                             }
                           }
                           const opLabel = gObj?.group || targetName;
-                          const investorUrl = gObj?.investor_url || `https://www.google.com/search?q=${encodeURIComponent(opLabel + ' investor relations quarterly financial results')}`;
                           const trendLabel = gObj?.performance_trend_3yr?.label || '📈 PERFORMANCE GOING UP';
                           const summaryText = gObj?.performance_trend_3yr?.summary || `Integrates direct web-scraped investor reports & quarterly disclosures for ${opLabel}.`;
+
+                          const cName = typeof selectedCountry === 'object' ? (selectedCountry?.country_name || '') : String(selectedCountry || '');
+                          const isIndiaCountry = cName.toLowerCase().includes('india');
+                          const targetOpStr = String(selectedOperator || accountData?.name || '').toLowerCase();
+                          const isAirtelOp = targetOpStr.includes('airtel') || targetOpStr.includes('bharti');
+                          const showTrackerButton = isIndiaCountry && isAirtelOp;
 
                           return (
                             <div
@@ -1738,7 +1817,7 @@ export default function DynamicCenterDashboard({
                             >
                               <div>
                                 <div style={{ fontSize: '10px', fontWeight: '800', color: 'var(--blue)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                  <span>🌐 Web Scraping & 3-Year Investor Intelligence ({opLabel})</span>
+                                  <span>📊 3-Year Investor & Financial Performance Intelligence ({opLabel})</span>
                                   <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: 'var(--green)', padding: '2px 7px', borderRadius: '4px', fontSize: '9px', fontWeight: '800' }}>
                                     {trendLabel}
                                   </span>
@@ -1748,28 +1827,34 @@ export default function DynamicCenterDashboard({
                                 </div>
                               </div>
 
-                              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                <a
-                                  href={investorUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  style={{
-                                    background: 'var(--blue)',
-                                    color: '#ffffff',
-                                    border: 'none',
-                                    borderRadius: '6px',
-                                    padding: '6px 12px',
-                                    fontSize: '10.5px',
-                                    fontWeight: '700',
-                                    textDecoration: 'none',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '4px'
-                                  }}
-                                >
-                                  <span>Open {opLabel} Quarterly Results Site</span>
-                                  <span>↗</span>
-                                </a>
+                              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                                {showTrackerButton && (
+                                  <button
+                                    onClick={() => {
+                                      setFinancialModalType('tracker');
+                                      setFinancialModalOpen(true);
+                                    }}
+                                    style={{
+                                      background: '#7c3aed',
+                                      color: '#ffffff',
+                                      border: 'none',
+                                      borderRadius: '6px',
+                                      padding: '6px 12px',
+                                      fontSize: '11px',
+                                      fontWeight: '800',
+                                      cursor: 'pointer',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '6px',
+                                      boxShadow: '0 2px 6px rgba(124, 58, 237, 0.3)'
+                                    }}
+                                  >
+                                    <span>🟢 Open 3-Yr Performance Tracker (Bharti Airtel)</span>
+                                  </button>
+                                )}
+                                <span style={{ background: 'rgba(16, 185, 129, 0.12)', color: 'var(--green)', padding: '5px 10px', borderRadius: '6px', fontSize: '10.5px', fontWeight: '700' }}>
+                                  ✓ Verified Disclosures
+                                </span>
                               </div>
                             </div>
                           );

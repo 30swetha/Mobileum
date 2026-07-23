@@ -222,33 +222,100 @@ export default function App() {
     if (!op) return null;
 
     const plan = op.plan2026 || {
-      productsFocusedOn: ['Steering of Roaming (SoR)', 'Roaming DNA', 'RAID 9 – Fraud Management'],
+      productsFocusedOn: ['Steering of Roaming (SoR)', 'Roaming Campaign Management', 'Roaming DNA'],
       valueOfOpportunities: `$${((op.sub_base_mln || 1.0) * 0.15 + (op.market_share_pct || 20.0) * 0.08 + 1).toFixed(1)}M pipeline`,
       pocOrDemoGiven: 'Demo and solution workshop completed',
       consultingTrialsGiven: '1 consulting trial scheduled',
-      strategies: []
+      strategies: [
+        `Introduce Steering of Roaming (SoR) to capture high-margin eSIM/5G roaming opportunities.`,
+        `Upsell Roaming Campaign Management Managed Services to offload operations and guarantee revenue assurance.`,
+        `Deliver on-site sandbox onboarding workshop for Roaming DNA in Q4 2026.`
+      ]
     };
 
-    const mobileumProducts = op.mobileum_services_parsed?.length > 0
-      ? op.mobileum_services_parsed.map(p => p.name)
-      : (op.product_scores?.slice(0, 2).map(p => p.product) || ['Steering of Roaming (SoR)', 'Roaming DNA']);
+    // 1. Mobileum products: populate from Plan 2026 productsFocusedOn first if present
+    const focusProducts = plan.productsFocusedOn || [];
+    const parsedProducts = op.mobileum_services_parsed?.length > 0 ? op.mobileum_services_parsed.map(p => p.name) : [];
+    const mobileumProducts = Array.from(new Set([...focusProducts, ...parsedProducts])).filter(Boolean);
+    if (mobileumProducts.length === 0) {
+      mobileumProducts.push('Steering of Roaming (SoR)', 'Roaming Campaign Management', 'Roaming DNA');
+    }
 
-    const competitionProducts = op.ia_satisfaction && op.ia_satisfaction !== 'nan'
-      ? [op.ia_satisfaction]
-      : ['Syniverse legacy systems', 'Tomia roaming systems'];
+    // 2. Competition Products: clearly label Competitor — Specific Product
+    let competitionProducts = [];
+    if (op.ia_satisfaction && op.ia_satisfaction !== 'nan') {
+      const sat = op.ia_satisfaction;
+      if (sat.includes('Syniverse')) competitionProducts.push('Syniverse — Roaming Steering & Interconnect');
+      else if (sat.includes('Tomia')) competitionProducts.push('Tomia — Data Clearing & Settlement');
+      else if (sat.includes('Subex')) competitionProducts.push('Subex — Business & Revenue Assurance');
+      else competitionProducts.push(`Syniverse — ${sat}`);
+    } else {
+      competitionProducts = [
+        'Syniverse — Roaming Steering & Interconnect',
+        'Tomia — Clearing & Settlement',
+        'Subex — Business & Revenue Assurance'
+      ];
+    }
 
+    // 3. Product Gaps
     const productGaps = op.ia_bu_gaps && op.ia_bu_gaps !== 'nan' && op.ia_bu_gaps !== 'Assess via direct engagement'
       ? op.ia_bu_gaps.split('|').map(s => s.trim())
-      : ['Managed services enablement', 'Active testing sandbox'];
+      : ['Fraud & Bypass Management', 'Revenue Assurance'];
 
+    // 4. Managed Services Possibility: derived from plan2026 & operator capabilities
     const msNeed = op.ia_need_ms_financial?.toLowerCase() || '';
-    const managedServicesPossibility = msNeed.includes('high') || msNeed.includes('medium')
-      ? ['Full Managed Roaming Operations', 'SaaS Fraud Operations Management']
-      : ['Standard level-2 application support'];
+    const managedServicesPossibility = msNeed.includes('high') || msNeed.includes('medium') || (plan.strategies || []).some(s => s.toLowerCase().includes('managed'))
+      ? ['Managed Services Transformation', 'SaaS Licensing Migration']
+      : ['Full Operations Support', 'Managed Analytics Services'];
 
-    const replaceableCompetitors = op.ia_satisfaction && op.ia_satisfaction !== 'nan'
-      ? [op.ia_satisfaction.split(' ')[0]]
-      : ['Syniverse'];
+    // 5. Replaceable competitors: format as Competitor — Specific Product
+    let replaceableCompetitors = [];
+    if (op.ia_satisfaction && op.ia_satisfaction !== 'nan') {
+      const sat = op.ia_satisfaction;
+      if (sat.includes('Syniverse')) replaceableCompetitors.push('Syniverse — Roaming Steering & Interconnect');
+      else if (sat.includes('Tomia')) replaceableCompetitors.push('Tomia — Data Clearing & Settlement');
+      else if (sat.includes('Subex')) replaceableCompetitors.push('Subex — Business & Revenue Assurance');
+      else replaceableCompetitors.push(`${sat.split(' ')[0]} — Legacy Platform`);
+    } else {
+      replaceableCompetitors = [
+        'Syniverse — Roaming Steering & Interconnect',
+        'Tomia — Clearing & Settlement',
+        'Subex — Business & Revenue Assurance'
+      ];
+    }
+
+    // 6. Strategic Sales Angle & Panic Services Risk Assessment
+    const panicServicesProb = msNeed.includes('high') || productGaps.some(g => g.toLowerCase().includes('fraud') || g.toLowerCase().includes('bypass'))
+      ? 'High Panic Services Risk — Urgent Bypass / Revenue Leakage Exposure'
+      : 'Moderate Opportunity — SaaS & Managed Services Expansion';
+
+    const salesAngle = {
+      narrative: `Position Mobileum AI-Powered Steering & Fraud Protection to replace legacy competitor platforms (${replaceableCompetitors.slice(0, 2).map(c => c.split(' — ')[0]).join(', ')}). Target immediate resolution for key gaps (${productGaps.join(', ')}).`,
+      panicRisk: panicServicesProb,
+      targetReplacements: replaceableCompetitors,
+      gapCoverage: productGaps
+    };
+
+    // 7. Final Strategies: formatted as { text: 'Operator: Action for Product', rtpStatus: 'Not Requested', engagementType: 'Product' }
+    const rawStrategies = (plan.strategies && plan.strategies.length > 0)
+      ? plan.strategies
+      : [
+          `Introduce Steering of Roaming (SoR) to capture high-margin eSIM/5G roaming opportunities.`,
+          `Upsell Roaming Campaign Management Managed Services to offload operations and guarantee revenue assurance.`,
+          `Deliver on-site sandbox onboarding workshop for Roaming DNA in Q4 2026.`
+        ];
+
+    const finalStrategies = rawStrategies.map(s => {
+      let text = typeof s === 'object' ? (s.text || '') : s;
+      if (!text.toLowerCase().startsWith(op.operator.toLowerCase())) {
+        text = `${op.operator}: ${text}`;
+      }
+      return {
+        text,
+        rtpStatus: typeof s === 'object' && s.rtpStatus ? s.rtpStatus : 'Not Requested',
+        engagementType: typeof s === 'object' && s.engagementType ? s.engagementType : 'Product'
+      };
+    });
 
     let revPot = 2.5;
     if (plan.valueOfOpportunities) {
@@ -256,7 +323,7 @@ export default function App() {
       if (match) revPot = parseFloat(match[1]);
     }
     const capexVal = Math.max(0.2, parseFloat(((op.sub_base_mln || 1.0) * 0.08 + (op.market_share_pct || 20.0) * 0.02).toFixed(1)));
-    
+
     let note = "";
     if (op.financial_comments && op.financial_comments !== 'nan') {
       note = op.financial_comments;
@@ -284,10 +351,9 @@ export default function App() {
     });
 
     const installedProductWiseSupportTicket = mobileumProducts.slice(0, 2).map((prod, i) => {
-      const tickets = Math.max(2, Math.round((op.sub_base_mln || 1.0) * (i === 0 ? 1.5 : 0.8) + (i === 0 ? 4 : 2)));
       return {
         product: prod,
-        tickets,
+        tickets: Math.max(2, Math.round((op.sub_base_mln || 1.0) * 1.5 + (i * 3))),
         trend: op.subscriber_growth_pct > 3 ? 'Improving' : 'Stable'
       };
     });
@@ -311,7 +377,8 @@ export default function App() {
         productGaps,
         managedServicesPossibility,
         replaceableCompetitors,
-        finalStrategies: plan.strategies || []
+        finalStrategies,
+        salesAngle
       },
       financialSection: {
         profit: `$${revPot.toFixed(1)}M Projected Potential`,
@@ -360,7 +427,7 @@ export default function App() {
       opInsight.productSection.productGaps.forEach(p => allGaps.add(p));
       opInsight.productSection.finalStrategies.forEach(s => {
         if (typeof s === 'object') {
-          allStrategies.push({ text: `${op.operator}: ${s.text}`, rtpStatus: s.rtpStatus, engagementType: s.engagementType });
+          allStrategies.push(s);
         } else {
           allStrategies.push({ text: `${op.operator}: ${s}`, rtpStatus: 'Not Requested', engagementType: 'Product' });
         }
@@ -537,7 +604,7 @@ export default function App() {
     if (activeCountriesList.length === 0) return null;
 
     const num_operators = activeCountriesList.reduce((sum, [_, c]) => sum + (c.num_operators || 0), 0);
-    
+
     const statsKeys = ['mobile_penetration', 'gdp_growth', 'avg_age', 'avg_5g', 'avg_sub_growth', 'avg_market_health', 'fraud_score', 'roaming_intensity', 'internet_users', 'gdp_per_capita', 'population', 'mobile_users'];
     const stats = {};
     statsKeys.forEach(k => {
@@ -589,7 +656,7 @@ export default function App() {
 
     const top_product = product_ranking.length > 0 ? product_ranking[0] : null;
 
-    const operators = activeCountriesList.flatMap(([name, c]) => 
+    const operators = activeCountriesList.flatMap(([name, c]) =>
       (c.operators || []).map(op => ({ ...op, countryName: name }))
     );
 
@@ -673,7 +740,7 @@ export default function App() {
             opInsight.renewalSection.amcRenewal.forEach((amc, idx) => {
               const val = parseFloat(amc.value.replace(/[^0-9.]/g, '')) * 1000;
               list.push({
-                contract_id: `AMC-2026-${op.operator.substring(0,3).toUpperCase()}-${opIdx}-${idx}`,
+                contract_id: `AMC-2026-${op.operator.substring(0, 3).toUpperCase()}-${opIdx}-${idx}`,
                 business_unit: amc.name.replace(' AMC Support', ''),
                 client_name: `${op.operator} (${cName})`,
                 outstanding_amount: val,
@@ -805,7 +872,7 @@ export default function App() {
 
       const cData = countries[selectedCountry];
       let tickets = getDynamicCountryTickets(selectedCountry, cData);
-      
+
       const ops = cData?.operators || [];
       const amcs = [];
       ops.forEach((op, opIdx) => {
@@ -846,7 +913,7 @@ export default function App() {
       setTicketData(tickets);
       setAmcData(amcs);
       setCompetitorData(MOCK_COMPETITORS);
-      
+
       // Merge backend overrides onto opInsight
       let mergedInsight = { ...opInsight };
       if (backendOverrides && Object.keys(backendOverrides).length > 0) {
@@ -868,10 +935,10 @@ export default function App() {
           mergedInsight[section] = { ...mergedInsight[section], ...accountDataOverrides[selectedCountry][section] };
         }
       }
-      
+
       setAccountData(mergedInsight);
       setIsDataLoading(false);
-      
+
       // Merge complete
     };
 
@@ -1030,8 +1097,8 @@ export default function App() {
 
         <div className="filter-sep"></div>
 
-        <button 
-          className={`filter-btn ${showGlobalOverview && !selectedCountry ? 'active' : ''}`} 
+        <button
+          className={`filter-btn ${showGlobalOverview && !selectedCountry ? 'active' : ''}`}
           onClick={() => {
             setSelectedCountry(null);
             setShowGlobalOverview(prev => !prev);
@@ -1051,7 +1118,7 @@ export default function App() {
       {/* MAIN APP CONTAINER */}
       <div id="app">
         <div className="app-main-layout">
-          
+
           {selectedCountry ? (
             // SIDE-BY-SIDE VIEW: Country Context Sidebar & Dynamic Operator Details (No Map)
             <>
@@ -1059,6 +1126,8 @@ export default function App() {
               <StaticCountrySidebar
                 selectedCountry={selectedCountry}
                 countryData={countries[selectedCountry]}
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
                 onClose={() => {
                   setSelectedCountry(null);
                   setSelectedOperator(null);
@@ -1099,7 +1168,7 @@ export default function App() {
                   onUpdateAccountData={handleUpdateAccountData}
                   activeRegion={activeRegion}
                   setActiveRegion={setActiveRegion}
-                  onCloseOverview={() => {}}
+                  onCloseOverview={() => { }}
                   onExportReport={() => exportReport(selectedCountry, countries[selectedCountry], metadata)}
                 />
               </div>
@@ -1215,11 +1284,11 @@ export default function App() {
                             .filter(name => CLUSTER_COLORS[name])
                             .sort((a, b) => (TIER_ORDER[a] ?? 99) - (TIER_ORDER[b] ?? 99))
                             .map(name => (
-                            <div className="legend-row" key={name}>
-                              <div className="legend-dot" style={{ background: CLUSTER_COLORS[name] }}></div>
-                              {name}
-                            </div>
-                          ))
+                              <div className="legend-row" key={name}>
+                                <div className="legend-dot" style={{ background: CLUSTER_COLORS[name] }}></div>
+                                {name}
+                              </div>
+                            ))
                         ) : currentLens === 'fraud' ? (
                           [
                             { label: 'Very Low', color: '#1ABC9C' },

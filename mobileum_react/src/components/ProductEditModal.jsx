@@ -1,12 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 export default function ProductEditModal({ isOpen, onClose, accountData, countryName, onSave }) {
+  const parseCompetitionItem = (item) => {
+    if (typeof item === 'object' && item !== null) {
+      return { name: item.name || item.text || '', selected: item.selected !== false };
+    }
+    return { name: String(item || ''), selected: true };
+  };
+
   const [formData, setFormData] = useState(() => {
     if (accountData?.productSection) {
       return {
         mobileumProducts: [...(accountData.productSection.mobileumProducts || [])],
         productGaps: [...(accountData.productSection.productGaps || [])],
-        competitionProducts: [...(accountData.productSection.competitionProducts || [])],
+        competitionProducts: (accountData.productSection.competitionProducts || []).map(parseCompetitionItem),
         replaceableCompetitors: [...(accountData.productSection.replaceableCompetitors || [])],
         managedServicesPossibility: [...(accountData.productSection.managedServicesPossibility || [])],
         finalStrategies: (accountData.productSection.finalStrategies || []).map(s => typeof s === 'string' ? { text: s, rtpStatus: 'Not Requested', engagementType: 'Product' } : { ...s })
@@ -26,7 +33,7 @@ export default function ProductEditModal({ isOpen, onClose, accountData, country
       setFormData({
         mobileumProducts: [...(accountData.productSection.mobileumProducts || [])],
         productGaps: [...(accountData.productSection.productGaps || [])],
-        competitionProducts: [...(accountData.productSection.competitionProducts || [])],
+        competitionProducts: (accountData.productSection.competitionProducts || []).map(parseCompetitionItem),
         replaceableCompetitors: [...(accountData.productSection.replaceableCompetitors || [])],
         managedServicesPossibility: [...(accountData.productSection.managedServicesPossibility || [])],
         finalStrategies: (accountData.productSection.finalStrategies || []).map(s => typeof s === 'string' ? { text: s, rtpStatus: 'Not Requested', engagementType: 'Product' } : { ...s })
@@ -42,8 +49,18 @@ export default function ProductEditModal({ isOpen, onClose, accountData, country
     setFormData(prev => ({ ...prev, [field]: newList }));
   };
 
+  const handleCompetitionChange = (index, key, value) => {
+    const newList = [...formData.competitionProducts];
+    newList[index] = { ...newList[index], [key]: value };
+    setFormData(prev => ({ ...prev, competitionProducts: newList }));
+  };
+
   const handleArrayAdd = (field) => {
-    setFormData(prev => ({ ...prev, [field]: [...prev[field], ''] }));
+    if (field === 'competitionProducts') {
+      setFormData(prev => ({ ...prev, competitionProducts: [...prev.competitionProducts, { name: '', selected: true }] }));
+    } else {
+      setFormData(prev => ({ ...prev, [field]: [...prev[field], ''] }));
+    }
   };
 
   const handleArrayRemove = (field, index) => {
@@ -85,17 +102,85 @@ export default function ProductEditModal({ isOpen, onClose, accountData, country
       <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', marginBottom: '8px', color: 'var(--text-primary)' }}>{title}</label>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {formData[field].map((val, idx) => (
-          <div key={idx} style={{ display: 'flex', gap: '8px' }}>
+          <div key={idx} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             <input
               type="text"
               value={val}
               onChange={(e) => handleArrayChange(field, idx, e.target.value)}
               style={{ flex: 1, padding: '8px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '12px' }}
             />
-            <button type="button" onClick={() => handleArrayRemove(field, idx)} style={{ background: 'var(--red)', color: 'white', border: 'none', borderRadius: '6px', padding: '0 12px', cursor: 'pointer' }}>✕</button>
+            <button type="button" onClick={() => handleArrayRemove(field, idx)} style={{ background: 'var(--red)', color: 'white', border: 'none', borderRadius: '6px', padding: '0 12px', height: '34px', cursor: 'pointer', flexShrink: 0 }}>✕</button>
           </div>
         ))}
         <button type="button" onClick={() => handleArrayAdd(field)} style={{ alignSelf: 'flex-start', background: 'var(--bg-card3)', border: '1px solid var(--border)', padding: '6px 12px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer' }}>+ Add Item</button>
+      </div>
+    </div>
+  );
+
+  const renderCompetitionArrayEditor = () => (
+    <div style={{ marginBottom: '20px' }}>
+      <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', marginBottom: '8px', color: 'var(--text-primary)' }}>Competition Products</label>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {formData.competitionProducts.map((item, idx) => (
+          <div key={idx} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <input
+              type="text"
+              value={item.name}
+              onChange={(e) => handleCompetitionChange(idx, 'name', e.target.value)}
+              placeholder="Competitor product..."
+              style={{ flex: 1, padding: '8px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '12px' }}
+            />
+            {/* Same size Checkbox Action Box (34px x 34px) */}
+            <button
+              type="button"
+              onClick={() => handleCompetitionChange(idx, 'selected', !item.selected)}
+              style={{
+                width: '34px',
+                height: '34px',
+                borderRadius: '6px',
+                border: item.selected ? '1px solid #d97706' : '1px solid var(--border)',
+                background: item.selected ? '#fef3c7' : 'var(--bg-card2)',
+                color: item.selected ? '#d97706' : 'var(--text-muted)',
+                fontSize: '15px',
+                fontWeight: '900',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                transition: 'all 0.15s ease'
+              }}
+              title={item.selected ? "Ticked (Gold status with tick mark)" : "Unticked (Red status)"}
+            >
+              {item.selected ? '✓' : ''}
+            </button>
+
+            {/* Same size Delete Action Box (34px x 34px) */}
+            <button
+              type="button"
+              onClick={() => handleArrayRemove('competitionProducts', idx)}
+              style={{
+                width: '34px',
+                height: '34px',
+                background: 'var(--red)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '13px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}
+              title="Delete item"
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+        <button type="button" onClick={() => handleArrayAdd('competitionProducts')} style={{ alignSelf: 'flex-start', background: 'var(--bg-card3)', border: '1px solid var(--border)', padding: '6px 12px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer' }}>+ Add Item</button>
       </div>
     </div>
   );
@@ -116,7 +201,7 @@ export default function ProductEditModal({ isOpen, onClose, accountData, country
               {renderStringArrayEditor('Managed Services Possibility', 'managedServicesPossibility')}
             </div>
             <div>
-              {renderStringArrayEditor('Competition Products', 'competitionProducts')}
+              {renderCompetitionArrayEditor()}
               {renderStringArrayEditor('Competitors to Replace', 'replaceableCompetitors')}
             </div>
           </div>

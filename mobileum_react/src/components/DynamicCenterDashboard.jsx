@@ -7,7 +7,8 @@ import FinancialReports from './FinancialReports';
 import GenericFormModal from './GenericFormModal';
 import ProductEditModal from './ProductEditModal';
 import PlanEditModal from './PlanEditModal';
-import HistoryModal from './HistoryModal';
+import FinancialAnalysisModal from './FinancialAnalysisModal';
+import FIN from '../data/operator_financials.json';
 
 const CLUSTER_COLORS = {
   'Frontier': '#E74C3C',
@@ -55,7 +56,7 @@ const getProductValue = (index, totalValStr, numProducts) => {
   const totalVal = parsePipelineValue(totalValStr);
   if (totalVal <= 0) return '$0.0M';
   if (numProducts <= 1) return `$${totalVal.toFixed(1)}M`;
-  
+
   const sumWeights = (numProducts * (numProducts + 1)) / 2;
   const productWeight = (numProducts - index) / sumWeights;
   const productVal = totalVal * productWeight;
@@ -92,6 +93,8 @@ export default function DynamicCenterDashboard({
   const [activeModal, setActiveModal] = useState(null); // null | 'product' | 'plan' | 'genericPlan' | 'history'
   const [formTitle, setFormTitle] = useState('');
   const [formType, setFormType] = useState(''); // 'plan' or 'product'
+  const [financialModalOpen, setFinancialModalOpen] = useState(false);
+  const [financialModalType, setFinancialModalType] = useState('revenue');
 
   const renderEditedBadge = (fieldName, section) => {
     if (section?._editedFields?.[fieldName]) {
@@ -120,7 +123,7 @@ export default function DynamicCenterDashboard({
 
     const usedProducts = accountData?.productSection?.mobileumProducts || [];
     const isUsed = usedProducts.includes(productName);
-    
+
     return {
       used: isUsed,
       channel: 'Licensed'
@@ -211,7 +214,7 @@ export default function DynamicCenterDashboard({
       const arpu = trendToScore(op.arpu_growth);
       const fiveG = op.fiveG_pct || 0;
       const subGrowth = op.subscriber_growth_pct || 0;
-      
+
       return {
         roaming_opportunity: (outbound + inbound) / 2,
         fraud_risk: ott,
@@ -279,7 +282,7 @@ export default function DynamicCenterDashboard({
               data: ops.map(o => parseFloat(o.market_share_pct) || 0),
               backgroundColor: ops.map((o, idx) => {
                 if (selectedOperator) {
-                  return o.operator === selectedOperator 
+                  return o.operator === selectedOperator
                     ? ['#3b82f6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'][idx % 6]
                     : 'rgba(200, 200, 200, 0.15)';
                 }
@@ -408,7 +411,7 @@ export default function DynamicCenterDashboard({
         const arpu = op.arpu_growth_score || trendToScore(op.arpu_growth);
         const profit = op.profitability_score || trendToScore(op.profitability);
         const fiveG = op.fiveG_pct || 0;
-        
+
         const base = 100;
         const ott_impact = -(ott - 2) * 2.0;
         const arpu_impact = -(3 - arpu) * 1.5;
@@ -416,7 +419,7 @@ export default function DynamicCenterDashboard({
         const roaming_upside = roamIntensity * 1.8;
         const fiveG_upside = (fiveG / 100) * 8.0;
         const net = base + ott_impact + arpu_impact + churn_impact + roaming_upside + fiveG_upside;
-        
+
         return {
           base,
           ott_substitution: Math.round(ott_impact * 10) / 10,
@@ -597,12 +600,29 @@ export default function DynamicCenterDashboard({
     setActiveModal(null);
   }, [selectedCountry, selectedOperator]);
 
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  const handleScroll = (e) => {
+    if (e.target.scrollTop > 20) {
+      if (!isScrolled) setIsScrolled(true);
+    } else {
+      if (isScrolled) setIsScrolled(false);
+    }
+  };
+
+  useEffect(() => {
+    setIsScrolled(false);
+    if (panelRef.current) {
+      panelRef.current.scrollTop = 0;
+    }
+  }, [activeTab, selectedCountry, selectedOperator]);
+
   if (!countryData) return null;
 
   const handleModalSave = (sectionName, newData) => {
     const currentSection = accountData[sectionName] || {};
     const newSection = newData[sectionName] || {};
-    
+
     Object.keys(newSection).forEach(fieldName => {
       if (JSON.stringify(currentSection[fieldName]) !== JSON.stringify(newSection[fieldName])) {
         fetch('/api/save-override', {
@@ -656,1000 +676,1234 @@ export default function DynamicCenterDashboard({
   };
 
   return (
-    <div className="dynamic-center-panel">
-      {/* Centered Panel Header */}
-      <div id="panel-header" style={{ padding: '0 0 12px 0', borderBottom: '1px solid var(--border)', background: 'transparent', flexShrink: 0, animation: 'none', opacity: 1, transform: 'none' }}>
-        {/* Breadcrumb / Back Navigation */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-          {selectedCountry ? (
-            <button 
-              onClick={() => {
-                if (selectedOperator) {
-                  if (setSelectedOperator) setSelectedOperator(null);
-                } else {
-                  if (setSelectedCountry) setSelectedCountry(null);
-                }
-              }}
-              style={{
-                background: 'var(--bg-card2)',
-                border: '1px solid var(--border)',
-                borderRadius: '6px',
-                padding: '6px 12px',
-                fontSize: '11px',
-                fontWeight: '600',
-                color: 'var(--text-primary)',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseOver={(e) => { e.currentTarget.style.background = 'var(--bg-card3)'; e.currentTarget.style.borderColor = 'var(--blue)'; }}
-              onMouseOut={(e) => { e.currentTarget.style.background = 'var(--bg-card2)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
-            >
-              {selectedOperator ? `← Back to ${selectedCountry}` : '← Back to Global Map'}
-            </button>
-          ) : (
-            <button 
-              onClick={() => {
-                if (onCloseOverview) onCloseOverview();
-              }}
-              style={{
-                background: 'var(--bg-card2)',
-                border: '1px solid var(--border)',
-                borderRadius: '6px',
-                padding: '6px 12px',
-                fontSize: '11px',
-                fontWeight: '600',
-                color: 'var(--text-primary)',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.color = 'var(--red)'; e.currentTarget.style.borderColor = 'var(--red)'; }}
-              onMouseOut={(e) => { e.currentTarget.style.background = 'var(--bg-card2)'; e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
-            >
-              ✖ Close Overview
-            </button>
-          )}
-
-          {selectedCountry && (
-            <>
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>/</span>
-              {selectedOperator ? (
-                <span 
-                  onClick={() => {
+    <div className={`dynamic-center-panel ${isScrolled ? 'is-scrolled' : ''}`}>
+      {/* Dynamic Sticky Header & Auto-Collapsing Header Container */}
+      <div className={`dynamic-header-wrapper ${isScrolled ? 'is-scrolled' : ''}`}>
+        {/* Centered Panel Header */}
+        <div id="panel-header" style={{ padding: isScrolled ? '2px 0 4px 0' : '0 0 8px 0', borderBottom: isScrolled ? 'none' : '1px solid var(--border)', background: 'transparent', flexShrink: 0, transition: 'all 0.2s ease' }}>
+          {/* Breadcrumb / Back Navigation */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: isScrolled ? '2px' : '8px' }}>
+            {selectedCountry ? (
+              <button
+                onClick={() => {
+                  if (selectedOperator) {
                     if (setSelectedOperator) setSelectedOperator(null);
-                  }}
-                  style={{ 
-                    fontSize: '11px', 
-                    fontWeight: '600', 
-                    color: 'var(--blue)', 
-                    cursor: 'pointer',
-                    textDecoration: 'underline'
-                  }}
-                  title={`Back to ${selectedCountry} details`}
-                >
-                  {selectedCountry}
-                </span>
-              ) : (
-                <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-primary)' }}>{selectedCountry}</span>
-              )}
-            </>
-          )}
-          {selectedOperator && (
-            <>
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>/</span>
-              <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-primary)' }}>{selectedOperator}</span>
-            </>
-          )}
-        </div>
+                  } else {
+                    if (setSelectedCountry) setSelectedCountry(null);
+                  }
+                }}
+                style={{
+                  background: 'var(--bg-card2)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '6px',
+                  padding: isScrolled ? '3px 8px' : '5px 10px',
+                  fontSize: '10px',
+                  fontWeight: '600',
+                  color: 'var(--text-primary)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => { e.currentTarget.style.background = 'var(--bg-card3)'; e.currentTarget.style.borderColor = 'var(--blue)'; }}
+                onMouseOut={(e) => { e.currentTarget.style.background = 'var(--bg-card2)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
+              >
+                {selectedOperator ? `← Back to ${selectedCountry}` : '← Back to Global Map'}
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  if (onCloseOverview) onCloseOverview();
+                }}
+                style={{
+                  background: 'var(--bg-card2)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '6px',
+                  padding: isScrolled ? '3px 8px' : '5px 10px',
+                  fontSize: '10px',
+                  fontWeight: '600',
+                  color: 'var(--text-primary)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.color = 'var(--red)'; e.currentTarget.style.borderColor = 'var(--red)'; }}
+                onMouseOut={(e) => { e.currentTarget.style.background = 'var(--bg-card2)'; e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
+              >
+                ✖ Close Overview
+              </button>
+            )}
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '20px' }}>
-          <div>
-            <div id="panel-title" style={{ fontSize: '24px', fontWeight: '800', marginTop: '10px' }}>
-              {selectedCountry 
-                ? <>{getFlagEmoji(countryData.iso)} {selectedCountry} Operator Details</>
-                : <>🌍 {activeRegion === 'all' ? 'Global Overview' : `${activeRegion} Regional Overview`}</>
-              }
-            </div>
-            <div id="panel-subtitle" style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-              {selectedCountry 
-                ? 'Active intelligence, operator benchmarks, support service levels, and competitor analytics.'
-                : 'Aggregated regional telecom statistics, operator distributions, and market benchmarks.'
-              }
-            </div>
+            {selectedCountry && (
+              <>
+                <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>/</span>
+                {selectedOperator ? (
+                  <span
+                    onClick={() => {
+                      if (setSelectedOperator) setSelectedOperator(null);
+                    }}
+                    style={{
+                      fontSize: '10px',
+                      fontWeight: '600',
+                      color: 'var(--blue)',
+                      cursor: 'pointer',
+                      textDecoration: 'underline'
+                    }}
+                    title={`Back to ${selectedCountry} details`}
+                  >
+                    {selectedCountry}
+                  </span>
+                ) : (
+                  <span style={{ fontSize: '10px', fontWeight: '600', color: 'var(--text-primary)' }}>{selectedCountry}</span>
+                )}
+              </>
+            )}
+            {selectedOperator && (
+              <>
+                <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>/</span>
+                <span style={{ fontSize: '10px', fontWeight: '600', color: 'var(--text-primary)' }}>{selectedOperator}</span>
+              </>
+            )}
           </div>
-          {onExportReport && selectedCountry && (
-            <button
-              onClick={onExportReport}
-              style={{
-                background: 'var(--blue)',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '8px 14px',
-                fontSize: '11px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                boxShadow: '0 4px 12px rgba(37,99,235,0.2)',
-                whiteSpace: 'nowrap',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
-              onMouseOut={(e) => e.currentTarget.style.transform = 'none'}
-            >
-              ↓ Export Report
-            </button>
-          )}
-        </div>
-      </div>
 
-      {/* Tabs list matching SidePanel but centered and responsive */}
-      <div id="panel-tabs" style={{ padding: '4px 0', background: 'var(--bg-card)', zIndex: 10, flexShrink: 0, animation: 'none', opacity: 1, transform: 'none' }}>
-        {[
-          { key: 'operators', label: 'Operator Details' },
-          { key: 'overview', label: 'Market Overview' },
-          { key: 'account', label: 'Account Section' },
-          { key: 'stats', label: 'Stats Profile' },
-          { key: 'narrative', label: 'Narrative Report' }
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            className={`tab-btn ${activeTab === tab.key ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab.key)}
-          >
-            {tab.label}
-          </button>
-        ))}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
+            <div>
+              <div id="panel-title" className="panel-title-text" style={{ fontSize: isScrolled ? '15px' : '20px', fontWeight: '800', marginTop: isScrolled ? '0' : '2px', transition: 'all 0.2s ease' }}>
+                {selectedCountry
+                  ? <>{getFlagEmoji(countryData.iso)} {selectedCountry} Operator Details</>
+                  : <>🌍 {activeRegion === 'all' ? 'Global Overview' : `${activeRegion} Regional Overview`}</>
+                }
+              </div>
+              {!isScrolled && (
+                <div id="panel-subtitle" className="panel-subtitle-text" style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  {selectedCountry
+                    ? 'Active intelligence, operator benchmarks, support service levels, and competitor analytics.'
+                    : 'Aggregated regional telecom statistics, operator distributions, and market benchmarks.'
+                  }
+                </div>
+              )}
+            </div>
+            {onExportReport && selectedCountry && (
+              <button
+                onClick={onExportReport}
+                style={{
+                  background: 'var(--blue)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: isScrolled ? '4px 10px' : '6px 12px',
+                  fontSize: '10px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  boxShadow: '0 2px 8px rgba(37,99,235,0.2)',
+                  whiteSpace: 'nowrap',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
+                onMouseOut={(e) => e.currentTarget.style.transform = 'none'}
+              >
+                ↓ Export Report
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Scrollable Container for Tab Contents */}
-      <div className="dynamic-center-content" ref={panelRef}>
+      <div className="dynamic-center-content" ref={panelRef} onScroll={handleScroll}>
 
-      {/* ── TAB: OVERVIEW ── */}
-      {activeTab === 'overview' && (
-        <div className="tab-content active" style={{ padding: '12px 0 0 0', display: 'block' }}>
-          <div style={{ padding: '0 0 12px 0' }}>
-            <span
-              className="cluster-tag"
-              style={{
-                background: `${clr}22`,
-                color: clr,
-                border: `1px solid ${clr}44`,
-                padding: '4px 10px',
-                borderRadius: '20px',
-                fontWeight: '600',
-                fontSize: '11px'
-              }}
-            >
-              ◈ {countryData.cluster_name}
-            </span>
-            <span style={{ fontSize: '11px', color: 'var(--text-secondary)', marginLeft: '12px' }}>
-              {metadata.cluster_definitions?.[countryData.cluster_name] || ''}
-            </span>
-          </div>
-
-          {countryData.anomaly_text && (
-            <div className="anomaly-box" style={{ padding: '12px', borderRadius: '10px' }}>
-              <div className="anomaly-icon" style={{ fontSize: '16px' }}>⚠</div>
-              <div style={{ fontSize: '12px', lineHeight: '1.5' }}>{countryData.anomaly_text}</div>
+        {/* ── TAB: OVERVIEW ── */}
+        {activeTab === 'overview' && (
+          <div className="tab-content active" style={{ padding: '12px 0 0 0', display: 'block' }}>
+            <div style={{ padding: '0 0 12px 0' }}>
+              <span
+                className="cluster-tag"
+                style={{
+                  background: `${clr}22`,
+                  color: clr,
+                  border: `1px solid ${clr}44`,
+                  padding: '4px 10px',
+                  borderRadius: '20px',
+                  fontWeight: '600',
+                  fontSize: '11px'
+                }}
+              >
+                ◈ {countryData.cluster_name}
+              </span>
+              <span style={{ fontSize: '11px', color: 'var(--text-secondary)', marginLeft: '12px' }}>
+                {metadata.cluster_definitions?.[countryData.cluster_name] || ''}
+              </span>
             </div>
-          )}
 
-          <div className="responsive-grid-12" style={{ marginTop: '10px' }}>
-            {countryData.top_product && (
-              <div className="section" style={{ marginBottom: '0' }}>
-                <div className="section-title">Primary Strategic Recommendation</div>
-                <div className="product-card top" style={{ padding: '16px', borderRadius: '12px' }}>
-                  <div className="product-top-badge" style={{ padding: '3px 10px', fontSize: '10px' }}>★ #1 RECOMMENDED FIT</div>
-                  <div className="product-name" style={{ fontSize: '16px', marginTop: '6px' }}>{countryData.top_product.product}</div>
-                  <div className="score-bar-wrap">
-                    <div className="score-bar-bg">
-                      <div
-                        className="score-bar-fill"
-                        style={{
-                          width: `${countryData.top_product.score}%`,
-                          background: countryData.top_product.score > 75 ? '#10b981' : countryData.top_product.score > 50 ? '#f59e0b' : '#3b82f6'
-                        }}
-                      ></div>
-                    </div>
-                    <div className="score-num">{countryData.top_product.score}/100</div>
-                  </div>
-                  <div className="product-reason" style={{ fontSize: '11px', marginTop: '8px' }}>{countryData.top_product.reason}</div>
-                </div>
+            {countryData.anomaly_text && (
+              <div className="anomaly-box" style={{ padding: '12px', borderRadius: '10px' }}>
+                <div className="anomaly-icon" style={{ fontSize: '16px' }}>⚠</div>
+                <div style={{ fontSize: '12px', lineHeight: '1.5' }}>{countryData.anomaly_text}</div>
               </div>
             )}
 
-            <div className="chart-wrap" style={{ margin: '0' }}>
-              <div className="chart-title">Impact Dimensions Overview</div>
-              <div className="chart-canvas-wrap" style={{ height: '200px' }}>
-                <canvas ref={overviewRadarRef} id="overview_radar"></canvas>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── TAB: OPERATORS ── */}
-      {activeTab === 'operators' && (
-        <div className="tab-content active" style={{ padding: '12px 0 0 0', display: 'block' }}>
-          
-          {/* Heatmap displayed first */}
-          <div className="section">
-            <div className="heatmap-wrap" style={{ border: '1px solid var(--border)', borderRadius: '10px', background: 'var(--bg-card)', padding: '16px' }}>
-              <div className="section-title" style={{ marginBottom: '16px' }}>Operator Performance Heatmap (Click any row for details)</div>
-              <div style={{ overflowX: 'auto' }}>
-                <table className="heatmap-table" style={{ width: '100%' }}>
-                <thead>
-                  <tr>
-                    <th style={{ textAlign: 'left' }}>Operator</th>
-                    <th>Subs (M)</th>
-                    <th>5G %</th>
-                    <th>Sub Growth</th>
-                    <th>ARPU</th>
-                    <th>Revenue</th>
-                    <th>Profitability</th>
-                    <th>Outbound</th>
-                    <th>Inbound</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(countryData.operators || []).map((op, idx) => {
-                    const cells = [
-                      { val: op.sub_base_mln, fmt: v => v ? v + 'M' : '—', score: null },
-                      { val: op.fiveG_pct, fmt: v => v !== null ? v + '%' : '—', score: op.fiveG_pct },
-                      { val: op.subscriber_growth_pct, fmt: v => v !== null ? v + '%' : '—', score: (op.subscriber_growth_pct || 0) + 5 },
-                      { val: op.arpu_growth_score, fmt: () => op.arpu_growth || '—', score: op.arpu_growth_score * 20 },
-                      { val: op.revenue_growth_score, fmt: () => op.revenue_growth || '—', score: op.revenue_growth_score * 20 },
-                      { val: op.profitability_score, fmt: () => op.profitability || '—', score: op.profitability_score * 20 },
-                      { val: op.outbound_roaming_score, fmt: () => op.outbound_roaming || '—', score: op.outbound_roaming_score * 20 },
-                      { val: op.inbound_roaming_score, fmt: () => op.inbound_roaming || '—', score: op.inbound_roaming_score * 20 },
-                    ];
-
-                    const isSelected = selectedOperator === op.operator;
-
-                    return (
-                      <tr 
-                        key={idx} 
-                        style={{ cursor: 'pointer', background: isSelected ? 'rgba(37, 99, 235, 0.15)' : '' }}
-                        onClick={() => {
-                          setSelectedOperator(op.operator);
-                          setActiveTab('account');
-                        }}
-                      >
-                        <td className="hm-op-name" style={{ borderLeft: isSelected ? '4px solid var(--blue)' : '' }}>
-                          <div className="op-name" style={{ fontSize: '11px' }}>{op.operator}</div>
-                          <div className="op-sub">
-                            {op.prepaid_postpaid || ''}
-                            {(!selectedCountry && op.countryName) ? ` • ${op.countryName}` : ''}
-                          </div>
-                        </td>
-                        {cells.map((cell, cidx) => {
-                          const sc = cell.score;
-                          const bg = sc === null ? '' : hmColor(sc);
-                          const textClr = sc !== null && sc < 20 ? '#fff' : 'var(--text-primary)';
-                          return (
-                            <td
-                              key={cidx}
-                              style={{
-                                background: bg,
-                                color: textClr,
-                                fontWeight: sc !== null ? '600' : 'normal',
-                                padding: '8px'
-                              }}
-                            >
-                              {cell.fmt(cell.val)}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-              </div>
-            </div>
-          </div>
-
-          {/* Dynamic Click Details Panel for selectedOperator */}
-          {selectedOperator && (() => {
-            const filteredAMC = amcData.filter(row => {
-              const client = row.client_name.toLowerCase();
-              const op = selectedOperator.toLowerCase();
-              return client.includes(op) || op.includes(client);
-            });
-
-            const getCustomVersus = (compName, opName) => {
-              switch (compName.toLowerCase()) {
-                case 'syniverse':
-                  return `At ${opName}, Syniverse has legacy clearing connectivity, but Mobileum's modern AI Steering of Roaming (SoR) and Roaming DNA offer advanced QoE analytics and real-time steering.`;
-                case 'tomia':
-                  return `Tomia focuses on basic settlement margins. Mobileum offers integrated signaling firewall security and eSIM testing, protecting ${opName} from bypass losses.`;
-                case 'subex':
-                  return `Subex has legacy assurance deployments. Mobileum's RAID 9 SaaS-ready platform provides faster detection of bypass and SIM-box fraud for ${opName}.`;
-                case 'bics':
-                  return `BICS is a routing partner but competes on active testing. Mobileum Universal Active Roaming Testing provides superior QoS assurance for ${opName}.`;
-                default:
-                  return `Mobileum offers superior SaaS-ready analytics and real-time active intelligence compared to traditional vendor solutions.`;
-              }
-            };
-
-            return (
-              <div className="operator-click-details-panel" style={{
-                background: 'var(--bg-card)',
-                border: '1px solid var(--border)',
-                borderRadius: '12px',
-                padding: '16px',
-                margin: '20px 0',
-                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.05)',
-                animation: 'fadeIn 0.25s ease-out'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                  <h4 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-                    {selectedOperator} — Financial Contracts (AMC) & Competitors
-                  </h4>
-                  <button 
-                    onClick={() => setSelectedOperator(null)}
-                    style={{
-                      background: 'var(--bg-card2)',
-                      border: '1px solid var(--border)',
-                      borderRadius: '6px',
-                      color: 'var(--text-secondary)',
-                      cursor: 'pointer',
-                      padding: '4px 10px',
-                      fontSize: '11px',
-                      fontWeight: '600'
-                    }}
-                  >
-                    ✕ Close details
-                  </button>
-                </div>
-
-                <div className="responsive-grid-21">
-                  {/* Column 1: AMC Contracts */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      Outstanding AMC Contracts
+            <div className="responsive-grid-12" style={{ marginTop: '10px' }}>
+              {countryData.top_product && (
+                <div className="section" style={{ marginBottom: '0' }}>
+                  <div className="section-title">Primary Strategic Recommendation</div>
+                  <div className="product-card top" style={{ padding: '16px', borderRadius: '12px' }}>
+                    <div className="product-top-badge" style={{ padding: '3px 10px', fontSize: '10px' }}>★ #1 RECOMMENDED FIT</div>
+                    <div className="product-name" style={{ fontSize: '16px', marginTop: '6px' }}>{countryData.top_product.product}</div>
+                    <div className="score-bar-wrap">
+                      <div className="score-bar-bg">
+                        <div
+                          className="score-bar-fill"
+                          style={{
+                            width: `${countryData.top_product.score}%`,
+                            background: countryData.top_product.score > 75 ? '#10b981' : countryData.top_product.score > 50 ? '#f59e0b' : '#3b82f6'
+                          }}
+                        ></div>
+                      </div>
+                      <div className="score-num">{countryData.top_product.score}/100</div>
                     </div>
-                    {filteredAMC.length > 0 ? (
-                      <div style={{ overflowX: 'auto', background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '4px' }}>
-                        <table className="op-table" style={{ width: '100%' }}>
-                          <thead>
-                            <tr>
-                              <th>Contract ID</th>
-                              <th>Business Unit</th>
-                              <th style={{ textAlign: 'right' }}>Value</th>
-                              <th>Due Date</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {filteredAMC.map(row => (
-                              <tr key={row.contract_id}>
-                                <td style={{ fontFamily: 'monospace', fontWeight: '700' }}>{row.contract_id}</td>
-                                <td>
-                                  <span style={{ background: 'var(--bg-card3)', color: 'var(--text-primary)', padding: '1px 4px', borderRadius: '3px', fontSize: '9px' }}>
-                                    {row.business_unit}
-                                  </span>
-                                </td>
-                                <td style={{ fontWeight: '700', color: 'var(--text-primary)', textAlign: 'right' }}>
-                                  ${row.outstanding_amount.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                                </td>
-                                <td style={{ color: 'var(--text-muted)' }}>{row.due_date}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    ) : (
-                      <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '11px' }}>
-                        No outstanding AMC contracts found for {selectedOperator} in this market.
-                      </div>
-                    )}
+                    <div className="product-reason" style={{ fontSize: '11px', marginTop: '8px' }}>{countryData.top_product.reason}</div>
                   </div>
-
-                  {/* Column 2: Competitor Details */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      Active Competitors & Mobileum Edge
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '180px', overflowY: 'auto' }}>
-                      {competitorData.map(comp => (
-                        <div key={comp.name} style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', fontSize: '10px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <strong style={{ color: 'var(--text-primary)' }}>{comp.name}</strong>
-                            <span style={{
-                              fontSize: '8px',
-                              fontWeight: '700',
-                              background: comp.category.toLowerCase().includes('direct') ? 'rgba(239, 68, 68, 0.1)' : 'rgba(59, 130, 246, 0.1)',
-                              color: comp.category.toLowerCase().includes('direct') ? 'var(--red)' : 'var(--blue-light)',
-                              padding: '1px 6px',
-                              borderRadius: '10px'
-                            }}>
-                              {comp.category}
-                            </span>
-                          </div>
-                          <div style={{ color: 'var(--text-secondary)', marginTop: '2px' }}>
-                            <strong>Key offering:</strong> {comp.key_offerings}
-                          </div>
-                          <div style={{ color: 'var(--text-muted)', fontStyle: 'italic', marginTop: '2px', borderTop: '1px dashed var(--border)', paddingTop: '2px' }}>
-                            <strong>Mobileum Edge:</strong> {getCustomVersus(comp.name, selectedOperator)}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* Charts displayed below Heatmap */}
-          <div className="responsive-grid-2" style={{ marginBottom: '20px' }}>
-            <div className="chart-wrap">
-              <div className="chart-title">Market Share Distribution</div>
-              <div style={{ height: '180px' }}>
-                <canvas ref={operatorsDoughnutRef} id="operators_doughnut"></canvas>
-              </div>
-            </div>
-            <div className="chart-wrap">
-              <div className="chart-title">Revenue Index vs Share Bubble Chart</div>
-              <div style={{ height: '180px' }}>
-                <canvas ref={operatorsScatterRef} id="operators_scatter"></canvas>
-              </div>
-            </div>
-          </div>
-
-          {/* Individual profiles displayed at the bottom */}
-          <div className="section" style={{ marginTop: '20px' }}>
-            <div className="section-title">Individual Operator Profiles (Click card for details)</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '15px' }}>
-              {(countryData.operators || []).map((op, idx) => {
-                const capexText = op.capex_investment !== 'nan' ? op.capex_investment : '—';
-                const isSelected = selectedOperator === op.operator;
-                return (
-                  <div 
-                    className="product-card" 
-                    key={idx} 
-                    style={{ 
-                      margin: '0', 
-                      cursor: 'pointer',
-                      borderColor: isSelected ? 'var(--blue)' : 'var(--border)',
-                      borderWidth: isSelected ? '2px' : '1px',
-                      background: isSelected ? 'rgba(37, 99, 235, 0.05)' : ''
-                    }}
-                    onClick={() => {
-                      setSelectedOperator(op.operator);
-                      setActiveTab('account');
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <div>
-                        <div className="product-name" style={{ fontSize: '14px' }}>{op.operator}</div>
-                        <div className="product-cat">
-                          {op.sub_base_mln ? op.sub_base_mln + 'M subs · ' : ''}
-                          {op.market_share_pct || '?'}% share
-                        </div>
-                      </div>
-                      <div
-                        className="score-circle"
-                        style={{
-                          borderColor: getBadgeColor(op.profitability_score * 20).border,
-                          backgroundColor: getBadgeColor(op.profitability_score * 20).bg,
-                          color: getBadgeColor(op.profitability_score * 20).text,
-                          width: '44px',
-                          height: '44px',
-                          flexDirection: 'column',
-                          gap: '2px'
-                        }}
-                      >
-                        <div style={{ fontSize: '13px' }}>{op.profitability_score}/5</div>
-                        <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>HLTH</div>
-                      </div>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '10px', fontSize: '10px', color: 'var(--text-secondary)' }}>
-                      <div>5G: <strong style={{ color: 'var(--text-primary)' }}>{op.fiveG_pct !== null ? op.fiveG_pct + '%' : '—'}</strong></div>
-                      <div>ARPU: <strong style={{ color: 'var(--text-primary)' }}>{op.arpu_growth || '—'}</strong></div>
-                      <div>Sub Growth: <strong style={{ color: 'var(--text-primary)' }}>{op.subscriber_growth_pct !== null ? op.subscriber_growth_pct + '%' : '—'}</strong></div>
-                      <div>Capex: <strong style={{ color: 'var(--text-primary)' }}>{capexText.length > 25 ? capexText.substring(0, 22) + '…' : capexText}</strong></div>
-                      <div>Outbound: <strong style={{ color: 'var(--text-primary)' }}>{(op.outbound_roaming || '—').substring(0, 15)}</strong></div>
-                      <div>Top Routes: <strong style={{ color: 'var(--text-primary)' }}>{(op.top_roaming_countries || '—').substring(0, 20)}</strong></div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── TAB: IMPACT ── */}
-      {activeTab === 'account' && (
-        <div className="tab-content active" style={{ padding: '0', display: 'block' }}>
-          {accountData ? (
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              
-              {selectedOperator && (
-                <div style={{ 
-                  background: 'rgba(37, 99, 235, 0.08)', 
-                  border: '1px solid var(--blue)', 
-                  borderRadius: '10px', 
-                  padding: '12px 16px', 
-                  margin: '12px 20px 0 20px',
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center', 
-                  animation: 'fadeIn 0.25s ease-out'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '16px' }}>💼</span>
-                    <div>
-                      <div style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-primary)' }}>
-                        Operator Specific View: <span style={{ color: 'var(--blue)' }}>{selectedOperator}</span>
-                      </div>
-                      <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                        Showing custom financial performance, renewals, and product fits for this operator.
-                      </div>
-                    </div>
-                  </div>
-                  <button 
-                    onClick={() => setSelectedOperator(null)}
-                    style={{
-                      background: 'var(--bg-card)',
-                      border: '1px solid var(--border)',
-                      borderRadius: '6px',
-                      color: 'var(--text-secondary)',
-                      cursor: 'pointer',
-                      padding: '4px 10px',
-                      fontSize: '11px',
-                      fontWeight: '600'
-                    }}
-                  >
-                    Clear Filter
-                  </button>
                 </div>
               )}
 
-              {/* Nested Sub-navigation Bar */}
-              <div id="sub-panel-tabs" style={{ 
-                display: 'flex', 
-                gap: '8px', 
-                borderBottom: '1px solid var(--border)', 
-                padding: '12px 20px 10px 20px', 
-                position: 'sticky',
-                top: 0,
-                background: 'var(--bg-card)',
-                zIndex: 10,
-                flexShrink: 0
-              }}>
-                {[
-                  { key: 'profile', label: 'Account Profile' },
-                  { key: 'impact', label: 'Impact Analysis' },
-                  { key: 'products', label: 'Product Fit' },
-                  { key: 'support', label: 'Support & AMC' },
-                  { key: 'competitors', label: 'Competitors' },
-                  { key: 'plan2026', label: 'Plan for 2026' }
-                ].map(subTab => (
-                  <button
-                    key={subTab.key}
-                    className={`tab-btn sm ${activeSubTab === subTab.key ? 'active' : ''}`}
-                    onClick={() => setActiveSubTab(subTab.key)}
-                  >
-                    {subTab.label}
-                  </button>
-                ))}
-              </div>
-
-              {activeSubTab === 'profile' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', animation: 'fadeIn 0.25s ease-out', padding: '20px' }}>
-                  
-                  {/* Sticky Index Navigation Bar */}
-                  <div style={{
-                    position: 'sticky',
-                    top: '40px',
-                    background: 'var(--bg-card)',
-                    borderBottom: '1px solid var(--border)',
-                    padding: '10px 0',
-                    display: 'flex',
-                    gap: '12px',
-                    alignItems: 'center',
-                    zIndex: 9,
-                    marginTop: '-12px',
-                    marginBottom: '8px',
-                    overflowX: 'auto'
-                  }} className="hide-scrollbar">
-                    <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginRight: '4px' }}>
-                      Jump To:
-                    </span>
-                    {[
-                      { id: 'product-section', label: 'Product Section' },
-                      { id: 'financial-section', label: 'Financial Section' },
-                      { id: 'renewal-section', label: 'Renewal Section' },
-                      { id: 'health-section', label: 'Health of Solution' }
-                    ].map(sec => (
-                      <button
-                        key={sec.id}
-                        onClick={() => {
-                          const el = document.getElementById(sec.id);
-                          if (el) {
-                            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                          }
-                        }}
-                        style={{
-                          background: 'var(--bg-card)',
-                          border: '1px solid var(--border)',
-                          borderRadius: '20px',
-                          padding: '6px 14px',
-                          fontSize: '11px',
-                          fontWeight: '600',
-                          color: 'var(--text-secondary)',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          transition: 'all 0.15s ease',
-                          whiteSpace: 'nowrap'
-                        }}
-                        onMouseOver={(e) => {
-                          e.currentTarget.style.borderColor = 'var(--blue)';
-                          e.currentTarget.style.color = 'var(--blue)';
-                          e.currentTarget.style.background = 'rgba(37, 99, 235, 0.08)';
-                        }}
-                        onMouseOut={(e) => {
-                          e.currentTarget.style.borderColor = 'var(--border)';
-                          e.currentTarget.style.color = 'var(--text-secondary)';
-                          e.currentTarget.style.background = 'var(--bg-card)';
-                        }}
-                      >
-                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--blue)' }}></span>
-                        {sec.label}
-                      </button>
-                    ))}
-                  </div>
-
-              {/* Product Section */}
-              <div id="product-section" className="section" style={{ scrollMarginTop: '90px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', margin: '0 0 4px 0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-                <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--blue)', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
-                  <span>Product Section</span>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button
-                      onClick={() => setActiveModal('history')}
-                      className="form-trigger-btn"
-                      style={{ background: 'var(--bg-card2)', color: 'var(--text-secondary)' }}
-                    >
-                      🕒 History
-                    </button>
-                    <button
-                      onClick={() => {
-                        setActiveModal('product');
-                      }}
-                      className="form-trigger-btn"
-                      disabled={isDataLoading}
-                      style={{ opacity: isDataLoading ? 0.5 : 1, cursor: isDataLoading ? 'not-allowed' : 'pointer' }}
-                    >
-                      📝 Form
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="responsive-grid-2">
-                  {/* LEFT COLUMN */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    {/* 1. Mobileum products */}
-                    <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', height: '100%', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
-                      <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        Mobileum Products
-                        {renderEditedBadge('mobileumProducts', accountData.productSection)}
-                      </div>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                        {(accountData.productSection?.mobileumProducts || []).map(item => (
-                          <span key={item} style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--blue)', border: '1px solid rgba(37, 99, 235, 0.2)', borderRadius: '6px', padding: '4px 8px', fontSize: '11px', fontWeight: '600' }}>
-                            {item}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* 3. Product gaps */}
-                    <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', height: '100%', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
-                      <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        Product Gaps
-                        {renderEditedBadge('productGaps', accountData.productSection)}
-                      </div>
-                      <ul style={{ margin: '0', paddingLeft: '18px', color: 'var(--text-secondary)', fontSize: '11px', lineHeight: '1.6' }}>
-                        {(accountData.productSection?.productGaps || []).map(item => <li key={item}>{item}</li>)}
-                      </ul>
-                    </div>
-
-                    {/* 4. Managed services possibility */}
-                    <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', height: '100%', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
-                      <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        Managed Services Possibility
-                        {renderEditedBadge('managedServicesPossibility', accountData.productSection)}
-                      </div>
-                      <ul style={{ margin: '0', paddingLeft: '18px', color: 'var(--text-secondary)', fontSize: '11px', lineHeight: '1.6' }}>
-                        {(accountData.productSection?.managedServicesPossibility || []).map(item => <li key={item}>{item}</li>)}
-                      </ul>
-                    </div>
-                  </div>
-
-                  {/* RIGHT COLUMN */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    {/* 2. Competition products */}
-                    <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', height: '100%', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
-                      <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        Competition Products
-                        {renderEditedBadge('competitionProducts', accountData.productSection)}
-                      </div>
-                      <ul style={{ margin: '0', paddingLeft: '18px', color: 'var(--text-secondary)', fontSize: '11px', lineHeight: '1.6' }}>
-                        {(accountData.productSection?.competitionProducts || []).map(item => <li key={item}>{item}</li>)}
-                      </ul>
-                    </div>
-
-                    {/* 6. Competition which can be replaced */}
-                    <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', height: '100%', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
-                      <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        Competitors to Replace
-                        {renderEditedBadge('replaceableCompetitors', accountData.productSection)}
-                      </div>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                        {(accountData.productSection?.replaceableCompetitors || []).map(item => (
-                          <span key={item} style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--red)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '999px', padding: '2px 8px', fontSize: '10px', fontWeight: '600' }}>
-                            {item}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Final Strategies */}
-                    <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', height: '100%', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
-                      <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        Final Strategies
-                        {renderEditedBadge('finalStrategies', accountData.productSection)}
-                      </div>
-                      <ul style={{ margin: '0', paddingLeft: '18px', color: 'var(--text-secondary)', fontSize: '11px', lineHeight: '1.6', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {(accountData.productSection?.finalStrategies || []).map((item, idx) => (
-                          <li key={idx} className="strategy-row">
-                            <div style={{ marginBottom: '6px' }}>{item.text || item}</div>
-                            {item.rtpStatus && (
-                              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px' }}>
-                                <span className={`chip-rtp chip-rtp-${item.rtpStatus.replace(/\s+/g, '').toLowerCase()}`}>
-                                  {item.rtpStatus}
-                                </span>
-                                <span className="badge-engagement">{item.engagementType}</span>
-                              </div>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 5. Plan for 2026 */}
-                {accountData.plan2026 && (
-                  <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px', marginTop: '16px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                      <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                        Plan for 2026 (Quick View)
-                      </span>
-                      <button 
-                        onClick={() => setActiveSubTab('plan2026')}
-                        style={{ background: 'var(--blue)', border: 'none', color: '#fff', borderRadius: '4px', padding: '3px 8px', fontSize: '9px', fontWeight: '600', cursor: 'pointer' }}
-                      >
-                        View full plan →
-                      </button>
-                    </div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-primary)' }}>
-                      <strong>Pipeline Value:</strong> {accountData.plan2026.valueOfOpportunities}
-                    </div>
-                    <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                      <strong>Focus:</strong> {(accountData.plan2026.productsFocusedOn || []).join(', ')}
-                    </div>
-                  </div>
-                )}
-
-                {/* Dynamic Product Submissions Section */}
-                {(() => {
-                  const currentProductSubmissions = (submissions || []).filter(sub => 
-                    sub.type === 'product' && 
-                    sub.country === (selectedCountry || 'Global') && 
-                    sub.operator === (selectedOperator || 'Global')
-                  );
-                  if (currentProductSubmissions.length === 0) return null;
-                  return (
-                    <div style={{ marginTop: '24px', borderTop: '1px solid var(--border)', paddingTop: '20px' }}>
-                      <h4 style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.05em' }}>
-                        Submitted Product Requests ({currentProductSubmissions.length})
-                      </h4>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
-                        {currentProductSubmissions.map(sub => (
-                          <div key={sub.id} className="submission-card" style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '14px', position: 'relative' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px' }}>
-                              <span style={{ fontWeight: '700', color: 'var(--blue-light)' }}>{sub.companyName}</span>
-                              <span>{sub.timestamp}</span>
-                            </div>
-                            <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '4px' }}>
-                              {sub.name} <span style={{ fontWeight: '400', color: 'var(--text-muted)', fontSize: '11px' }}>({sub.email})</span>
-                            </div>
-                            {sub.phone && (
-                              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px' }}>
-                                📞 {sub.phone}
-                              </div>
-                            )}
-                            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', background: 'var(--bg-card3)', padding: '8px', borderRadius: '6px', whiteSpace: 'pre-wrap' }}>
-                              {sub.requirements}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-
-              {/* Financial Section */}
-              <div id="financial-section" className="section" style={{ scrollMarginTop: '90px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', margin: '0 0 4px 0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-                <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--teal)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  Financial Section
-                </div>
-                
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
-                  <div className="product-card" style={{ padding: '12px', margin: 0, cursor: 'default' }}>
-                    <div style={{ fontSize: '9px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>1. Profit / Revenue Potential</div>
-                    <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--green)', marginTop: '4px' }}>
-                      {accountData.financialSection?.profit || '—'}
-                    </div>
-                  </div>
-                  
-                  <div className="product-card" style={{ padding: '12px', margin: 0, cursor: 'default' }}>
-                    <div style={{ fontSize: '9px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>2. Capex Investment</div>
-                    <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--blue)', marginTop: '4px' }}>
-                      {accountData.financialSection?.capexInvestment || '—'}
-                    </div>
-                  </div>
-                  
-                  <div className="product-card" style={{ padding: '12px', margin: 0, cursor: 'default', gridColumn: '1 / -1' }}>
-                    <div style={{ fontSize: '9px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>3. Strategic Notes & Outlook (xxxx)</div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: '1.5' }}>
-                      {accountData.financialSection?.note || '—'}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Renewal Section */}
-              <div id="renewal-section" className="section" style={{ scrollMarginTop: '90px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', margin: '0 0 4px 0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-                <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--purple)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  Renewal Section
-                </div>
-                
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
-                  <div>
-                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
-                      1. AMC Renewal List
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {(accountData.renewalSection?.amcRenewal || []).map((item, idx) => (
-                        <div key={idx} style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-primary)' }}>{item.name}</span>
-                            <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--green)' }}>{item.value}</span>
-                          </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
-                            <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Status:</span>
-                            <span style={{ 
-                              fontSize: '9px', 
-                              fontWeight: '700', 
-                              background: item.status.toLowerCase().includes('due') ? 'rgba(245, 158, 11, 0.15)' : 'rgba(16, 185, 129, 0.15)', 
-                              color: item.status.toLowerCase().includes('due') ? 'var(--yellow)' : 'var(--green)',
-                              padding: '1px 6px',
-                              borderRadius: '4px'
-                            }}>
-                              {item.status}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                      {(!accountData.renewalSection?.amcRenewal || accountData.renewalSection.amcRenewal.length === 0) && (
-                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic' }}>No AMC renewals listed.</div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
-                      2. Managed Services Renewal
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {(accountData.renewalSection?.managedServicesRenewal || []).map((item, idx) => (
-                        <div key={idx} style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-primary)' }}>{item.name}</span>
-                            <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--green)' }}>{item.value}</span>
-                          </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
-                            <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Status:</span>
-                            <span style={{ 
-                              fontSize: '9px', 
-                              fontWeight: '700', 
-                              background: item.status.toLowerCase().includes('ready') ? 'rgba(16, 185, 129, 0.15)' : 'rgba(37, 99, 235, 0.15)', 
-                              color: item.status.toLowerCase().includes('ready') ? 'var(--green)' : 'var(--blue)',
-                              padding: '1px 6px',
-                              borderRadius: '4px'
-                            }}>
-                              {item.status}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                      {(!accountData.renewalSection?.managedServicesRenewal || accountData.renewalSection.managedServicesRenewal.length === 0) && (
-                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic' }}>No managed services renewals listed.</div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Health of Solution Section */}
-              <div id="health-section" className="section" style={{ scrollMarginTop: '90px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', margin: '0 0 4px 0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-                <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--red)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  Health of Solution Section
-                </div>
-                
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
-                  <div>
-                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
-                      1. Installed Product-wise Support Tickets
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {(accountData.healthSection?.installedProductWiseSupportTicket || []).map((item, idx) => (
-                        <div key={idx} style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-primary)' }}>{item.product}</span>
-                            <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--red)' }}>{item.tickets} Tickets</span>
-                          </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
-                            <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Trend:</span>
-                            <span style={{ 
-                              fontSize: '9px', 
-                              fontWeight: '700', 
-                              color: item.trend.toLowerCase().includes('improving') ? 'var(--green)' : item.trend.toLowerCase().includes('stable') ? 'var(--blue)' : 'var(--yellow)' 
-                            }}>
-                              {item.trend}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
-                      2. Usage of Installed Products
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {(accountData.healthSection?.usageOfInstalledProducts || []).map((item, idx) => (
-                        <div key={idx} style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px' }}>
-                          <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-primary)' }}>{item.product}</div>
-                          <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: '1.4' }}>
-                            {item.usage}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+              <div className="chart-wrap" style={{ margin: '0' }}>
+                <div className="chart-title">Impact Dimensions Overview</div>
+                <div className="chart-canvas-wrap" style={{ height: '200px' }}>
+                  <canvas ref={overviewRadarRef} id="overview_radar"></canvas>
                 </div>
               </div>
             </div>
-          )}
-              {activeSubTab === 'impact' && (
-                <div style={{ animation: 'fadeIn 0.25s ease-out' }}>
+          </div>
+        )}
+
+        {/* ── TAB: OPERATORS ── */}
+        {activeTab === 'operators' && (
+          <div className="tab-content active" style={{ padding: '12px 0 0 0', display: 'block' }}>
+
+            {/* Heatmap displayed first */}
+            <div className="section">
+              <div className="heatmap-wrap" style={{ border: '1px solid var(--border)', borderRadius: '10px', background: 'var(--bg-card)', padding: '16px' }}>
+                <div className="section-title" style={{ marginBottom: '16px' }}>Operator Performance Heatmap (Click any row for details)</div>
+                <div style={{ overflowX: 'auto' }}>
+                  <table className="heatmap-table" style={{ width: '100%' }}>
+                    <thead>
+                      <tr>
+                        <th style={{ textAlign: 'left' }}>Operator</th>
+                        <th>Subs (M)</th>
+                        <th>5G %</th>
+                        <th>Sub Growth</th>
+                        <th>ARPU</th>
+                        <th>Revenue</th>
+                        <th>Profitability</th>
+                        <th>Outbound</th>
+                        <th>Inbound</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(countryData.operators || []).map((op, idx) => {
+                        const cells = [
+                          { val: op.sub_base_mln, fmt: v => v ? v + 'M' : '—', score: null },
+                          { val: op.fiveG_pct, fmt: v => v !== null ? v + '%' : '—', score: op.fiveG_pct },
+                          { val: op.subscriber_growth_pct, fmt: v => v !== null ? v + '%' : '—', score: (op.subscriber_growth_pct || 0) + 5 },
+                          { val: op.arpu_growth_score, fmt: () => op.arpu_growth || '—', score: op.arpu_growth_score * 20 },
+                          { val: op.revenue_growth_score, fmt: () => op.revenue_growth || '—', score: op.revenue_growth_score * 20 },
+                          { val: op.profitability_score, fmt: () => op.profitability || '—', score: op.profitability_score * 20 },
+                          { val: op.outbound_roaming_score, fmt: () => op.outbound_roaming || '—', score: op.outbound_roaming_score * 20 },
+                          { val: op.inbound_roaming_score, fmt: () => op.inbound_roaming || '—', score: op.inbound_roaming_score * 20 },
+                        ];
+
+                        const isSelected = selectedOperator === op.operator;
+
+                        return (
+                          <tr
+                            key={idx}
+                            style={{ cursor: 'pointer', background: isSelected ? 'rgba(37, 99, 235, 0.15)' : '' }}
+                            onClick={() => {
+                              setSelectedOperator(op.operator);
+                              setActiveTab('account');
+                            }}
+                          >
+                            <td className="hm-op-name" style={{ borderLeft: isSelected ? '4px solid var(--blue)' : '' }}>
+                              <div className="op-name" style={{ fontSize: '11px' }}>{op.operator}</div>
+                              <div className="op-sub">
+                                {op.prepaid_postpaid || ''}
+                                {(!selectedCountry && op.countryName) ? ` • ${op.countryName}` : ''}
+                              </div>
+                            </td>
+                            {cells.map((cell, cidx) => {
+                              const sc = cell.score;
+                              const bg = sc === null ? '' : hmColor(sc);
+                              const textClr = sc !== null && sc < 20 ? '#fff' : 'var(--text-primary)';
+                              return (
+                                <td
+                                  key={cidx}
+                                  style={{
+                                    background: bg,
+                                    color: textClr,
+                                    fontWeight: sc !== null ? '600' : 'normal',
+                                    padding: '8px'
+                                  }}
+                                >
+                                  {cell.fmt(cell.val)}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Dynamic Click Details Panel for selectedOperator */}
+            {selectedOperator && (() => {
+              const filteredAMC = amcData.filter(row => {
+                const client = row.client_name.toLowerCase();
+                const op = selectedOperator.toLowerCase();
+                return client.includes(op) || op.includes(client);
+              });
+
+              const getCustomVersus = (compName, opName) => {
+                switch (compName.toLowerCase()) {
+                  case 'syniverse':
+                    return `At ${opName}, Syniverse has legacy clearing connectivity, but Mobileum's modern AI Steering of Roaming (SoR) and Roaming DNA offer advanced QoE analytics and real-time steering.`;
+                  case 'tomia':
+                    return `Tomia focuses on basic settlement margins. Mobileum offers integrated signaling firewall security and eSIM testing, protecting ${opName} from bypass losses.`;
+                  case 'subex':
+                    return `Subex has legacy assurance deployments. Mobileum's RAID 9 SaaS-ready platform provides faster detection of bypass and SIM-box fraud for ${opName}.`;
+                  case 'bics':
+                    return `BICS is a routing partner but competes on active testing. Mobileum Universal Active Roaming Testing provides superior QoS assurance for ${opName}.`;
+                  default:
+                    return `Mobileum offers superior SaaS-ready analytics and real-time active intelligence compared to traditional vendor solutions.`;
+                }
+              };
+
+              return (
+                <div className="operator-click-details-panel" style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '12px',
+                  padding: '16px',
+                  margin: '20px 0',
+                  boxShadow: '0 4px 15px rgba(0, 0, 0, 0.05)',
+                  animation: 'fadeIn 0.25s ease-out'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                    <h4 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                      {selectedOperator} — Financial Contracts (AMC) & Competitors
+                    </h4>
+                    <button
+                      onClick={() => setSelectedOperator(null)}
+                      style={{
+                        background: 'var(--bg-card2)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '6px',
+                        color: 'var(--text-secondary)',
+                        cursor: 'pointer',
+                        padding: '4px 10px',
+                        fontSize: '11px',
+                        fontWeight: '600'
+                      }}
+                    >
+                      ✕ Close details
+                    </button>
+                  </div>
+
+                  <div className="responsive-grid-21">
+                    {/* Column 1: AMC Contracts */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        Outstanding AMC Contracts
+                      </div>
+                      {filteredAMC.length > 0 ? (
+                        <div style={{ overflowX: 'auto', background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '4px' }}>
+                          <table className="op-table" style={{ width: '100%' }}>
+                            <thead>
+                              <tr>
+                                <th>Contract ID</th>
+                                <th>Business Unit</th>
+                                <th style={{ textAlign: 'right' }}>Value</th>
+                                <th>Due Date</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {filteredAMC.map(row => (
+                                <tr key={row.contract_id}>
+                                  <td style={{ fontFamily: 'monospace', fontWeight: '700' }}>{row.contract_id}</td>
+                                  <td>
+                                    <span style={{ background: 'var(--bg-card3)', color: 'var(--text-primary)', padding: '1px 4px', borderRadius: '3px', fontSize: '9px' }}>
+                                      {row.business_unit}
+                                    </span>
+                                  </td>
+                                  <td style={{ fontWeight: '700', color: 'var(--text-primary)', textAlign: 'right' }}>
+                                    ${row.outstanding_amount.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                  </td>
+                                  <td style={{ color: 'var(--text-muted)' }}>{row.due_date}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '11px' }}>
+                          No outstanding AMC contracts found for {selectedOperator} in this market.
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Column 2: Competitor Details */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        Active Competitors & Mobileum Edge
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '180px', overflowY: 'auto' }}>
+                        {competitorData.map(comp => (
+                          <div key={comp.name} style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '8px', fontSize: '10px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <strong style={{ color: 'var(--text-primary)' }}>{comp.name}</strong>
+                              <span style={{
+                                fontSize: '8px',
+                                fontWeight: '700',
+                                background: comp.category.toLowerCase().includes('direct') ? 'rgba(239, 68, 68, 0.1)' : 'rgba(59, 130, 246, 0.1)',
+                                color: comp.category.toLowerCase().includes('direct') ? 'var(--red)' : 'var(--blue-light)',
+                                padding: '1px 6px',
+                                borderRadius: '10px'
+                              }}>
+                                {comp.category}
+                              </span>
+                            </div>
+                            <div style={{ color: 'var(--text-secondary)', marginTop: '2px' }}>
+                              <strong>Key offering:</strong> {comp.key_offerings}
+                            </div>
+                            <div style={{ color: 'var(--text-muted)', fontStyle: 'italic', marginTop: '2px', borderTop: '1px dashed var(--border)', paddingTop: '2px' }}>
+                              <strong>Mobileum Edge:</strong> {getCustomVersus(comp.name, selectedOperator)}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Charts displayed below Heatmap */}
+            <div className="responsive-grid-2" style={{ marginBottom: '20px' }}>
+              <div className="chart-wrap">
+                <div className="chart-title">Market Share Distribution</div>
+                <div style={{ height: '180px' }}>
+                  <canvas ref={operatorsDoughnutRef} id="operators_doughnut"></canvas>
+                </div>
+              </div>
+              <div className="chart-wrap">
+                <div className="chart-title">Revenue Index vs Share Bubble Chart</div>
+                <div style={{ height: '180px' }}>
+                  <canvas ref={operatorsScatterRef} id="operators_scatter"></canvas>
+                </div>
+              </div>
+            </div>
+
+            {/* Individual profiles displayed at the bottom */}
+            <div className="section" style={{ marginTop: '20px' }}>
+              <div className="section-title">Individual Operator Profiles (Click card for details)</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '15px' }}>
+                {(countryData.operators || []).map((op, idx) => {
+                  const capexText = op.capex_investment !== 'nan' ? op.capex_investment : '—';
+                  const isSelected = selectedOperator === op.operator;
+                  return (
+                    <div
+                      className="product-card"
+                      key={idx}
+                      style={{
+                        margin: '0',
+                        cursor: 'pointer',
+                        borderColor: isSelected ? 'var(--blue)' : 'var(--border)',
+                        borderWidth: isSelected ? '2px' : '1px',
+                        background: isSelected ? 'rgba(37, 99, 235, 0.05)' : ''
+                      }}
+                      onClick={() => {
+                        setSelectedOperator(op.operator);
+                        setActiveTab('account');
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <div>
+                          <div className="product-name" style={{ fontSize: '14px' }}>{op.operator}</div>
+                          <div className="product-cat">
+                            {op.sub_base_mln ? op.sub_base_mln + 'M subs · ' : ''}
+                            {op.market_share_pct || '?'}% share
+                          </div>
+                        </div>
+                        <div
+                          className="score-circle"
+                          style={{
+                            borderColor: getBadgeColor(op.profitability_score * 20).border,
+                            backgroundColor: getBadgeColor(op.profitability_score * 20).bg,
+                            color: getBadgeColor(op.profitability_score * 20).text,
+                            width: '44px',
+                            height: '44px',
+                            flexDirection: 'column',
+                            gap: '2px'
+                          }}
+                        >
+                          <div style={{ fontSize: '13px' }}>{op.profitability_score}/5</div>
+                          <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>HLTH</div>
+                        </div>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '10px', fontSize: '10px', color: 'var(--text-secondary)' }}>
+                        <div>5G: <strong style={{ color: 'var(--text-primary)' }}>{op.fiveG_pct !== null ? op.fiveG_pct + '%' : '—'}</strong></div>
+                        <div>ARPU: <strong style={{ color: 'var(--text-primary)' }}>{op.arpu_growth || '—'}</strong></div>
+                        <div>Sub Growth: <strong style={{ color: 'var(--text-primary)' }}>{op.subscriber_growth_pct !== null ? op.subscriber_growth_pct + '%' : '—'}</strong></div>
+                        <div>Capex: <strong style={{ color: 'var(--text-primary)' }}>{capexText.length > 25 ? capexText.substring(0, 22) + '…' : capexText}</strong></div>
+                        <div>Outbound: <strong style={{ color: 'var(--text-primary)' }}>{(op.outbound_roaming || '—').substring(0, 15)}</strong></div>
+                        <div>Top Routes: <strong style={{ color: 'var(--text-primary)' }}>{(op.top_roaming_countries || '—').substring(0, 20)}</strong></div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── TAB: IMPACT ── */}
+        {activeTab === 'account' && (
+          <div className="tab-content active" style={{ padding: '0', display: 'block' }}>
+            {accountData ? (
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+
+                {selectedOperator && (
+                  <div style={{
+                    background: 'rgba(37, 99, 235, 0.08)',
+                    border: '1px solid var(--blue)',
+                    borderRadius: '10px',
+                    padding: '12px 16px',
+                    margin: '12px 20px 0 20px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    animation: 'fadeIn 0.25s ease-out'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '16px' }}>💼</span>
+                      <div>
+                        <div style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-primary)' }}>
+                          Operator Specific View: <span style={{ color: 'var(--blue)' }}>{selectedOperator}</span>
+                        </div>
+                        <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                          Showing custom financial performance, renewals, and product fits for this operator.
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setSelectedOperator(null)}
+                      style={{
+                        background: 'var(--bg-card)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '6px',
+                        color: 'var(--text-secondary)',
+                        cursor: 'pointer',
+                        padding: '4px 10px',
+                        fontSize: '11px',
+                        fontWeight: '600'
+                      }}
+                    >
+                      Clear Filter
+                    </button>
+                  </div>
+                )}
+
+                {/* Nested Sub-navigation Bar */}
+                <div id="sub-panel-tabs" style={{
+                  display: 'flex',
+                  gap: '6px',
+                  borderBottom: '1px solid var(--border)',
+                  padding: '6px 12px 6px 12px',
+                  position: 'sticky',
+                  top: 0,
+                  background: 'var(--bg-card)',
+                  zIndex: 10,
+                  flexShrink: 0
+                }}>
+                  {[
+                    { key: 'profile', label: 'Account Profile' },
+                    { key: 'impact', label: 'Impact Analysis' },
+                    { key: 'products', label: 'Product Fit' },
+                    { key: 'support', label: 'Support & AMC' },
+                    { key: 'competitors', label: 'Competitors' },
+                    { key: 'plan2026', label: 'Plan for 2026' }
+                  ].map(subTab => (
+                    <button
+                      key={subTab.key}
+                      className={`tab-btn sm ${activeSubTab === subTab.key ? 'active' : ''}`}
+                      onClick={() => setActiveSubTab(subTab.key)}
+                      style={{ padding: '4px 10px', fontSize: '10px' }}
+                    >
+                      {subTab.label}
+                    </button>
+                  ))}
+                </div>
+
+                {activeSubTab === 'profile' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', animation: 'fadeIn 0.25s ease-out', padding: '8px 12px' }}>
+                    {/* Index Navigation Jump Bar */}
+                    <div style={{
+                      background: 'var(--bg-card2)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '8px',
+                      padding: '6px 10px',
+                      marginBottom: '2px'
+                    }}>
+                      {/* Quick Jump Bar */}
+                      <div style={{
+                        display: 'flex',
+                        gap: '6px',
+                        alignItems: 'center',
+                        overflowX: 'auto'
+                      }} className="hide-scrollbar">
+                        <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginRight: '4px' }}>
+                          Jump To:
+                        </span>
+                        {[
+                          { id: 'product-section', label: 'Product Section' },
+                          { id: 'financial-section', label: 'Financial Section' },
+                          { id: 'renewal-section', label: 'Renewal Section' },
+                          { id: 'health-section', label: 'Health of Solution' }
+                        ].map(sec => (
+                          <button
+                            key={sec.id}
+                            onClick={() => {
+                              const el = document.getElementById(sec.id);
+                              if (el) {
+                                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                              }
+                            }}
+                            style={{
+                              background: 'var(--bg-card)',
+                              border: '1px solid var(--border)',
+                              borderRadius: '20px',
+                              padding: '4px 12px',
+                              fontSize: '10px',
+                              fontWeight: '600',
+                              color: 'var(--text-secondary)',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '5px',
+                              transition: 'all 0.15s ease',
+                              whiteSpace: 'nowrap'
+                            }}
+                            onMouseOver={(e) => {
+                              e.currentTarget.style.borderColor = 'var(--blue)';
+                              e.currentTarget.style.color = 'var(--blue)';
+                              e.currentTarget.style.background = 'rgba(37, 99, 235, 0.08)';
+                            }}
+                            onMouseOut={(e) => {
+                              e.currentTarget.style.borderColor = 'var(--border)';
+                              e.currentTarget.style.color = 'var(--text-secondary)';
+                              e.currentTarget.style.background = 'var(--bg-card)';
+                            }}
+                          >
+                            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--blue)' }}></span>
+                            {sec.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Product Section */}
+                    <div id="product-section" className="section" style={{ scrollMarginTop: '60px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '10px 14px', margin: '0 0 8px 0', boxShadow: '0 2px 4px rgba(0,0,0,0.03)' }}>
+                      {/* Navigation Breadcrumb & Back Action */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', paddingBottom: '4px', borderBottom: '1px solid var(--border)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <button
+                            onClick={() => {
+                              if (setSelectedOperator) setSelectedOperator(null);
+                              if (setActiveTab) setActiveTab('operators');
+                            }}
+                            style={{
+                              background: 'var(--bg-card2)',
+                              border: '1px solid var(--border)',
+                              borderRadius: '6px',
+                              padding: '4px 10px',
+                              fontSize: '10px',
+                              fontWeight: '600',
+                              color: 'var(--text-primary)',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            ← Back to Operator List
+                          </button>
+                          <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>/</span>
+                          <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--blue)' }}>Product & Competitive Intelligence</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button
+                            onClick={() => setActiveModal('history')}
+                            className="form-trigger-btn"
+                            style={{ background: 'var(--bg-card2)', color: 'var(--text-secondary)', padding: '4px 10px', fontSize: '10px' }}
+                          >
+                            History
+                          </button>
+                          <button
+                            onClick={() => setActiveModal('product')}
+                            className="form-trigger-btn"
+                            disabled={isDataLoading}
+                            style={{ opacity: isDataLoading ? 0.5 : 1, cursor: isDataLoading ? 'not-allowed' : 'pointer', padding: '4px 10px', fontSize: '10px' }}
+                          >
+                            Form
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* 1. SECTION GROUPING: PRODUCTS LANDSCAPE TILE */}
+                      <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px 14px', marginBottom: '12px' }}>
+                        <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--blue)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span>Products Landscape</span>
+                          <span style={{ fontSize: '9px', fontWeight: '600', color: 'var(--text-muted)' }}>Mobileum vs Market Competitors</span>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, auto) 1fr 1fr', gap: '10px' }}>
+                          {/* 1A. Mobileum Products (Fit Content - No Empty Gap!) */}
+                          <div style={{ background: 'var(--bg-card3)', border: '1px solid var(--border)', borderRadius: '6px', padding: '10px' }}>
+                            <div style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}>
+                              Mobileum Products
+                              {renderEditedBadge('mobileumProducts', accountData.productSection)}
+                            </div>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                              {(accountData.productSection?.mobileumProducts || []).map(item => (
+                                <span key={item} style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--blue)', border: '1px solid rgba(37, 99, 235, 0.2)', borderRadius: '5px', padding: '3px 7px', fontSize: '10px', fontWeight: '600', whiteSpace: 'nowrap' }}>
+                                  {item}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* 1B. Competition Products */}
+                          <div style={{ background: 'var(--bg-card3)', border: '1px solid var(--border)', borderRadius: '6px', padding: '10px' }}>
+                            <div style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              Competition Products
+                              {renderEditedBadge('competitionProducts', accountData.productSection)}
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                              {(accountData.productSection?.competitionProducts || []).map((item, idx) => {
+                                const name = typeof item === 'object' ? (item.name || '') : String(item);
+                                const isSelected = typeof item === 'object' ? item.selected !== false : true;
+                                return (
+                                  <div
+                                    key={idx}
+                                    style={{
+                                      fontSize: '10px',
+                                      fontWeight: '700',
+                                      color: isSelected ? '#b45309' : 'var(--red)',
+                                      background: isSelected ? 'rgba(245, 158, 11, 0.15)' : 'rgba(239, 68, 68, 0.1)',
+                                      border: `1px solid ${isSelected ? 'rgba(245, 158, 11, 0.35)' : 'rgba(239, 68, 68, 0.25)'}`,
+                                      borderRadius: '6px',
+                                      padding: '5px 10px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'space-between',
+                                      gap: '8px'
+                                    }}
+                                  >
+                                    <span>{name}</span>
+                                    {/* Square Tick Box on the right side */}
+                                    <div
+                                      style={{
+                                        width: '16px',
+                                        height: '16px',
+                                        borderRadius: '4px',
+                                        border: `1.5px solid ${isSelected ? '#b45309' : 'var(--red)'}`,
+                                        background: isSelected ? '#b45309' : 'transparent',
+                                        color: '#ffffff',
+                                        fontSize: '11px',
+                                        fontWeight: '900',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        flexShrink: 0
+                                      }}
+                                    >
+                                      {isSelected ? '✓' : ''}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                          {/* 1C. Competitors to Replace (Heading in BLACK) */}
+                          <div style={{ background: 'var(--bg-card3)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '6px', padding: '10px' }}>
+                            <div style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              Competitors to Replace
+                              {renderEditedBadge('replaceableCompetitors', accountData.productSection)}
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                              {(accountData.productSection?.replaceableCompetitors || []).map((item, idx) => {
+                                const raw = typeof item === 'object' ? (item.name || item.text || '') : String(item || '');
+                                const shortName = raw.includes('—') ? raw.split('—')[0].trim() : raw.includes('-') ? raw.split('-')[0].trim() : raw.split(' ')[0].trim();
+                                return (
+                                  <div key={idx} style={{ background: 'rgba(239, 68, 68, 0.08)', color: 'var(--red)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '5px', padding: '4px 8px', fontSize: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                    <span style={{ fontSize: '11px', color: 'var(--red)' }}>•</span> {shortName}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 2. STRATEGIC SALES ANGLE & RISK ASSESSMENT TILE (Placed directly below Products Landscape!) */}
+                      <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px 14px', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--blue)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px' }}>
+                          <span>Strategic Sales Angle & Risk Assessment</span>
+                          <span style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#d97706', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '12px', padding: '3px 8px', fontSize: '9px', fontWeight: '700' }}>
+                            {accountData.productSection?.salesAngle?.panicRisk || 'High Panic Services Risk — Urgent Bypass / Revenue Leakage Exposure'}
+                          </span>
+                        </div>
+
+                        <div style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                          {accountData.productSection?.salesAngle?.narrative || `Target competitive replacement of legacy competitor systems with Mobileum AI Steering and Active Testing.`}
+                        </div>
+
+                        {/* 3 Sub-Tiles: Competitors to Replace (small), Product Gaps Proposed Solution, Managed Services */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                          {/* Sub-tile 1: Competitors to Replace (Header in BLACK, small compact list) */}
+                          <div style={{ background: 'var(--bg-card3)', border: '1px solid var(--border)', borderRadius: '6px', padding: '10px' }}>
+                            <div style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              Competitors to Replace
+                              {renderEditedBadge('replaceableCompetitors', accountData.productSection)}
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                              {(accountData.productSection?.replaceableCompetitors || []).map((item, idx) => {
+                                const raw = typeof item === 'object' ? (item.name || item.text || '') : String(item || '');
+                                const shortName = raw.includes('—') ? raw.split('—')[0].trim() : raw.includes('-') ? raw.split('-')[0].trim() : raw.split(' ')[0].trim();
+                                return (
+                                  <div key={idx} style={{ background: 'rgba(239, 68, 68, 0.08)', color: 'var(--red)', border: '1px solid rgba(239, 68, 68, 0.18)', borderRadius: '4px', padding: '3px 6px', fontSize: '9.5px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <span style={{ fontSize: '10px', color: 'var(--red)' }}>•</span> {shortName}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                          {/* Sub-tile 2: Product Gaps Proposed Solution */}
+                          <div style={{ background: 'var(--bg-card3)', border: '1px solid var(--border)', borderRadius: '6px', padding: '10px' }}>
+                            <div style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              Product Gaps Proposed Solution
+                              {renderEditedBadge('productGaps', accountData.productSection)}
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                              {(accountData.productSection?.productGaps || []).map((item, idx) => (
+                                <div key={idx} style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                  <span style={{ color: 'var(--red)', fontWeight: 'bold' }}>•</span> {item}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Sub-tile 3: Managed Services */}
+                          <div style={{ background: 'var(--bg-card3)', border: '1px solid var(--border)', borderRadius: '6px', padding: '10px' }}>
+                            <div style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              Managed Services
+                              {renderEditedBadge('managedServicesPossibility', accountData.productSection)}
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                              {(accountData.productSection?.managedServicesPossibility || []).map((item, idx) => (
+                                <div key={idx} style={{ fontSize: '10px', color: 'var(--blue)', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                  <span style={{ color: 'var(--blue)', fontWeight: 'bold' }}>•</span> {item}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 3. STRATEGY PLACEMENT & FIX FORM BUTTON (Placed after Strategic Sales Angle!) */}
+                      <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px 14px', marginBottom: '12px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                          <div style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            Final Strategies & Execution Roadmap
+                            {renderEditedBadge('finalStrategies', accountData.productSection)}
+                          </div>
+                          <button
+                            onClick={() => setActiveModal('product')}
+                            style={{ background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: '5px', padding: '4px 10px', fontSize: '10px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                          >
+                            Fix Strategy Form
+                          </button>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          {(accountData.productSection?.finalStrategies || []).map((item, idx) => {
+                            const text = typeof item === 'object' ? (item.text || '') : item;
+                            const rtp = typeof item === 'object' && item.rtpStatus ? item.rtpStatus : 'NOT REQUESTED';
+                            const eng = typeof item === 'object' && item.engagementType ? item.engagementType : 'PRODUCT';
+                            return (
+                              <div key={idx} className="strategy-row" style={{ background: 'var(--bg-card3)', border: '1px solid var(--border)', borderRadius: '6px', padding: '8px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
+                                <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-primary)', lineHeight: '1.4' }}>
+                                  • {text}
+                                </div>
+                                <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexShrink: 0 }}>
+                                  <span className={`chip-rtp chip-rtp-${rtp.replace(/\s+/g, '').toLowerCase()}`} style={{ fontSize: '9px', padding: '2px 6px' }}>
+                                    {rtp.toUpperCase()}
+                                  </span>
+                                  <span className="badge-engagement" style={{ fontSize: '9px', padding: '2px 6px' }}>{eng.toUpperCase()}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* 4. FULL PLAN INTEGRATION (Plan for 2026 Quick View Tile) */}
+                      {accountData.plan2026 && (
+                        <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px 14px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                            <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--blue)', textTransform: 'uppercase' }}>
+                              Full 2026 Strategic Plan Integration
+                            </span>
+                            <button
+                              onClick={() => setActiveSubTab('plan2026')}
+                              style={{ background: 'var(--blue)', border: 'none', color: '#fff', borderRadius: '6px', padding: '5px 12px', fontSize: '10px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 2px 6px rgba(37,99,235,0.2)' }}
+                            >
+                              View Full 2026 Plan →
+                            </button>
+                          </div>
+                          <div style={{ display: 'flex', gap: '16px', fontSize: '11px', color: 'var(--text-primary)' }}>
+                            <div><strong>Pipeline Value:</strong> {accountData.plan2026.valueOfOpportunities}</div>
+                            <div><strong>Trial Status:</strong> {accountData.plan2026.consultingTrialsGiven}</div>
+                          </div>
+                          <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                            <strong>Product Focus Areas:</strong> {(accountData.plan2026.productsFocusedOn || []).join(', ')}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Dynamic Product Submissions Section */}
+                      {(() => {
+                        const currentProductSubmissions = (submissions || []).filter(sub =>
+                          sub.type === 'product' &&
+                          sub.country === (selectedCountry || 'Global') &&
+                          sub.operator === (selectedOperator || 'Global')
+                        );
+                        if (currentProductSubmissions.length === 0) return null;
+                        return (
+                          <div style={{ marginTop: '16px', borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
+                            <h4 style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-primary)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>
+                              Submitted Product Requests ({currentProductSubmissions.length})
+                            </h4>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '10px' }}>
+                              {currentProductSubmissions.map(sub => (
+                                <div key={sub.id} className="submission-card" style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px', position: 'relative' }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                                    <span style={{ fontWeight: '700', color: 'var(--blue-light)' }}>{sub.companyName}</span>
+                                    <span>{sub.timestamp}</span>
+                                  </div>
+                                  <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '2px' }}>
+                                    {sub.name} <span style={{ fontWeight: '400', color: 'var(--text-muted)', fontSize: '10px' }}>({sub.email})</span>
+                                  </div>
+                                  {sub.phone && (
+                                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                                      📞 {sub.phone}
+                                    </div>
+                                  )}
+                                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)', background: 'var(--bg-card3)', padding: '6px', borderRadius: '6px', whiteSpace: 'pre-wrap' }}>
+                                    {sub.requirements}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+
+                    {/* Financial Section */}
+                    <div id="financial-section" className="section" style={{ scrollMarginTop: '90px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px 16px', margin: '0 0 10px 0', boxShadow: '0 2px 4px rgba(0,0,0,0.03)' }}>
+                      <div style={{ fontSize: '13px', fontWeight: '800', color: 'var(--teal)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        Financial Section
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
+                        <div
+                          className="product-card"
+                          onClick={() => {
+                            setFinancialModalType('revenue');
+                            setFinancialModalOpen(true);
+                          }}
+                          style={{
+                            padding: '10px 12px',
+                            margin: 0,
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                            border: '1px solid rgba(16, 185, 129, 0.3)',
+                            background: 'rgba(16, 185, 129, 0.04)'
+                          }}
+                          title="Click to view full Revenue & Profit Analysis Dashboard & CSV export"
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ fontSize: '9px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>1. Profit / Revenue Potential</div>
+                            <span style={{ fontSize: '9px', fontWeight: '800', color: 'var(--green)', background: 'rgba(16, 185, 129, 0.15)', padding: '1px 6px', borderRadius: '4px' }}>📊 Analysis & Export</span>
+                          </div>
+                          <div style={{ fontSize: '14px', fontWeight: '900', color: 'var(--green)', marginTop: '4px' }}>
+                            {accountData.financialSection?.profit || '—'}
+                          </div>
+                          <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginTop: '2px', fontStyle: 'italic' }}>
+                            Click for Annual & Quarterly reports →
+                          </div>
+                        </div>
+
+                        <div
+                          className="product-card"
+                          onClick={() => {
+                            setFinancialModalType('capex');
+                            setFinancialModalOpen(true);
+                          }}
+                          style={{
+                            padding: '10px 12px',
+                            margin: 0,
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                            border: '1px solid rgba(37, 99, 235, 0.3)',
+                            background: 'rgba(37, 99, 235, 0.04)'
+                          }}
+                          title="Click to view full Capex Investment Analysis Dashboard & CSV export"
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ fontSize: '9px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>2. Capex Investment</div>
+                            <span style={{ fontSize: '9px', fontWeight: '800', color: 'var(--blue)', background: 'rgba(37, 99, 235, 0.15)', padding: '1px 6px', borderRadius: '4px' }}>📊 Analysis & Export</span>
+                          </div>
+                          <div style={{ fontSize: '14px', fontWeight: '900', color: 'var(--blue)', marginTop: '4px' }}>
+                            {accountData.financialSection?.capexInvestment || '—'}
+                          </div>
+                          <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginTop: '2px', fontStyle: 'italic' }}>
+                            Click for Annual & Quarterly reports →
+                          </div>
+                        </div>
+
+                         <div className="product-card" style={{ padding: '10px 12px', margin: 0, cursor: 'default', gridColumn: '1 / -1' }}>
+                          <div style={{ fontSize: '9px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>3. Strategic Notes & Outlook (xxxx)</div>
+                          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px', lineHeight: '1.4' }}>
+                            {accountData.financialSection?.note || '—'}
+                          </div>
+                        </div>
+
+                        {/* 4. Live Investor Results & 3-Year Web Intelligence Banner */}
+                        {(() => {
+                          const targetName = selectedOperator || accountData?.name || (typeof selectedCountry === 'object' ? selectedCountry?.country_name : selectedCountry) || 'Operator';
+                          const grpKey = FIN.operator_to_group[targetName];
+                          let gObj = grpKey ? FIN.groups[grpKey] : null;
+                          if (!gObj) {
+                            const low = String(targetName).toLowerCase();
+                            for (const [k, v] of Object.entries(FIN.groups)) {
+                              if (low.includes(k.toLowerCase()) || k.toLowerCase().includes(low)) {
+                                gObj = v;
+                                break;
+                              }
+                            }
+                          }
+                          const opLabel = gObj?.group || targetName;
+                          const investorUrl = gObj?.investor_url || `https://www.google.com/search?q=${encodeURIComponent(opLabel + ' investor relations quarterly financial results')}`;
+                          const trendLabel = gObj?.performance_trend_3yr?.label || '📈 PERFORMANCE GOING UP';
+                          const summaryText = gObj?.performance_trend_3yr?.summary || `Integrates direct web-scraped investor reports & quarterly disclosures for ${opLabel}.`;
+
+                          return (
+                            <div
+                              className="product-card"
+                              style={{
+                                padding: '10px 14px',
+                                margin: 0,
+                                gridColumn: '1 / -1',
+                                background: 'rgba(59, 130, 246, 0.05)',
+                                border: '1px solid rgba(59, 130, 246, 0.25)',
+                                borderRadius: '8px',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                flexWrap: 'wrap',
+                                gap: '10px'
+                              }}
+                            >
+                              <div>
+                                <div style={{ fontSize: '10px', fontWeight: '800', color: 'var(--blue)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <span>🌐 Web Scraping & 3-Year Investor Intelligence ({opLabel})</span>
+                                  <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: 'var(--green)', padding: '2px 7px', borderRadius: '4px', fontSize: '9px', fontWeight: '800' }}>
+                                    {trendLabel}
+                                  </span>
+                                </div>
+                                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '3px' }}>
+                                  {summaryText}
+                                </div>
+                              </div>
+
+                              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                <a
+                                  href={investorUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{
+                                    background: 'var(--blue)',
+                                    color: '#ffffff',
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    padding: '6px 12px',
+                                    fontSize: '10.5px',
+                                    fontWeight: '700',
+                                    textDecoration: 'none',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px'
+                                  }}
+                                >
+                                  <span>Open {opLabel} Quarterly Results Site</span>
+                                  <span>↗</span>
+                                </a>
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* Renewal Section */}
+                    <div id="renewal-section" className="section" style={{ scrollMarginTop: '90px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px 16px', margin: '0 0 10px 0', boxShadow: '0 2px 4px rgba(0,0,0,0.03)' }}>
+                      <div style={{ fontSize: '13px', fontWeight: '800', color: 'var(--purple)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        Renewal Section
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px' }}>
+                        <div>
+                          <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                            1. AMC Renewal List
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            {(accountData.renewalSection?.amcRenewal || []).map((item, idx) => (
+                              <div key={idx} style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '8px 10px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-primary)' }}>{item.name}</span>
+                                  <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--green)' }}>{item.value}</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2px' }}>
+                                  <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Status:</span>
+                                  <span style={{
+                                    fontSize: '9px',
+                                    fontWeight: '700',
+                                    background: item.status.toLowerCase().includes('due') ? 'rgba(245, 158, 11, 0.15)' : 'rgba(16, 185, 129, 0.15)',
+                                    color: item.status.toLowerCase().includes('due') ? 'var(--yellow)' : 'var(--green)',
+                                    padding: '1px 6px',
+                                    borderRadius: '4px'
+                                  }}>
+                                    {item.status}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                            {(!accountData.renewalSection?.amcRenewal || accountData.renewalSection.amcRenewal.length === 0) && (
+                              <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontStyle: 'italic' }}>No AMC renewals listed.</div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div>
+                          <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                            2. Managed Services Renewal
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            {(accountData.renewalSection?.managedServicesRenewal || []).map((item, idx) => (
+                              <div key={idx} style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '8px 10px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-primary)' }}>{item.name}</span>
+                                  <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--green)' }}>{item.value}</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2px' }}>
+                                  <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Status:</span>
+                                  <span style={{
+                                    fontSize: '9px',
+                                    fontWeight: '700',
+                                    background: item.status.toLowerCase().includes('ready') ? 'rgba(16, 185, 129, 0.15)' : 'rgba(37, 99, 235, 0.15)',
+                                    color: item.status.toLowerCase().includes('ready') ? 'var(--green)' : 'var(--blue)',
+                                    padding: '1px 6px',
+                                    borderRadius: '4px'
+                                  }}>
+                                    {item.status}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                            {(!accountData.renewalSection?.managedServicesRenewal || accountData.renewalSection.managedServicesRenewal.length === 0) && (
+                              <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontStyle: 'italic' }}>No managed services renewals listed.</div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Health of Solution Section */}
+                    <div id="health-section" className="section" style={{ scrollMarginTop: '90px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px 16px', margin: '0 0 10px 0', boxShadow: '0 2px 4px rgba(0,0,0,0.03)' }}>
+                      <div style={{ fontSize: '13px', fontWeight: '800', color: 'var(--red)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        Health of Solution Section
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px' }}>
+                        <div>
+                          <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                            1. Installed Product-wise Support Tickets
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            {(accountData.healthSection?.installedProductWiseSupportTicket || []).map((item, idx) => (
+                              <div key={idx} style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '8px 10px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-primary)' }}>{item.product}</span>
+                                  <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--red)' }}>{item.tickets} Tickets</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2px' }}>
+                                  <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Trend:</span>
+                                  <span style={{
+                                    fontSize: '9px',
+                                    fontWeight: '700',
+                                    color: item.trend.toLowerCase().includes('improving') ? 'var(--green)' : item.trend.toLowerCase().includes('stable') ? 'var(--blue)' : 'var(--yellow)'
+                                  }}>
+                                    {item.trend}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div>
+                          <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                            2. Usage of Installed Products
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            {(accountData.healthSection?.usageOfInstalledProducts || []).map((item, idx) => (
+                              <div key={idx} style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '8px 10px' }}>
+                                <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-primary)' }}>{item.product}</div>
+                                <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '2px', lineHeight: '1.4' }}>
+                                  {item.usage}
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                )}
+                {activeSubTab === 'impact' && (
+                  <div style={{ animation: 'fadeIn 0.25s ease-out' }}>
                     <div className="responsive-grid-2" style={{ marginBottom: '20px' }}>
                       <div className="chart-wrap">
                         <div className="chart-title">Impact Radar — Country vs Regional Average</div>
@@ -1667,7 +1921,7 @@ export default function DynamicCenterDashboard({
                           </div>
                         </div>
                       </div>
-          
+
                       <div className="chart-wrap">
                         <div className="chart-title">Revenue Opportunity Waterfall — Mobileum Impact</div>
                         <div className="chart-canvas-wrap" style={{ height: '240px' }}>
@@ -1675,7 +1929,7 @@ export default function DynamicCenterDashboard({
                         </div>
                       </div>
                     </div>
-          
+
                     <div className="responsive-grid-21">
                       <div className="section" style={{ marginBottom: 0 }}>
                         <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px', height: '100%', boxSizing: 'border-box' }}>
@@ -1715,7 +1969,7 @@ export default function DynamicCenterDashboard({
                           </div>
                         </div>
                       </div>
-          
+
                       <div className="section" style={{ marginBottom: 0 }}>
                         <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px', height: '100%', boxSizing: 'border-box' }}>
                           <div className="section-title" style={{ marginBottom: '16px' }}>Impact Analysis Dimensions</div>
@@ -1728,7 +1982,7 @@ export default function DynamicCenterDashboard({
                               { label: 'Revenue Growth Outlook', key: 'ia_rev_growth' },
                               { label: 'Profitability Outlook', key: 'ia_profitability' }
                             ];
-            
+
                             const op0 = (countryData.operators && countryData.operators[0]) || {};
                             return dims.map(d => {
                               const val = op0[d.key] || '—';
@@ -1756,8 +2010,8 @@ export default function DynamicCenterDashboard({
                     </div>
                   </div>
                 )}
-              {activeSubTab === 'products' && (
-                <div style={{ animation: 'fadeIn 0.25s ease-out' }}>
+                {activeSubTab === 'products' && (
+                  <div style={{ animation: 'fadeIn 0.25s ease-out' }}>
                     <div className="responsive-grid-12">
                       <div className="chart-wrap">
                         <div className="chart-title">Product Fit Score — All Mobileum Solutions</div>
@@ -1765,7 +2019,7 @@ export default function DynamicCenterDashboard({
                           <canvas ref={productsBarRef} id="products_bar"></canvas>
                         </div>
                       </div>
-          
+
                       <div className="section">
                         <div className="section-title">Priority Recommendations</div>
                         {(countryData.product_ranking || []).slice(0, 3).map((p, i) => {
@@ -1792,63 +2046,111 @@ export default function DynamicCenterDashboard({
                         })}
                       </div>
                     </div>
-          
+
                     <div className="section" style={{ marginTop: '20px' }}>
                       <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px' }}>
                         <div className="section-title" style={{ marginBottom: '16px' }}>Full Product Ranking Table</div>
                         <div style={{ overflowX: 'auto' }}>
                           <table className="op-table" style={{ width: '100%' }}>
-                          <thead>
-                            <tr>
-                              <th style={{ width: '40px' }}>#</th>
-                              <th>Product</th>
-                              <th style={{ width: '100px' }}>Score</th>
-                              <th>Rationale</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {(countryData.product_ranking || []).map((p, i) => {
-                              const barClr = p.score > 75 ? 'var(--green)' : p.score > 50 ? 'var(--yellow)' : 'var(--blue)';
-                              return (
-                                <tr key={p.product}>
-                                  <td style={{ color: 'var(--text-muted)', fontSize: '10px' }}>{i + 1}</td>
-                                  <td className="op-name" style={{ fontSize: '11px' }}>{p.product}</td>
-                                  <td>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                      <div className="score-bar-bg" style={{ width: '50px', height: '4px' }}>
-                                        <div className="score-bar-fill" style={{ width: `${p.score}%`, background: barClr, height: '100%' }}></div>
+                            <thead>
+                              <tr>
+                                <th style={{ width: '40px' }}>#</th>
+                                <th>Product</th>
+                                <th style={{ width: '100px' }}>Score</th>
+                                <th>Rationale</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {(countryData.product_ranking || []).map((p, i) => {
+                                const barClr = p.score > 75 ? 'var(--green)' : p.score > 50 ? 'var(--yellow)' : 'var(--blue)';
+                                return (
+                                  <tr key={p.product}>
+                                    <td style={{ color: 'var(--text-muted)', fontSize: '10px' }}>{i + 1}</td>
+                                    <td className="op-name" style={{ fontSize: '11px' }}>{p.product}</td>
+                                    <td>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <div className="score-bar-bg" style={{ width: '50px', height: '4px' }}>
+                                          <div className="score-bar-fill" style={{ width: `${p.score}%`, background: barClr, height: '100%' }}></div>
+                                        </div>
+                                        <span style={{ fontSize: '10px', fontWeight: '600', color: barClr }}>
+                                          {p.score}
+                                        </span>
                                       </div>
-                                      <span style={{ fontSize: '10px', fontWeight: '600', color: barClr }}>
-                                        {p.score}
-                                      </span>
-                                    </div>
-                                  </td>
-                                  <td style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
-                                    {p.reason}
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
+                                    </td>
+                                    <td style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
+                                      {p.reason}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
                         </div>
                       </div>
                     </div>
-                </div>
-              )}
-              {activeSubTab === 'support' && (
-                <div style={{ animation: 'fadeIn 0.25s ease-out' }}>
+                  </div>
+                )}
+                {activeSubTab === 'support' && (
+                  <div style={{ animation: 'fadeIn 0.25s ease-out' }}>
                     <CustomerServiceTickets ticketData={ticketData} isLoading={isDataLoading} />
                     <OutstandingAMCTable amcData={amcData} isLoading={isDataLoading} />
                   </div>
                 )}
-              {activeSubTab === 'competitors' && (
-                <div style={{ animation: 'fadeIn 0.25s ease-out' }}>
+                {activeSubTab === 'competitors' && (
+                  <div style={{ animation: 'fadeIn 0.25s ease-out' }}>
                     <CompetitorsTable competitorData={competitorData} />
                   </div>
                 )}
-              {activeSubTab === 'plan2026' && (
-                <div style={{ animation: 'fadeIn 0.25s ease-out' }}>
+                {activeSubTab === 'plan2026' && (
+                  <div style={{ animation: 'fadeIn 0.25s ease-out' }}>
+                    {/* Navigation Back Header */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '8px 12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <button
+                          onClick={() => setActiveSubTab('profile')}
+                          style={{
+                            background: 'var(--blue)',
+                            border: 'none',
+                            color: '#fff',
+                            borderRadius: '6px',
+                            padding: '5px 12px',
+                            fontSize: '11px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            boxShadow: '0 2px 6px rgba(37,99,235,0.2)',
+                            transition: 'all 0.15s ease'
+                          }}
+                          onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
+                          onMouseOut={(e) => e.currentTarget.style.transform = 'none'}
+                        >
+                          ← Back to Account Profile
+                        </button>
+                        <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>/</span>
+                        <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-primary)' }}>Full 2026 Strategic Plan</span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          if (setSelectedOperator) setSelectedOperator(null);
+                          if (setActiveTab) setActiveTab('operators');
+                        }}
+                        style={{
+                          background: 'transparent',
+                          border: '1px solid var(--border)',
+                          borderRadius: '6px',
+                          padding: '4px 10px',
+                          fontSize: '10px',
+                          fontWeight: '600',
+                          color: 'var(--text-secondary)',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        ← Back to Operator List
+                      </button>
+                    </div>
+
                     {accountData?.plan2026 ? (
                       <div className="section" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                         <div style={{ fontSize: '15px', fontWeight: '800', color: 'var(--blue)', marginBottom: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
@@ -1873,7 +2175,7 @@ export default function DynamicCenterDashboard({
                               className="form-trigger-btn"
                               style={{ background: 'var(--bg-card2)', color: 'var(--text-secondary)' }}
                             >
-                              🕒 History
+                              History
                             </button>
                             <button
                               onClick={() => {
@@ -1883,11 +2185,11 @@ export default function DynamicCenterDashboard({
                               disabled={isDataLoading}
                               style={{ opacity: isDataLoading ? 0.5 : 1, cursor: isDataLoading ? 'not-allowed' : 'pointer' }}
                             >
-                              📝 Form
+                              Form
                             </button>
                           </div>
                         </div>
-                        
+
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                           {/* Recommended Products Table */}
                           <div>
@@ -1898,63 +2200,63 @@ export default function DynamicCenterDashboard({
                               </div>
                               <div style={{ overflowX: 'auto' }}>
                                 <table className="op-table" style={{ width: '100%' }}>
-                                <thead>
-                                  <tr>
-                                    <th style={{ width: '160px' }}>MOBILEUM PRODUCT USED</th>
-                                    <th>PRODUCT NAME</th>
-                                    <th style={{ width: '120px' }}>VALUE</th>
-                                    <th style={{ width: '180px' }}>TYPE OF CHANNEL</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {(accountData.plan2026.productsFocusedOn || []).map((product, idx) => {
-                                    const state = getProductState(product);
-                                    const val = getProductValue(idx, accountData.plan2026.valueOfOpportunities, (accountData.plan2026.productsFocusedOn || []).length);
-                                    return (
-                                      <tr key={product} style={{ borderBottom: idx === (accountData.plan2026.productsFocusedOn || []).length - 1 ? 'none' : '1px solid var(--border)', transition: 'background 0.2s' }}>
-                                        <td style={{ padding: '10px 12px' }}>
-                                          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', userSelect: 'none' }}>
-                                            <input
-                                              type="checkbox"
-                                              checked={state.used}
-                                              onChange={(e) => setProductStateValue(product, 'used', e.target.checked)}
-                                              style={{
-                                                width: '15px',
-                                                height: '15px',
-                                                accentColor: 'var(--blue)',
-                                                cursor: 'pointer'
-                                              }}
-                                            />
-                                            <span style={{ color: 'var(--text-secondary)', fontWeight: '500' }}>Used</span>
-                                          </label>
-                                        </td>
-                                        <td style={{ padding: '10px 12px', fontWeight: '600', color: 'var(--text-primary)' }}>
-                                          {product}
-                                        </td>
-                                        <td style={{ padding: '10px 12px', fontWeight: '700', color: 'var(--green)' }}>
-                                          {val}
-                                        </td>
-                                        <td style={{ padding: '10px 12px' }}>
-                                          <div className="custom-select-wrapper">
-                                            <select
-                                              value={state.channel}
-                                              onChange={(e) => setProductStateValue(product, 'channel', e.target.value)}
-                                              className="custom-channel-select"
-                                            >
-                                              <option value="Licensed">Licensed</option>
-                                              <option value="Mobileum Service">Mobileum Service</option>
-                                            </select>
-                                          </div>
-                                        </td>
-                                      </tr>
-                                    );
-                                  })}
-                                </tbody>
-                              </table>
+                                  <thead>
+                                    <tr>
+                                      <th style={{ width: '160px' }}>MOBILEUM PRODUCT USED</th>
+                                      <th>PRODUCT NAME</th>
+                                      <th style={{ width: '120px' }}>VALUE</th>
+                                      <th style={{ width: '180px' }}>TYPE OF CHANNEL</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {(accountData.plan2026.productsFocusedOn || []).map((product, idx) => {
+                                      const state = getProductState(product);
+                                      const val = getProductValue(idx, accountData.plan2026.valueOfOpportunities, (accountData.plan2026.productsFocusedOn || []).length);
+                                      return (
+                                        <tr key={product} style={{ borderBottom: idx === (accountData.plan2026.productsFocusedOn || []).length - 1 ? 'none' : '1px solid var(--border)', transition: 'background 0.2s' }}>
+                                          <td style={{ padding: '10px 12px' }}>
+                                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', userSelect: 'none' }}>
+                                              <input
+                                                type="checkbox"
+                                                checked={state.used}
+                                                onChange={(e) => setProductStateValue(product, 'used', e.target.checked)}
+                                                style={{
+                                                  width: '15px',
+                                                  height: '15px',
+                                                  accentColor: 'var(--blue)',
+                                                  cursor: 'pointer'
+                                                }}
+                                              />
+                                              <span style={{ color: 'var(--text-secondary)', fontWeight: '500' }}>Used</span>
+                                            </label>
+                                          </td>
+                                          <td style={{ padding: '10px 12px', fontWeight: '600', color: 'var(--text-primary)' }}>
+                                            {product}
+                                          </td>
+                                          <td style={{ padding: '10px 12px', fontWeight: '700', color: 'var(--green)' }}>
+                                            {val}
+                                          </td>
+                                          <td style={{ padding: '10px 12px' }}>
+                                            <div className="custom-select-wrapper">
+                                              <select
+                                                value={state.channel}
+                                                onChange={(e) => setProductStateValue(product, 'channel', e.target.value)}
+                                                className="custom-channel-select"
+                                              >
+                                                <option value="Licensed">Licensed</option>
+                                                <option value="Mobileum Service">Mobileum Service</option>
+                                              </select>
+                                            </div>
+                                          </td>
+                                        </tr>
+                                      );
+                                    })}
+                                  </tbody>
+                                </table>
                               </div>
                             </div>
                           </div>
-          
+
                           {/* 2. Total Opportunities Value */}
                           <div>
                             <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.05em' }}>
@@ -1965,7 +2267,7 @@ export default function DynamicCenterDashboard({
                               <strong style={{ fontSize: '15px', color: 'var(--green)' }}>{accountData.plan2026.valueOfOpportunities}</strong>
                             </div>
                           </div>
-          
+
                           {/* 3. PoC or demo given */}
                           <div>
                             <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.05em' }}>
@@ -1976,7 +2278,7 @@ export default function DynamicCenterDashboard({
                               {accountData.plan2026.pocOrDemoGiven}
                             </div>
                           </div>
-          
+
                           {/* 4. Consulting trials given */}
                           <div>
                             <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.05em' }}>
@@ -2040,9 +2342,9 @@ export default function DynamicCenterDashboard({
 
                           {/* Plan Submissions Section for populated case */}
                           {(() => {
-                            const currentPlanSubmissions = (submissions || []).filter(sub => 
-                              sub.type === 'plan' && 
-                              sub.country === (selectedCountry || 'Global') && 
+                            const currentPlanSubmissions = (submissions || []).filter(sub =>
+                              sub.type === 'plan' &&
+                              sub.country === (selectedCountry || 'Global') &&
                               sub.operator === (selectedOperator || 'Global')
                             );
                             if (currentPlanSubmissions.length === 0) return null;
@@ -2095,12 +2397,12 @@ export default function DynamicCenterDashboard({
                           </button>
                         </div>
                         <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '12px' }}>No 2026 plan details are available for this account yet.</div>
-                        
+
                         {/* Plan Submissions Section for empty case */}
                         {(() => {
-                          const currentPlanSubmissions = (submissions || []).filter(sub => 
-                            sub.type === 'plan' && 
-                            sub.country === (selectedCountry || 'Global') && 
+                          const currentPlanSubmissions = (submissions || []).filter(sub =>
+                            sub.type === 'plan' &&
+                            sub.country === (selectedCountry || 'Global') &&
                             sub.operator === (selectedOperator || 'Global')
                           );
                           if (currentPlanSubmissions.length === 0) return null;
@@ -2135,7 +2437,7 @@ export default function DynamicCenterDashboard({
                         })()}
                       </div>
                     )}
-                    
+
                     {/* Render Financial Reports below the Strategic Plan */}
                     <FinancialReports
                       operator={selectedOperator || selectedCountry || 'Global Market'}
@@ -2145,245 +2447,245 @@ export default function DynamicCenterDashboard({
                     />
                   </div>
                 )}
-            </div>
-          ) : (
-            <div className="section"><div className="section-title">Account insights</div><div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>No account insight is available for this market yet.</div></div>
-          )}
-        </div>
-      )}
+              </div>
+            ) : (
+              <div className="section"><div className="section-title">Account insights</div><div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>No account insight is available for this market yet.</div></div>
+            )}
+          </div>
+        )}
 
-      {/* ── TAB: STATS PROFILE ── */}
-      {activeTab === 'stats' && (
-        <div className="tab-content active" style={{ padding: '12px 0 0 0', display: 'block' }}>
-          <div className="responsive-grid-2">
-            <div className="section" style={{ marginBottom: 0 }}>
-              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
-                <div className="section-title" style={{ marginBottom: '16px' }}>Position vs Region Peers Bubble Chart</div>
-                <div style={{ flex: 1, position: 'relative', minHeight: '220px' }}>
-                  <canvas ref={statsBubbleRef} id="stats_bubble" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}></canvas>
-                </div>
-                <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginTop: '10px', textAlign: 'center' }}>
-                  X: Mobile Penetration · Y: GDP Growth · Size: Population · Color: Cluster
+        {/* ── TAB: STATS PROFILE ── */}
+        {activeTab === 'stats' && (
+          <div className="tab-content active" style={{ padding: '12px 0 0 0', display: 'block' }}>
+            <div className="responsive-grid-2">
+              <div className="section" style={{ marginBottom: 0 }}>
+                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
+                  <div className="section-title" style={{ marginBottom: '16px' }}>Position vs Region Peers Bubble Chart</div>
+                  <div style={{ flex: 1, position: 'relative', minHeight: '220px' }}>
+                    <canvas ref={statsBubbleRef} id="stats_bubble" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}></canvas>
+                  </div>
+                  <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginTop: '10px', textAlign: 'center' }}>
+                    X: Mobile Penetration · Y: GDP Growth · Size: Population · Color: Cluster
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="section" style={{ marginBottom: 0 }}>
-              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
-                <div className="section-title" style={{ marginBottom: '16px' }}>Global Percentile Rankings</div>
+              <div className="section" style={{ marginBottom: 0 }}>
+                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
+                  <div className="section-title" style={{ marginBottom: '16px' }}>Global Percentile Rankings</div>
+                  {(() => {
+                    const p = countryData.percentiles || {};
+                    const ga = metadata.global_averages || {};
+                    const ra = countryData.regional_averages || {};
+
+                    const percMetrics = [
+                      { label: 'Mobile Penetration', key: 'mobile_penetration', val: countryData.mobile_penetration_pct, unit: '%', src: 'ITU 2024' },
+                      { label: 'GDP Growth', key: 'gdp_growth', val: countryData.gdp_growth_pct, unit: '%', src: 'World Bank 2024' },
+                      { label: 'Internet Users', key: 'internet_users', val: countryData.internet_users_pct, unit: '%', src: 'ITU 2024' },
+                      { label: 'GDP per Capita', key: 'gdp_per_capita', val: countryData.gdp_per_capita_usd, unit: 'USD', src: 'World Bank 2024' },
+                      { label: '5G Penetration (avg)', key: 'avg_5g', val: countryData.stats?.avg_5g, unit: '%', src: 'GSMA 2024' }
+                    ];
+
+                    return percMetrics.map(m => {
+                      const perc = p[m.key];
+                      if (perc === null || perc === undefined) return null;
+                      const barClr = perc > 75 ? '#10b981' : perc > 50 ? '#3b82f6' : perc > 25 ? '#f59e0b' : '#ef4444';
+                      return (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }} key={m.key}>
+                          <div style={{ fontSize: '9px', color: 'var(--text-muted)', width: '130px', flexShrink: 0, textAlign: 'left' }}>
+                            {m.label}
+                          </div>
+                          <div className="perc-bar" style={{ flex: 1, height: '4px', background: 'var(--bg-card3)', borderRadius: '2px' }}>
+                            <div className="perc-fill" style={{ width: `${perc}%`, background: barClr, height: '100%', borderRadius: '2px' }}></div>
+                          </div>
+                          <div style={{ fontSize: '9px', color: 'var(--text-primary)', fontWeight: '600', width: '70px', textAlign: 'right', flexShrink: 0 }}>
+                            {typeof m.val === 'number' ? m.val.toFixed(0) + (m.unit === 'USD' ? ' USD' : '%') : '—'}
+                          </div>
+                          <div style={{ fontSize: '9px', fontWeight: '600', color: barClr, width: '30px', textAlign: 'right', flexShrink: 0 }}>
+                            {perc}th
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              </div>
               {(() => {
-                const p = countryData.percentiles || {};
-                const ga = metadata.global_averages || {};
-                const ra = countryData.regional_averages || {};
+                const peers = Object.entries(allCountries)
+                  .filter(([k, cv]) => cv.cluster_name === countryData.cluster_name && k !== selectedCountry)
+                  .slice(0, 4);
 
-                const percMetrics = [
-                  { label: 'Mobile Penetration', key: 'mobile_penetration', val: countryData.mobile_penetration_pct, unit: '%', src: 'ITU 2024' },
-                  { label: 'GDP Growth', key: 'gdp_growth', val: countryData.gdp_growth_pct, unit: '%', src: 'World Bank 2024' },
-                  { label: 'Internet Users', key: 'internet_users', val: countryData.internet_users_pct, unit: '%', src: 'ITU 2024' },
-                  { label: 'GDP per Capita', key: 'gdp_per_capita', val: countryData.gdp_per_capita_usd, unit: 'USD', src: 'World Bank 2024' },
-                  { label: '5G Penetration (avg)', key: 'avg_5g', val: countryData.stats?.avg_5g, unit: '%', src: 'GSMA 2024' }
-                ];
-
-                return percMetrics.map(m => {
-                  const perc = p[m.key];
-                  if (perc === null || perc === undefined) return null;
-                  const barClr = perc > 75 ? '#10b981' : perc > 50 ? '#3b82f6' : perc > 25 ? '#f59e0b' : '#ef4444';
+                if (peers.length > 0) {
                   return (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }} key={m.key}>
-                      <div style={{ fontSize: '9px', color: 'var(--text-muted)', width: '130px', flexShrink: 0, textAlign: 'left' }}>
-                        {m.label}
-                      </div>
-                      <div className="perc-bar" style={{ flex: 1, height: '4px', background: 'var(--bg-card3)', borderRadius: '2px' }}>
-                        <div className="perc-fill" style={{ width: `${perc}%`, background: barClr, height: '100%', borderRadius: '2px' }}></div>
-                      </div>
-                      <div style={{ fontSize: '9px', color: 'var(--text-primary)', fontWeight: '600', width: '70px', textAlign: 'right', flexShrink: 0 }}>
-                        {typeof m.val === 'number' ? m.val.toFixed(0) + (m.unit === 'USD' ? ' USD' : '%') : '—'}
-                      </div>
-                      <div style={{ fontSize: '9px', fontWeight: '600', color: barClr, width: '30px', textAlign: 'right', flexShrink: 0 }}>
-                        {perc}th
+                    <div className="section" style={{ marginBottom: 0 }}>
+                      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
+                        <div className="section-title" style={{ marginBottom: '16px' }}>Cluster Peers — {countryData.cluster_name}</div>
+                        <div style={{ overflowX: 'auto' }}>
+                          <table className="op-table" style={{ width: '100%' }}>
+                            <thead>
+                              <tr>
+                                <th>Country</th>
+                                <th>Pen%</th>
+                                <th>5G%</th>
+                                <th>GDP Gr%</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {peers.map(([pName, pv]) => (
+                                <tr key={pName}>
+                                  <td className="op-name" style={{ fontSize: '11px' }}>{getFlagEmoji(pv.iso)} {pName}</td>
+                                  <td>{pv.mobile_penetration_pct?.toFixed(0) || '—'}%</td>
+                                  <td>{pv.stats?.avg_5g?.toFixed(0) || '—'}%</td>
+                                  <td>{pv.gdp_growth_pct?.toFixed(1) || '—'}%</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
                     </div>
                   );
-                });
+                }
               })()}
-              </div>
-            </div>
-            {(() => {
-              const peers = Object.entries(allCountries)
-                .filter(([k, cv]) => cv.cluster_name === countryData.cluster_name && k !== selectedCountry)
-                .slice(0, 4);
 
-              if (peers.length > 0) {
-                return (
-                  <div className="section" style={{ marginBottom: 0 }}>
-                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
-                      <div className="section-title" style={{ marginBottom: '16px' }}>Cluster Peers — {countryData.cluster_name}</div>
-                      <div style={{ overflowX: 'auto' }}>
-                        <table className="op-table" style={{ width: '100%' }}>
-                        <thead>
-                          <tr>
-                            <th>Country</th>
-                            <th>Pen%</th>
-                            <th>5G%</th>
-                            <th>GDP Gr%</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {peers.map(([pName, pv]) => (
-                            <tr key={pName}>
-                              <td className="op-name" style={{ fontSize: '11px' }}>{getFlagEmoji(pv.iso)} {pName}</td>
-                              <td>{pv.mobile_penetration_pct?.toFixed(0) || '—'}%</td>
-                              <td>{pv.stats?.avg_5g?.toFixed(0) || '—'}%</td>
-                              <td>{pv.gdp_growth_pct?.toFixed(1) || '—'}%</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                      </div>
-                    </div>
-                  </div>
-                );
-              }
-            })()}
+              <div className="section" style={{ marginBottom: 0 }}>
+                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                  <div className="section-title" style={{ marginBottom: '16px' }}>Fraud Risk Decomposition</div>
+                  {(() => {
+                    const op0 = (countryData.operators && countryData.operators[0]) || {};
+                    const fraudDims = [
+                      { label: 'OTT/App Substitution', score: op0.ott_score || 3 },
+                      { label: 'Outbound Roaming', score: op0.outbound_roaming_score || 3 },
+                      { label: 'Inbound Attack Surface', score: op0.inbound_roaming_score || 3 },
+                      { label: 'Regulatory Gap', score: op0.regulatory_risk || 3 }
+                    ];
 
-            <div className="section" style={{ marginBottom: 0 }}>
-              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <div className="section-title" style={{ marginBottom: '16px' }}>Fraud Risk Decomposition</div>
-              {(() => {
-                const op0 = (countryData.operators && countryData.operators[0]) || {};
-                const fraudDims = [
-                  { label: 'OTT/App Substitution', score: op0.ott_score || 3 },
-                  { label: 'Outbound Roaming', score: op0.outbound_roaming_score || 3 },
-                  { label: 'Inbound Attack Surface', score: op0.inbound_roaming_score || 3 },
-                  { label: 'Regulatory Gap', score: op0.regulatory_risk || 3 }
-                ];
+                    const totalFraud = fraudDims.reduce((a, d) => a + d.score, 0);
+                    const maxFraud = fraudDims.length * 5;
+                    const fraudPct = Math.round((totalFraud / maxFraud) * 100);
+                    const color = fraudPct > 70 ? 'var(--red)' : fraudPct > 50 ? 'var(--yellow)' : 'var(--green)';
 
-                const totalFraud = fraudDims.reduce((a, d) => a + d.score, 0);
-                const maxFraud = fraudDims.length * 5;
-                const fraudPct = Math.round((totalFraud / maxFraud) * 100);
-                const color = fraudPct > 70 ? 'var(--red)' : fraudPct > 50 ? 'var(--yellow)' : 'var(--green)';
-
-                return (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flex: 1, padding: '10px 0' }}>
-                    <div style={{ textAlign: 'center', width: '80px', flexShrink: 0, paddingRight: '20px', borderRight: '1px solid var(--border)' }}>
-                      <div style={{ fontSize: '26px', fontWeight: '800', color }}>
-                        {fraudPct}%
-                      </div>
-                      <div style={{ fontSize: '8px', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '4px' }}>
-                        Index
-                      </div>
-                    </div>
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px', justifyContent: 'center' }}>
-                      {fraudDims.map(d => {
-                        const w = (d.score / 5) * 100;
-                        const c = d.score >= 4 ? 'var(--red)' : d.score >= 3 ? 'var(--yellow)' : 'var(--green)';
-                        return (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }} key={d.label}>
-                            <div style={{ fontSize: '9px', color: 'var(--text-muted)', width: '130px', flexShrink: 0, textAlign: 'left' }}>
-                              {d.label}
-                            </div>
-                            <div className="perc-bar" style={{ flex: 1, height: '4px', background: 'var(--bg-card3)', borderRadius: '2px' }}>
-                              <div className="perc-fill" style={{ width: `${w}%`, background: c, height: '100%', borderRadius: '2px' }}></div>
-                            </div>
-                            <div style={{ fontSize: '9px', fontWeight: '600', color: c, width: '20px', textAlign: 'right', flexShrink: 0 }}>
-                              {d.score}
-                            </div>
+                    return (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flex: 1, padding: '10px 0' }}>
+                        <div style={{ textAlign: 'center', width: '80px', flexShrink: 0, paddingRight: '20px', borderRight: '1px solid var(--border)' }}>
+                          <div style={{ fontSize: '26px', fontWeight: '800', color }}>
+                            {fraudPct}%
                           </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })()}
+                          <div style={{ fontSize: '8px', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '4px' }}>
+                            Index
+                          </div>
+                        </div>
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px', justifyContent: 'center' }}>
+                          {fraudDims.map(d => {
+                            const w = (d.score / 5) * 100;
+                            const c = d.score >= 4 ? 'var(--red)' : d.score >= 3 ? 'var(--yellow)' : 'var(--green)';
+                            return (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }} key={d.label}>
+                                <div style={{ fontSize: '9px', color: 'var(--text-muted)', width: '130px', flexShrink: 0, textAlign: 'left' }}>
+                                  {d.label}
+                                </div>
+                                <div className="perc-bar" style={{ flex: 1, height: '4px', background: 'var(--bg-card3)', borderRadius: '2px' }}>
+                                  <div className="perc-fill" style={{ width: `${w}%`, background: c, height: '100%', borderRadius: '2px' }}></div>
+                                </div>
+                                <div style={{ fontSize: '9px', fontWeight: '600', color: c, width: '20px', textAlign: 'right', flexShrink: 0 }}>
+                                  {d.score}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* ── TAB: NARRATIVE REPORT ── */}
-      {activeTab === 'narrative' && (
-        <div className="tab-content active" style={{ padding: '12px 0 0 0', display: 'block' }}>
-          {(() => {
-            const op0 = (countryData.operators && countryData.operators[0]) || {};
-            const isYoung = countryData.avg_age < 30;
-            const isAging = countryData.avg_age > 42;
-            const isHighGDP = countryData.gdp_per_capita_usd > 20000;
-            const is5GLeader = (countryData.stats?.avg_5g || 0) > 60;
-            const is5GLagging = (countryData.stats?.avg_5g || 0) < 15;
-            const isRoamingHub = countryData.cluster_name.includes('Roaming Hub');
-            const isFrontier = countryData.cluster_name === 'Frontier Market';
-            const highFraud = countryData.stats?.fraud_score > 3.5;
-            const operatorsStr = (countryData.operators || []).map(o => o.operator).join(', ');
-            const topOp = (countryData.operators || []).reduce((a, b) => (a.sub_base_mln || 0) > (b.sub_base_mln || 0) ? a : b, { operator: '—' });
-            const fiveGAvg = countryData.stats?.avg_5g?.toFixed(0) || '—';
+        {/* ── TAB: NARRATIVE REPORT ── */}
+        {activeTab === 'narrative' && (
+          <div className="tab-content active" style={{ padding: '12px 0 0 0', display: 'block' }}>
+            {(() => {
+              const op0 = (countryData.operators && countryData.operators[0]) || {};
+              const isYoung = countryData.avg_age < 30;
+              const isAging = countryData.avg_age > 42;
+              const isHighGDP = countryData.gdp_per_capita_usd > 20000;
+              const is5GLeader = (countryData.stats?.avg_5g || 0) > 60;
+              const is5GLagging = (countryData.stats?.avg_5g || 0) < 15;
+              const isRoamingHub = countryData.cluster_name.includes('Roaming Hub');
+              const isFrontier = countryData.cluster_name === 'Frontier Market';
+              const highFraud = countryData.stats?.fraud_score > 3.5;
+              const operatorsStr = (countryData.operators || []).map(o => o.operator).join(', ');
+              const topOp = (countryData.operators || []).reduce((a, b) => (a.sub_base_mln || 0) > (b.sub_base_mln || 0) ? a : b, { operator: '—' });
+              const fiveGAvg = countryData.stats?.avg_5g?.toFixed(0) || '—';
 
-            return (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                <div className="narrative-block" style={{ margin: '0' }}>
-                  <h4>Market Overview</h4>
-                  <p>
-                    <strong>{selectedCountry}</strong> is a{' '}
-                    {isHighGDP ? 'high-income' : countryData.gdp_per_capita_usd > 5000 ? 'upper-middle income' : 'emerging market'}{' '}
-                    country in the <strong>{countryData.region}</strong> region. With a population of{' '}
-                    <strong>{countryData.population_mln ? countryData.population_mln.toFixed(0) + 'M' : '—'}</strong> and{' '}
-                    {countryData.mobile_users_mln ? countryData.mobile_users_mln.toFixed(0) + 'M' : '—'} active mobile subscribers (
-                    <strong>{countryData.mobile_penetration_pct ? countryData.mobile_penetration_pct.toFixed(0) + '%' : '—'} penetration</strong>
-                    ), the market is served by <strong>{countryData.num_operators} operator{countryData.num_operators > 1 ? 's' : ''}</strong> (
-                    {operatorsStr}). The dominant player is <strong>{topOp.operator}</strong>{' '}
-                    {topOp.sub_base_mln ? `with ${topOp.sub_base_mln}M subscribers` : ''}.
-                  </p>
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                  <div className="narrative-block" style={{ margin: '0' }}>
+                    <h4>Market Overview</h4>
+                    <p>
+                      <strong>{selectedCountry}</strong> is a{' '}
+                      {isHighGDP ? 'high-income' : countryData.gdp_per_capita_usd > 5000 ? 'upper-middle income' : 'emerging market'}{' '}
+                      country in the <strong>{countryData.region}</strong> region. With a population of{' '}
+                      <strong>{countryData.population_mln ? countryData.population_mln.toFixed(0) + 'M' : '—'}</strong> and{' '}
+                      {countryData.mobile_users_mln ? countryData.mobile_users_mln.toFixed(0) + 'M' : '—'} active mobile subscribers (
+                      <strong>{countryData.mobile_penetration_pct ? countryData.mobile_penetration_pct.toFixed(0) + '%' : '—'} penetration</strong>
+                      ), the market is served by <strong>{countryData.num_operators} operator{countryData.num_operators > 1 ? 's' : ''}</strong> (
+                      {operatorsStr}). The dominant player is <strong>{topOp.operator}</strong>{' '}
+                      {topOp.sub_base_mln ? `with ${topOp.sub_base_mln}M subscribers` : ''}.
+                    </p>
+                  </div>
+
+                  <div className="narrative-block" style={{ margin: '0' }}>
+                    <h4>Demographic & Digital Behavior</h4>
+                    <p>
+                      The average age of <strong>{countryData.avg_age ? countryData.avg_age + ' years' : '—'}</strong>{' '}
+                      {isYoung
+                        ? 'indicates a highly digital-native, mobile-first population with strong OTT and app usage. This demographic is the primary driver of data demand and creates elevated bypass fraud risk via WhatsApp voice and video calls.'
+                        : isAging
+                          ? 'reflects an aging population where mobile usage tends toward voice and traditional services. Churn risk is lower but ARPU uplift through data migration is the key opportunity.'
+                          : 'places this market in the middle-age bracket — a blend of digital-native and traditional mobile users.'}{' '}
+                      Internet penetration of <strong>{countryData.internet_users_pct ? countryData.internet_users_pct + '%' : '—'}</strong>{' '}
+                      {countryData.internet_users_pct > 90
+                        ? 'confirms a fully digitised market where advanced SaaS and eSIM solutions are viable immediately.'
+                        : countryData.internet_users_pct > 60
+                          ? 'shows a maturing digital market with room for smart device and 5G upsell.'
+                          : 'highlights a digital gap — managed services and infrastructure solutions are likely more relevant than SaaS.'}
+                    </p>
+                  </div>
+
+                  <div className="narrative-block" style={{ margin: '0' }}>
+                    <h4>5G & Technology Landscape</h4>
+                    <p>
+                      Average 5G penetration across operators is <strong>{fiveGAvg}%</strong>.{' '}
+                      {is5GLeader
+                        ? `This is a 5G-advanced market where the eSIM, Steering of Roaming, and Roaming DNA products operate at full capability.`
+                        : is5GLagging
+                          ? `5G deployment is in early stages. This creates a strong opportunity for Mobileum's 5G Active Testing and Managed Services.`
+                          : `5G deployment is progressing, presenting solid upsell opportunities.`}
+                    </p>
+                  </div>
+
+                  <div className="narrative-block" style={{ margin: '0' }}>
+                    <h4>Mobileum Strategic Opportunity</h4>
+                    <p>
+                      {highFraud && 'Fraud exposure is elevated. RAID 9 with AI-adaptive rules is recommended. '}
+                      {isRoamingHub && 'Roaming hub dynamics make Steering of Roaming and Roaming DNA primary value drivers. '}
+                      The recommended business model is:{' '}
+                      <strong>
+                        {op0.ia_recommended_biz_model && op0.ia_recommended_biz_model !== 'nan'
+                          ? op0.ia_recommended_biz_model
+                          : 'Evaluate based on operator financials'}
+                      </strong>
+                      .
+                    </p>
+                  </div>
                 </div>
-
-                <div className="narrative-block" style={{ margin: '0' }}>
-                  <h4>Demographic & Digital Behavior</h4>
-                  <p>
-                    The average age of <strong>{countryData.avg_age ? countryData.avg_age + ' years' : '—'}</strong>{' '}
-                    {isYoung
-                      ? 'indicates a highly digital-native, mobile-first population with strong OTT and app usage. This demographic is the primary driver of data demand and creates elevated bypass fraud risk via WhatsApp voice and video calls.'
-                      : isAging
-                      ? 'reflects an aging population where mobile usage tends toward voice and traditional services. Churn risk is lower but ARPU uplift through data migration is the key opportunity.'
-                      : 'places this market in the middle-age bracket — a blend of digital-native and traditional mobile users.'}{' '}
-                    Internet penetration of <strong>{countryData.internet_users_pct ? countryData.internet_users_pct + '%' : '—'}</strong>{' '}
-                    {countryData.internet_users_pct > 90
-                      ? 'confirms a fully digitised market where advanced SaaS and eSIM solutions are viable immediately.'
-                      : countryData.internet_users_pct > 60
-                      ? 'shows a maturing digital market with room for smart device and 5G upsell.'
-                      : 'highlights a digital gap — managed services and infrastructure solutions are likely more relevant than SaaS.'}
-                  </p>
-                </div>
-
-                <div className="narrative-block" style={{ margin: '0' }}>
-                  <h4>5G & Technology Landscape</h4>
-                  <p>
-                    Average 5G penetration across operators is <strong>{fiveGAvg}%</strong>.{' '}
-                    {is5GLeader
-                      ? `This is a 5G-advanced market where the eSIM, Steering of Roaming, and Roaming DNA products operate at full capability.`
-                      : is5GLagging
-                      ? `5G deployment is in early stages. This creates a strong opportunity for Mobileum's 5G Active Testing and Managed Services.`
-                      : `5G deployment is progressing, presenting solid upsell opportunities.`}
-                  </p>
-                </div>
-
-                <div className="narrative-block" style={{ margin: '0' }}>
-                  <h4>Mobileum Strategic Opportunity</h4>
-                  <p>
-                    {highFraud && 'Fraud exposure is elevated. RAID 9 with AI-adaptive rules is recommended. '}
-                    {isRoamingHub && 'Roaming hub dynamics make Steering of Roaming and Roaming DNA primary value drivers. '}
-                    The recommended business model is:{' '}
-                    <strong>
-                      {op0.ia_recommended_biz_model && op0.ia_recommended_biz_model !== 'nan'
-                        ? op0.ia_recommended_biz_model
-                        : 'Evaluate based on operator financials'}
-                    </strong>
-                    .
-                  </p>
-                </div>
-              </div>
-            );
-          })()}
-        </div>
-      )}
+              );
+            })()}
+          </div>
+        )}
       </div>
 
       {/* Reusable Form Modal */}
@@ -2427,6 +2729,19 @@ export default function DynamicCenterDashboard({
             } else {
               onUpdateAccountData(selectedCountry, { ...accountData, _forceRefresh: Date.now() });
             }
+          }}
+        />
+      )}
+      {financialModalOpen && (
+        <FinancialAnalysisModal
+          isOpen={financialModalOpen}
+          onClose={() => setFinancialModalOpen(false)}
+          type={financialModalType}
+          accountData={accountData}
+          countryName={selectedCountry}
+          onNavigateToPlan={() => {
+            setActiveTab('account');
+            setActiveSubTab('plan2026');
           }}
         />
       )}

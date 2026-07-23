@@ -2021,3 +2021,27 @@ html, body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   border-color: var(--blue-light);
 }
+
+/* ── DYNAMIC AUTO-COLLAPSING STICKY HEADER ── */
+.dynamic-header-wrapper {
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px 6px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.dynamic-header-wrapper.is-scrolled {
+  padding: 6px 16px 4px 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+.tab-btn.compact {
+  padding: 4px 10px !important;
+  font-size: 11px !important;
+}
+

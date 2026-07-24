@@ -133,7 +133,7 @@ export default function FinancialReports({ operator, country, operators, operato
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '20px' }}>
 
       {/* ---- Telecom Operator 3-Year Performance Tracker (Section 1: Performance at a Glance) ---- */}
-      <OperatorPerformanceTracker selectedOperatorId={operatorSelected && String(operator).toLowerCase().includes('jio') ? 'reliance-jio' : 'bharti-airtel'} />
+      <OperatorPerformanceTracker countryName={country || 'India'} operators={operators} selectedOperatorId={operator} showSwitcher={true} />
 
       {/* ---- Real group-level financials, or honest empty state ---- */}
       <div className="financial-card">
@@ -193,9 +193,11 @@ export default function FinancialReports({ operator, country, operators, operato
                     {verified ? ' (confirmed against company release).' : ' (verify against latest filing).'}
                   </div>
                   {/* Clean Executive Source Disclosure */}
-                  <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--green)', padding: '3px 8px', borderRadius: '4px', fontWeight: '700', fontSize: '10px' }}>
-                    ✓ Verified Financial Disclosures
-                  </span>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--green)', padding: '3px 8px', borderRadius: '4px', fontWeight: '700', fontSize: '10px' }}>
+                      ✓ Verified Financial Disclosures
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

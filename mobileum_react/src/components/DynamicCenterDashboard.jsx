@@ -1687,7 +1687,7 @@ export default function DynamicCenterDashboard({
                         >
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div style={{ fontSize: '9px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>1. Profit / Revenue Potential</div>
-                            <span style={{ fontSize: '9px', fontWeight: '800', color: 'var(--green)', background: 'rgba(16, 185, 129, 0.15)', padding: '1px 6px', borderRadius: '4px' }}>📊 Analysis & Export</span>
+                            <span style={{ fontSize: '9px', fontWeight: '800', color: 'var(--green)', background: 'rgba(16, 185, 129, 0.15)', padding: '1px 6px', borderRadius: '4px' }}>Analysis & Export</span>
                           </div>
                           <div style={{ fontSize: '14px', fontWeight: '900', color: 'var(--green)', marginTop: '4px' }}>
                             {accountData.financialSection?.profit || '—'}
@@ -1715,7 +1715,7 @@ export default function DynamicCenterDashboard({
                         >
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div style={{ fontSize: '9px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>2. Capex Investment</div>
-                            <span style={{ fontSize: '9px', fontWeight: '800', color: 'var(--blue)', background: 'rgba(37, 99, 235, 0.15)', padding: '1px 6px', borderRadius: '4px' }}>📊 Analysis & Export</span>
+                            <span style={{ fontSize: '9px', fontWeight: '800', color: 'var(--blue)', background: 'rgba(37, 99, 235, 0.15)', padding: '1px 6px', borderRadius: '4px' }}>Analysis & Export</span>
                           </div>
                           <div style={{ fontSize: '14px', fontWeight: '900', color: 'var(--blue)', marginTop: '4px' }}>
                             {accountData.financialSection?.capexInvestment || '—'}
@@ -1725,54 +1725,12 @@ export default function DynamicCenterDashboard({
                           </div>
                         </div>
 
-                        {(() => {
-                          const cName = typeof selectedCountry === 'object' ? (selectedCountry?.country_name || '') : String(selectedCountry || '');
-                          const isIndiaCountry = cName.toLowerCase().includes('india');
-                          const targetOpStr = String(selectedOperator || accountData?.name || '').toLowerCase();
-                          const isAirtelOp = targetOpStr.includes('airtel') || targetOpStr.includes('bharti');
-                          const showTrackerOption = isIndiaCountry && isAirtelOp;
-
-                          return (
-                            <>
-                              {showTrackerOption && (
-                                <div
-                                  className="product-card"
-                                  onClick={() => {
-                                    setFinancialModalType('tracker');
-                                    setFinancialModalOpen(true);
-                                  }}
-                                  style={{
-                                    padding: '10px 12px',
-                                    margin: 0,
-                                    cursor: 'pointer',
-                                    transition: 'all 0.15s ease',
-                                    border: '1px solid rgba(124, 58, 237, 0.35)',
-                                    background: 'rgba(124, 58, 237, 0.05)'
-                                  }}
-                                  title="Click to view 3-Year Bharti Airtel Performance Tracker & CSV export"
-                                >
-                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div style={{ fontSize: '9px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>3. Performance Tracker (Bharti Airtel)</div>
-                                    <span style={{ fontSize: '9px', fontWeight: '800', color: '#7c3aed', background: 'rgba(124, 58, 237, 0.15)', padding: '1px 6px', borderRadius: '4px' }}>🟢 Open Tracker & Export</span>
-                                  </div>
-                                  <div style={{ fontSize: '14px', fontWeight: '900', color: '#7c3aed', marginTop: '4px' }}>
-                                    6 Key Metrics (2022–2024)
-                                  </div>
-                                  <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginTop: '2px', fontStyle: 'italic' }}>
-                                    Click for Bharti Airtel 3-Yr YoY report →
-                                  </div>
-                                </div>
-                              )}
-
-                              <div className="product-card" style={{ padding: '10px 12px', margin: 0, cursor: 'default', gridColumn: '1 / -1' }}>
-                                <div style={{ fontSize: '9px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{showTrackerOption ? '4. Strategic Notes & Outlook (xxxx)' : '3. Strategic Notes & Outlook (xxxx)'}</div>
-                                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px', lineHeight: '1.4' }}>
-                                  {accountData.financialSection?.note || '—'}
-                                </div>
-                              </div>
-                            </>
-                          );
-                        })()}
+                        <div className="product-card" style={{ padding: '10px 12px', margin: 0, cursor: 'default', gridColumn: '1 / -1' }}>
+                          <div style={{ fontSize: '9px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>3. Strategic Notes & Outlook (xxxx)</div>
+                          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px', lineHeight: '1.4' }}>
+                            {accountData.financialSection?.note || '—'}
+                          </div>
+                        </div>
 
                         {/* Live Investor Results & 3-Year Web Intelligence Banner */}
                         {(() => {
@@ -1789,14 +1747,9 @@ export default function DynamicCenterDashboard({
                             }
                           }
                           const opLabel = gObj?.group || targetName;
-                          const trendLabel = gObj?.performance_trend_3yr?.label || '📈 PERFORMANCE GOING UP';
+                          const rawTrendLabel = gObj?.performance_trend_3yr?.label || 'PERFORMANCE GOING UP';
+                          const trendLabel = rawTrendLabel.replace(/[📈📉📊🟢]/g, '').trim();
                           const summaryText = gObj?.performance_trend_3yr?.summary || `Integrates direct web-scraped investor reports & quarterly disclosures for ${opLabel}.`;
-
-                          const cName = typeof selectedCountry === 'object' ? (selectedCountry?.country_name || '') : String(selectedCountry || '');
-                          const isIndiaCountry = cName.toLowerCase().includes('india');
-                          const targetOpStr = String(selectedOperator || accountData?.name || '').toLowerCase();
-                          const isAirtelOp = targetOpStr.includes('airtel') || targetOpStr.includes('bharti');
-                          const showTrackerButton = isIndiaCountry && isAirtelOp;
 
                           return (
                             <div
@@ -1817,7 +1770,7 @@ export default function DynamicCenterDashboard({
                             >
                               <div>
                                 <div style={{ fontSize: '10px', fontWeight: '800', color: 'var(--blue)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                  <span>📊 3-Year Investor & Financial Performance Intelligence ({opLabel})</span>
+                                  <span>3-Year Investor & Financial Performance Intelligence ({opLabel})</span>
                                   <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: 'var(--green)', padding: '2px 7px', borderRadius: '4px', fontSize: '9px', fontWeight: '800' }}>
                                     {trendLabel}
                                   </span>
@@ -1828,30 +1781,6 @@ export default function DynamicCenterDashboard({
                               </div>
 
                               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                                {showTrackerButton && (
-                                  <button
-                                    onClick={() => {
-                                      setFinancialModalType('tracker');
-                                      setFinancialModalOpen(true);
-                                    }}
-                                    style={{
-                                      background: '#7c3aed',
-                                      color: '#ffffff',
-                                      border: 'none',
-                                      borderRadius: '6px',
-                                      padding: '6px 12px',
-                                      fontSize: '11px',
-                                      fontWeight: '800',
-                                      cursor: 'pointer',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      gap: '6px',
-                                      boxShadow: '0 2px 6px rgba(124, 58, 237, 0.3)'
-                                    }}
-                                  >
-                                    <span>🟢 Open 3-Yr Performance Tracker (Bharti Airtel)</span>
-                                  </button>
-                                )}
                                 <span style={{ background: 'rgba(16, 185, 129, 0.12)', color: 'var(--green)', padding: '5px 10px', borderRadius: '6px', fontSize: '10.5px', fontWeight: '700' }}>
                                   ✓ Verified Disclosures
                                 </span>

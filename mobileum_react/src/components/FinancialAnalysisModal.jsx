@@ -3,6 +3,191 @@ import Chart from 'chart.js/auto';
 import FIN from '../data/operator_financials.json';
 import OperatorPerformanceTracker from './OperatorPerformanceTracker';
 
+function FinancialChart({ activeTab, isRevenue }) {
+  let labels = [];
+  let series1 = { label: '', values: [], color: '#10b981', gradient: 'rgba(16, 185, 129, 0.4)' };
+  let series2 = { label: '', values: [], color: '#3b82f6', gradient: 'rgba(59, 130, 246, 0.4)', isLine: false };
+
+  if (activeTab === 'trend3yr') {
+    labels = ['FY 2023', 'FY 2024', 'FY 2025', 'FY 2026 (Proj)'];
+    series1 = { label: 'Consolidated Revenue ($M)', values: [14.2, 16.8, 18.5, 22.0], color: '#10b981', gradient: 'rgba(16, 185, 129, 0.35)' };
+    series2 = { label: 'Net Profit ($M)', values: [3.8, 4.9, 5.7, 7.4], color: '#3b82f6', isLine: true };
+  } else if (activeTab === 'annual') {
+    labels = ['FY 2023', 'FY 2024', 'FY 2025', 'FY 2026 (Proj)'];
+    if (isRevenue) {
+      series1 = { label: 'Gross Revenue ($M)', values: [14.2, 16.8, 18.5, 22.0], color: '#10b981', gradient: 'rgba(16, 185, 129, 0.4)' };
+      series2 = { label: 'Net Profit ($M)', values: [3.8, 4.9, 5.7, 7.4], color: '#3b82f6', gradient: 'rgba(59, 130, 246, 0.4)' };
+    } else {
+      series1 = { label: 'Total Capex ($M)', values: [1.8, 2.2, 2.5, 2.8], color: '#3b82f6', gradient: 'rgba(59, 130, 246, 0.4)' };
+      series2 = { label: '5G Core Infra ($M)', values: [0.9, 1.2, 1.4, 1.6], color: '#f59e0b', gradient: 'rgba(245, 158, 11, 0.4)' };
+    }
+  } else if (activeTab === 'quarterly') {
+    labels = ['Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025', 'Q1 2026 (E)', 'Q2 2026 (E)'];
+    if (isRevenue) {
+      series1 = { label: 'Quarterly Revenue ($M)', values: [4.4, 4.6, 4.7, 4.8, 5.2, 5.5], color: '#10b981', gradient: 'rgba(16, 185, 129, 0.15)', isLine: true };
+      series2 = { label: 'Profit Contribution ($M)', values: [1.3, 1.4, 1.5, 1.5, 1.7, 1.8], color: '#3b82f6', isLine: true, isDashed: true };
+    } else {
+      series1 = { label: 'Capex Allocated ($M)', values: [0.60, 0.62, 0.63, 0.65, 0.70, 0.75], color: '#3b82f6', gradient: 'rgba(59, 130, 246, 0.4)' };
+      series2 = { label: 'Infra Deployment Pace', values: [0.30, 0.35, 0.38, 0.40, 0.45, 0.48], color: '#f59e0b', isLine: true };
+    }
+  } else {
+    labels = ['FY 2023', 'FY 2024', 'FY 2025', 'FY 2026 (Proj)'];
+    series1 = { label: 'Disclosed Performance Index', values: [78, 84, 91, 98], color: '#7c3aed', gradient: 'rgba(124, 58, 237, 0.3)' };
+  }
+
+  const allVals = [...series1.values, ...(series2.values || [])];
+  const maxVal = Math.max(...allVals, 1) * 1.25;
+  const tickSteps = [
+    maxVal.toFixed(1),
+    (maxVal * 0.75).toFixed(1),
+    (maxVal * 0.50).toFixed(1),
+    (maxVal * 0.25).toFixed(1),
+    '0.0'
+  ];
+
+  return (
+    <div style={{ position: 'relative', width: '100%', height: '190px', display: 'flex', flexDirection: 'column', paddingTop: '4px' }}>
+      {/* Legend Header */}
+      <div style={{ display: 'flex', gap: '16px', justifyContent: 'flex-end', marginBottom: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10.5px', fontWeight: '700', color: 'var(--text-secondary)' }}>
+          <span style={{ width: '10px', height: '10px', borderRadius: '3px', background: series1.color }} />
+          <span>{series1.label}</span>
+        </div>
+        {series2.label && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10.5px', fontWeight: '700', color: 'var(--text-secondary)' }}>
+            <span style={{ width: '10px', height: '10px', borderRadius: '3px', background: series2.color }} />
+            <span>{series2.label}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Main Graph Grid Area */}
+      <div style={{ flex: 1, display: 'flex', position: 'relative' }}>
+        {/* Y Axis Ticks */}
+        <div style={{ width: '42px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', fontSize: '9.5px', fontWeight: '700', color: 'var(--text-muted)', textAlign: 'right', paddingRight: '8px' }}>
+          {tickSteps.map((t, idx) => (
+            <span key={idx}>${t}</span>
+          ))}
+        </div>
+
+        {/* Chart Column Area */}
+        <div style={{ flex: 1, borderLeft: '1px solid var(--border)', borderBottom: '1px solid var(--border)', position: 'relative', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', padding: '0 8px' }}>
+          {/* Background Grid Lines */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none', zIndex: 0 }}>
+            <div style={{ borderTop: '1px dashed var(--border)', width: '100%' }} />
+            <div style={{ borderTop: '1px dashed var(--border)', width: '100%' }} />
+            <div style={{ borderTop: '1px dashed var(--border)', width: '100%' }} />
+            <div style={{ borderTop: '1px dashed var(--border)', width: '100%' }} />
+            <div style={{ width: '100%' }} />
+          </div>
+
+          {/* Render Bar Columns */}
+          {labels.map((lbl, idx) => {
+            const v1 = series1.values[idx] || 0;
+            const v2 = series2.values ? (series2.values[idx] || 0) : 0;
+            const p1 = Math.min(100, Math.max(2, (v1 / maxVal) * 100));
+            const p2 = Math.min(100, Math.max(2, (v2 / maxVal) * 100));
+
+            return (
+              <div key={idx} style={{ flex: 1, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', zIndex: 1, position: 'relative' }}>
+                <div style={{ display: 'flex', gap: '6px', alignItems: 'flex-end', height: '100%', width: '75%', justifyContent: 'center' }}>
+                  {/* Bar 1 */}
+                  {!series1.isLine && (
+                    <div
+                      title={`${series1.label}: $${v1}M`}
+                      style={{
+                        height: `${p1}%`,
+                        width: series2.isLine || !series2.values ? '50%' : '35%',
+                        background: series1.gradient || series1.color,
+                        border: `1.5px solid ${series1.color}`,
+                        borderBottom: 'none',
+                        borderTopLeftRadius: '4px',
+                        borderTopRightRadius: '4px',
+                        position: 'relative',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+                      }}
+                    >
+                      <span style={{ position: 'absolute', top: '-16px', left: '50%', transform: 'translateX(-50%)', fontSize: '9px', fontWeight: '800', color: series1.color, whiteSpace: 'nowrap' }}>
+                        ${v1}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Bar 2 */}
+                  {series2.values && !series2.isLine && (
+                    <div
+                      title={`${series2.label}: $${v2}M`}
+                      style={{
+                        height: `${p2}%`,
+                        width: '35%',
+                        background: series2.gradient || series2.color,
+                        border: `1.5px solid ${series2.color}`,
+                        borderBottom: 'none',
+                        borderTopLeftRadius: '4px',
+                        borderTopRightRadius: '4px',
+                        position: 'relative',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+                      }}
+                    >
+                      <span style={{ position: 'absolute', top: '-16px', left: '50%', transform: 'translateX(-50%)', fontSize: '9px', fontWeight: '800', color: series2.color, whiteSpace: 'nowrap' }}>
+                        ${v2}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* X Axis Label */}
+                <div style={{ position: 'absolute', bottom: '-22px', fontSize: '9.5px', fontWeight: '700', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+                  {lbl}
+                </div>
+              </div>
+            );
+          })}
+
+          {/* SVG Overlay Line Curves */}
+          <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 2 }}>
+            {[series1, series2].map((ser, sIdx) => {
+              if (!ser.isLine || !ser.values || ser.values.length === 0) return null;
+              const pts = labels.map((_, i) => {
+                const x = ((i + 0.5) / labels.length) * 100;
+                const y = 100 - Math.min(100, Math.max(2, ((ser.values[i] || 0) / maxVal) * 100));
+                return `${x}%,${y}%`;
+              });
+              const pathD = pts.reduce((acc, pt, i) => (i === 0 ? `M ${pt}` : `${acc} L ${pt}`), '');
+
+              return (
+                <g key={sIdx}>
+                  <path
+                    d={pathD}
+                    fill="none"
+                    stroke={ser.color}
+                    strokeWidth="2.5"
+                    strokeDasharray={ser.isDashed ? '4 4' : 'none'}
+                  />
+                  {labels.map((_, i) => {
+                    const cx = `${((i + 0.5) / labels.length) * 100}%`;
+                    const cy = `${100 - Math.min(100, Math.max(2, ((ser.values[i] || 0) / maxVal) * 100))}%`;
+                    return (
+                      <g key={i}>
+                        <circle cx={cx} cy={cy} r="4" fill="#ffffff" stroke={ser.color} strokeWidth="2.5" />
+                        <text x={cx} y={`calc(${cy} - 7px)`} textAnchor="middle" fontSize="9" fontWeight="800" fill={ser.color}>
+                          ${ser.values[i]}
+                        </text>
+                      </g>
+                    );
+                  })}
+                </g>
+              );
+            })}
+          </svg>
+        </div>
+      </div>
+
+      <div style={{ height: '22px' }} />
+    </div>
+  );
+}
+
 export default function FinancialAnalysisModal({ isOpen, onClose, type, accountData, countryName, onNavigateToPlan }) {
   const [activeTab, setActiveTab] = useState(type === 'tracker' ? 'tracker' : 'annual');
   const chartCanvasRef = useRef(null);
@@ -21,8 +206,9 @@ export default function FinancialAnalysisModal({ isOpen, onClose, type, accountD
     : isRevenue 
       ? 'Profit / Revenue Potential Analysis' 
       : 'Capex Investment Analysis';
+  const opDisplayName = accountData?.name || countryName || 'Operator';
   const metricVal = isTracker
-    ? 'Bharti Airtel (FY22 – FY24 Disclosures)'
+    ? `${opDisplayName} (FY22 – FY24 Disclosures)`
     : isRevenue 
       ? (accountData?.financialSection?.profit || '$9.5M Projected Potential')
       : (accountData?.financialSection?.capexInvestment || '$2.8M Capex Enabled');
@@ -85,170 +271,186 @@ export default function FinancialAnalysisModal({ isOpen, onClose, type, accountD
   useEffect(() => {
     if (!isOpen) return;
 
-    if (chartInstanceRef.current) {
-      chartInstanceRef.current.destroy();
-      chartInstanceRef.current = null;
-    }
+    const timer = setTimeout(() => {
+      if (chartInstanceRef.current) {
+        chartInstanceRef.current.destroy();
+        chartInstanceRef.current = null;
+      }
 
-    const canvas = chartCanvasRef.current;
-    if (!canvas) return;
+      const canvas = chartCanvasRef.current;
+      if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
 
-    let labels = [];
-    let datasets = [];
+      let labels = [];
+      let datasets = [];
 
-    if (activeTab === 'trend3yr') {
-      labels = ['FY 2023', 'FY 2024', 'FY 2025', 'FY 2026 (Proj)'];
-      datasets = [
-        {
-          type: 'bar',
-          label: 'Consolidated Revenue ($M)',
-          data: [14.2, 16.8, 18.5, 22.0],
-          backgroundColor: 'rgba(16, 185, 129, 0.25)',
-          borderColor: '#10b981',
-          borderWidth: 2,
-          borderRadius: 6,
-          order: 2,
-        },
-        {
-          type: 'line',
-          label: 'Net Profit ($M)',
-          data: [3.8, 4.9, 5.7, 7.4],
-          borderColor: '#3b82f6',
-          backgroundColor: '#3b82f6',
-          borderWidth: 3,
-          pointBackgroundColor: '#ffffff',
-          pointBorderColor: '#3b82f6',
-          pointRadius: 5,
-          pointHoverRadius: 7,
-          tension: 0.35,
-          order: 1,
-        }
-      ];
-    } else if (activeTab === 'annual') {
-      labels = ['FY 2023', 'FY 2024', 'FY 2025', 'FY 2026 (Proj)'];
-      if (isRevenue) {
+      if (activeTab === 'trend3yr') {
+        labels = ['FY 2023', 'FY 2024', 'FY 2025', 'FY 2026 (Proj)'];
         datasets = [
           {
             type: 'bar',
-            label: 'Gross Revenue ($M)',
+            label: 'Consolidated Revenue ($M)',
             data: [14.2, 16.8, 18.5, 22.0],
-            backgroundColor: 'rgba(16, 185, 129, 0.3)',
+            backgroundColor: 'rgba(16, 185, 129, 0.35)',
             borderColor: '#10b981',
-            borderWidth: 1.5,
+            borderWidth: 2,
             borderRadius: 6,
+            order: 2,
           },
           {
-            type: 'bar',
+            type: 'line',
             label: 'Net Profit ($M)',
             data: [3.8, 4.9, 5.7, 7.4],
-            backgroundColor: 'rgba(59, 130, 246, 0.3)',
             borderColor: '#3b82f6',
-            borderWidth: 1.5,
-            borderRadius: 6,
-          }
-        ];
-      } else {
-        datasets = [
-          {
-            type: 'bar',
-            label: 'Total Capex ($M)',
-            data: [1.8, 2.2, 2.5, 2.8],
-            backgroundColor: 'rgba(59, 130, 246, 0.3)',
-            borderColor: '#3b82f6',
-            borderWidth: 1.5,
-            borderRadius: 6,
-          },
-          {
-            type: 'bar',
-            label: '5G Core Infra ($M)',
-            data: [0.9, 1.2, 1.4, 1.6],
-            backgroundColor: 'rgba(245, 158, 11, 0.3)',
-            borderColor: '#f59e0b',
-            borderWidth: 1.5,
-            borderRadius: 6,
-          }
-        ];
-      }
-    } else if (activeTab === 'quarterly') {
-      labels = ['Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025', 'Q1 2026 (E)', 'Q2 2026 (E)'];
-      if (isRevenue) {
-        datasets = [
-          {
-            type: 'line',
-            label: 'Quarterly Revenue ($M)',
-            data: [4.4, 4.6, 4.7, 4.8, 5.2, 5.5],
-            borderColor: '#10b981',
-            backgroundColor: 'rgba(16, 185, 129, 0.12)',
-            fill: true,
+            backgroundColor: '#3b82f6',
+            borderWidth: 3,
+            pointBackgroundColor: '#ffffff',
+            pointBorderColor: '#3b82f6',
+            pointRadius: 5,
+            pointHoverRadius: 7,
             tension: 0.35,
-            pointRadius: 4,
-          },
-          {
-            type: 'line',
-            label: 'Profit Contribution ($M)',
-            data: [1.3, 1.4, 1.5, 1.5, 1.7, 1.8],
-            borderColor: '#3b82f6',
-            backgroundColor: 'transparent',
-            borderDash: [4, 4],
-            tension: 0.35,
-            pointRadius: 4,
+            order: 1,
           }
         ];
-      } else {
-        datasets = [
-          {
-            type: 'bar',
-            label: 'Capex Allocated ($M)',
-            data: [0.60, 0.62, 0.63, 0.65, 0.70],
-            backgroundColor: 'rgba(59, 130, 246, 0.3)',
-            borderColor: '#3b82f6',
-            borderWidth: 1.5,
-            borderRadius: 6,
-          }
-        ];
-      }
-    }
-
-    chartInstanceRef.current = new Chart(ctx, {
-      type: 'bar',
-      data: { labels, datasets },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: true,
-            position: 'top',
-            labels: {
-              boxWidth: 12,
-              font: { size: 10, weight: '700' },
-              color: '#64748b'
+      } else if (activeTab === 'annual') {
+        labels = ['FY 2023', 'FY 2024', 'FY 2025', 'FY 2026 (Proj)'];
+        if (isRevenue) {
+          datasets = [
+            {
+              type: 'bar',
+              label: 'Gross Revenue ($M)',
+              data: [14.2, 16.8, 18.5, 22.0],
+              backgroundColor: 'rgba(16, 185, 129, 0.4)',
+              borderColor: '#10b981',
+              borderWidth: 1.5,
+              borderRadius: 6,
+            },
+            {
+              type: 'bar',
+              label: 'Net Profit ($M)',
+              data: [3.8, 4.9, 5.7, 7.4],
+              backgroundColor: 'rgba(59, 130, 246, 0.4)',
+              borderColor: '#3b82f6',
+              borderWidth: 1.5,
+              borderRadius: 6,
             }
-          },
-          tooltip: {
-            mode: 'index',
-            intersect: false,
-            padding: 10,
-            borderRadius: 6,
-          }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10, weight: '600' }, color: '#64748b' }
-          },
-          y: {
-            grid: { color: 'rgba(226, 232, 240, 0.5)' },
-            ticks: { font: { size: 10, weight: '600' }, color: '#64748b' }
-          }
+          ];
+        } else {
+          datasets = [
+            {
+              type: 'bar',
+              label: 'Total Capex ($M)',
+              data: [1.8, 2.2, 2.5, 2.8],
+              backgroundColor: 'rgba(59, 130, 246, 0.4)',
+              borderColor: '#3b82f6',
+              borderWidth: 1.5,
+              borderRadius: 6,
+            },
+            {
+              type: 'bar',
+              label: '5G Core Infra ($M)',
+              data: [0.9, 1.2, 1.4, 1.6],
+              backgroundColor: 'rgba(245, 158, 11, 0.4)',
+              borderColor: '#f59e0b',
+              borderWidth: 1.5,
+              borderRadius: 6,
+            }
+          ];
+        }
+      } else if (activeTab === 'quarterly') {
+        labels = ['Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025', 'Q1 2026 (E)', 'Q2 2026 (E)'];
+        if (isRevenue) {
+          datasets = [
+            {
+              type: 'line',
+              label: 'Quarterly Revenue ($M)',
+              data: [4.4, 4.6, 4.7, 4.8, 5.2, 5.5],
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.15)',
+              fill: true,
+              tension: 0.35,
+              pointRadius: 5,
+              pointBackgroundColor: '#10b981',
+            },
+            {
+              type: 'line',
+              label: 'Profit Contribution ($M)',
+              data: [1.3, 1.4, 1.5, 1.5, 1.7, 1.8],
+              borderColor: '#3b82f6',
+              backgroundColor: 'transparent',
+              borderDash: [4, 4],
+              tension: 0.35,
+              pointRadius: 5,
+              pointBackgroundColor: '#3b82f6',
+            }
+          ];
+        } else {
+          datasets = [
+            {
+              type: 'bar',
+              label: 'Capex Allocated ($M)',
+              data: [0.60, 0.62, 0.63, 0.65, 0.70, 0.75],
+              backgroundColor: 'rgba(59, 130, 246, 0.4)',
+              borderColor: '#3b82f6',
+              borderWidth: 1.5,
+              borderRadius: 6,
+            },
+            {
+              type: 'line',
+              label: 'Infra Deployment Pace',
+              data: [0.30, 0.35, 0.38, 0.40, 0.45, 0.48],
+              borderColor: '#f59e0b',
+              backgroundColor: 'transparent',
+              borderWidth: 2,
+              tension: 0.35,
+              pointRadius: 4,
+            }
+          ];
         }
       }
-    });
+
+      chartInstanceRef.current = new Chart(ctx, {
+        type: 'bar',
+        data: { labels, datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                boxWidth: 12,
+                font: { size: 10, weight: '700' },
+                color: '#64748b'
+              }
+            },
+            tooltip: {
+              mode: 'index',
+              intersect: false,
+              padding: 10,
+              borderRadius: 6,
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { font: { size: 10, weight: '600' }, color: '#64748b' }
+            },
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(226, 232, 240, 0.6)' },
+              ticks: { font: { size: 10, weight: '600' }, color: '#64748b' }
+            }
+          }
+        }
+      });
+    }, 60);
 
     return () => {
+      clearTimeout(timer);
       if (chartInstanceRef.current) {
         chartInstanceRef.current.destroy();
         chartInstanceRef.current = null;
@@ -431,7 +633,7 @@ export default function FinancialAnalysisModal({ isOpen, onClose, type, accountD
                   cursor: 'pointer'
                 }}
               >
-                3-Yr Investor Trend 📊
+                3-Yr Investor Trend
               </button>
               <button
                 onClick={() => setActiveTab('tracker')}
@@ -446,7 +648,7 @@ export default function FinancialAnalysisModal({ isOpen, onClose, type, accountD
                   cursor: 'pointer'
                 }}
               >
-                3-Yr Performance Tracker 🟢
+                3-Yr Performance Tracker
               </button>
             </div>
 
@@ -483,8 +685,8 @@ export default function FinancialAnalysisModal({ isOpen, onClose, type, accountD
                 {activeTab === 'trend3yr' ? 'Revenue vs Profit Trajectory' : activeTab === 'annual' ? 'Multi-Year Growth Breakdown' : 'Recent & Forecasted Quarters'}
               </span>
             </div>
-            <div style={{ position: 'relative', height: '210px', width: '100%' }}>
-              <canvas ref={chartCanvasRef} />
+            <div style={{ position: 'relative', minHeight: '210px', width: '100%' }}>
+              <FinancialChart activeTab={activeTab} isRevenue={isRevenue} />
             </div>
           </div>
 
@@ -631,7 +833,7 @@ export default function FinancialAnalysisModal({ isOpen, onClose, type, accountD
 
           {activeTab === 'tracker' && (
             <div>
-              <OperatorPerformanceTracker selectedOperatorId={operatorLabel.toLowerCase().includes('jio') ? 'reliance-jio' : 'bharti-airtel'} />
+              <OperatorPerformanceTracker countryName={countryName || 'India'} selectedOperatorId={targetSearch} showSwitcher={true} />
             </div>
           )}
 

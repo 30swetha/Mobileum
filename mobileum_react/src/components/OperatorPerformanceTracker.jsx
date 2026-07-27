@@ -107,7 +107,8 @@ export default function OperatorPerformanceTracker({
   countryName = 'India',
   selectedOperatorId = null,
   operators = null,
-  showSwitcher = true
+  showSwitcher = true,
+  filterSingleOperator = false
 }) {
   // Resolve list of operators for current country
   let countryOps = operators;
@@ -121,6 +122,19 @@ export default function OperatorPerformanceTracker({
     availableOperators = countryOps.map((op, idx) => buildDynamicOperatorObj(op, countryName, idx));
   } else {
     availableOperators = OPERATOR_TRACKER_DATA;
+  }
+
+  // Task #1: If filterSingleOperator is true and selectedOperatorId is provided,
+  // filter availableOperators to show only that operator's performance data.
+  if (filterSingleOperator && selectedOperatorId) {
+    const singleOpList = availableOperators.filter(o => 
+      o.operator_id === selectedOperatorId || 
+      o.operator_name.toLowerCase().includes(String(selectedOperatorId).toLowerCase()) ||
+      String(selectedOperatorId).toLowerCase().includes(o.operator_name.toLowerCase())
+    );
+    if (singleOpList.length > 0) {
+      availableOperators = singleOpList;
+    }
   }
 
   const initialOpId = selectedOperatorId
@@ -144,7 +158,7 @@ export default function OperatorPerformanceTracker({
       }
       setActiveOperatorId(availableOperators[0].operator_id);
     }
-  }, [countryName, selectedOperatorId, operators]);
+  }, [countryName, selectedOperatorId, operators, filterSingleOperator]);
 
   const operatorData = availableOperators.find(op => op.operator_id === activeOperatorId) || availableOperators[0];
 
@@ -187,8 +201,8 @@ export default function OperatorPerformanceTracker({
   return (
     <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', marginBottom: '20px' }}>
       
-      {/* Dynamic Country Operator Switcher Buttons */}
-      {showSwitcher && availableOperators.length > 0 && (
+      {/* Dynamic Country Operator Switcher Buttons (only when not filtered to single operator) */}
+      {showSwitcher && !filterSingleOperator && availableOperators.length > 1 && (
         <div style={{ marginBottom: '18px', paddingBottom: '14px', borderBottom: '1px dashed var(--border)' }}>
           <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Select Operator in {countryName}:

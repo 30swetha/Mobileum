@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import CollapsibleList from './CollapsibleList';
 
 export default function StaticCountrySidebar({
   selectedCountry,
@@ -30,10 +31,49 @@ export default function StaticCountrySidebar({
 
   const numOps = countryData.num_operators || (countryData.operators ? countryData.operators.length : 0);
 
+  const sortedOperators = countryData.operators
+    ? [...countryData.operators].sort((a, b) => a.operator.localeCompare(b.operator))
+    : [];
+
   return (
     <div className="static-context-sidebar">
-      {/* Back Button(s) at the Top */}
-      <div style={{ marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      {/* Task #2: Persistent Navigation Bar with Home Button & Step-back Navigation */}
+      <div style={{ marginBottom: '12px', display: 'flex', gap: '8px' }}>
+        <button
+          onClick={() => {
+            onSelectOperator(null);
+            onClose();
+          }}
+          style={{
+            flex: '0 0 auto',
+            padding: '8px 12px',
+            borderRadius: '8px',
+            background: 'var(--bg-card)',
+            color: 'var(--text-primary)',
+            border: '1px solid var(--border)',
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.15s ease'
+          }}
+          title="Jump directly to Global Map"
+          onMouseOver={(e) => {
+            e.currentTarget.style.background = 'var(--bg-card3)';
+            e.currentTarget.style.borderColor = 'var(--blue)';
+            e.currentTarget.style.color = 'var(--blue)';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.background = 'var(--bg-card)';
+            e.currentTarget.style.borderColor = 'var(--border)';
+            e.currentTarget.style.color = 'var(--text-primary)';
+          }}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 3L2 12h3v8a1 1 0 001 1h5v-5a1 1 0 011-1h0a1 1 0 011 1v5h5a1 1 0 001-1v-8h3L12 3z" />
+          </svg>
+        </button>
+
         <button
           className="filter-btn"
           onClick={() => {
@@ -44,8 +84,8 @@ export default function StaticCountrySidebar({
             }
           }}
           style={{
-            width: '100%',
-            padding: '10px',
+            flex: '1',
+            padding: '9px 12px',
             borderRadius: '8px',
             background: 'var(--blue)',
             color: 'white',
@@ -53,8 +93,11 @@ export default function StaticCountrySidebar({
             border: 'none',
             cursor: 'pointer',
             textAlign: 'center',
-            fontSize: '12px',
+            fontSize: '11px',
             display: 'block',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
             transition: 'background 0.2s ease'
           }}
           onMouseOver={(e) => e.currentTarget.style.background = 'var(--blue-light)'}
@@ -62,29 +105,6 @@ export default function StaticCountrySidebar({
         >
           {selectedOperator ? `← Back to ${selectedCountry}` : '← Back to Map'}
         </button>
-
-        {selectedOperator && (
-          <button
-            onClick={onClose}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'var(--text-muted)',
-              fontSize: '11px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              textDecoration: 'underline',
-              textAlign: 'center',
-              width: '100%',
-              padding: '2px 0',
-              transition: 'color 0.15s ease'
-            }}
-            onMouseOver={(e) => e.currentTarget.style.color = 'var(--blue-light)'}
-            onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
-          >
-            ← Back to Map
-          </button>
-        )}
       </div>
 
       {/* Sidebar Header */}
@@ -106,13 +126,15 @@ export default function StaticCountrySidebar({
           Country Context
         </div>
 
-        {/* 1. OPERATORS BLOCK (Always Visible) */}
+        {/* 1. OPERATORS BLOCK (Task #3: Collapsible List with Top 4 + More pattern) */}
         <div className="sidebar-metric-card" style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 12px' }}>
           <div style={{ fontSize: '9px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>Operators ({numOps})</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            {countryData.operators ? [...countryData.operators]
-              .sort((a, b) => a.operator.localeCompare(b.operator))
-              .map(o => {
+          {sortedOperators.length > 0 ? (
+            <CollapsibleList
+              items={sortedOperators}
+              initialCount={4}
+              moreLabel="More operators"
+              renderItem={(o) => {
                 const isSelected = selectedOperator === o.operator;
                 return (
                   <button
@@ -143,8 +165,9 @@ export default function StaticCountrySidebar({
                     {o.operator}
                   </button>
                 );
-              }) : '—'}
-          </div>
+              }}
+            />
+          ) : '—'}
         </div>
 
         {/* Single Line GDP Growth Context */}

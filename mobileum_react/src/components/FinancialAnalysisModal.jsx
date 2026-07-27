@@ -188,7 +188,16 @@ function FinancialChart({ activeTab, isRevenue }) {
   );
 }
 
-export default function FinancialAnalysisModal({ isOpen, onClose, type, accountData, countryName, onNavigateToPlan }) {
+export default function FinancialAnalysisModal({
+  isOpen,
+  onClose,
+  type,
+  accountData,
+  countryName,
+  selectedOperator = null,
+  operators = null,
+  onNavigateToPlan
+}) {
   const [activeTab, setActiveTab] = useState(type === 'tracker' ? 'tracker' : 'annual');
   const chartCanvasRef = useRef(null);
   const chartInstanceRef = useRef(null);
@@ -206,7 +215,9 @@ export default function FinancialAnalysisModal({ isOpen, onClose, type, accountD
     : isRevenue 
       ? 'Profit / Revenue Potential Analysis' 
       : 'Capex Investment Analysis';
-  const opDisplayName = accountData?.name || countryName || 'Operator';
+  
+  const targetOperator = selectedOperator || (accountData?.name !== countryName ? accountData?.name : null);
+  const opDisplayName = targetOperator || countryName || 'Operator';
   const metricVal = isTracker
     ? `${opDisplayName} (FY22 – FY24 Disclosures)`
     : isRevenue 
@@ -214,7 +225,7 @@ export default function FinancialAnalysisModal({ isOpen, onClose, type, accountD
       : (accountData?.financialSection?.capexInvestment || '$2.8M Capex Enabled');
 
   // Dynamically resolve operator group info
-  const targetSearch = countryName || accountData?.name || '';
+  const targetSearch = targetOperator || countryName || '';
   const grpKey = FIN.operator_to_group[targetSearch];
   let gObj = grpKey ? FIN.groups[grpKey] : null;
   if (!gObj && targetSearch) {
@@ -537,7 +548,7 @@ export default function FinancialAnalysisModal({ isOpen, onClose, type, accountD
         <div className="generic-modal-header" style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <div style={{ fontSize: '10px', fontWeight: '800', color: isRevenue ? 'var(--green)' : 'var(--blue)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Financial Analysis Dashboard — {countryName}
+              Financial Analysis Dashboard — {targetOperator ? `${targetOperator} (${countryName})` : countryName}
             </div>
             <h3 style={{ margin: '2px 0 0 0', fontSize: '16px', fontWeight: '800', color: 'var(--text-primary)' }}>
               {title}
@@ -833,7 +844,13 @@ export default function FinancialAnalysisModal({ isOpen, onClose, type, accountD
 
           {activeTab === 'tracker' && (
             <div>
-              <OperatorPerformanceTracker countryName={countryName || 'India'} selectedOperatorId={targetSearch} showSwitcher={true} />
+              <OperatorPerformanceTracker
+                countryName={countryName || 'India'}
+                selectedOperatorId={targetOperator || countryName}
+                operators={operators}
+                showSwitcher={!targetOperator}
+                filterSingleOperator={!!targetOperator}
+              />
             </div>
           )}
 

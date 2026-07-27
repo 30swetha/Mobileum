@@ -133,7 +133,7 @@ export default function FinancialReports({ operator, country, operators, operato
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '20px' }}>
 
       {/* ---- Telecom Operator 3-Year Performance Tracker (Section 1: Performance at a Glance) ---- */}
-      <OperatorPerformanceTracker countryName={country || 'India'} operators={operators} selectedOperatorId={operator} showSwitcher={true} />
+      <OperatorPerformanceTracker countryName={country || 'India'} operators={operators} selectedOperatorId={operator} showSwitcher={true} filterSingleOperator={operatorSelected} />
 
       {/* ---- Real group-level financials, or honest empty state ---- */}
       <div className="financial-card">

@@ -8,6 +8,8 @@ import GenericFormModal from './GenericFormModal';
 import ProductEditModal from './ProductEditModal';
 import PlanEditModal from './PlanEditModal';
 import FinancialAnalysisModal from './FinancialAnalysisModal';
+import CollapsibleList from './CollapsibleList';
+import DashboardHeader from './DashboardHeader';
 import FIN from '../data/operator_financials.json';
 
 const CLUSTER_COLORS = {
@@ -677,142 +679,20 @@ export default function DynamicCenterDashboard({
 
   return (
     <div className={`dynamic-center-panel ${isScrolled ? 'is-scrolled' : ''}`}>
-      {/* Dynamic Sticky Header & Auto-Collapsing Header Container */}
+      {/* Dynamic Sticky Header Container using shared DashboardHeader */}
       <div className={`dynamic-header-wrapper ${isScrolled ? 'is-scrolled' : ''}`}>
-        {/* Centered Panel Header */}
-        <div id="panel-header" style={{ padding: isScrolled ? '2px 0 4px 0' : '0 0 8px 0', borderBottom: isScrolled ? 'none' : '1px solid var(--border)', background: 'transparent', flexShrink: 0, transition: 'all 0.2s ease' }}>
-          {/* Breadcrumb / Back Navigation */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: isScrolled ? '2px' : '8px' }}>
-            {selectedCountry ? (
-              <button
-                onClick={() => {
-                  if (selectedOperator) {
-                    if (setSelectedOperator) setSelectedOperator(null);
-                  } else {
-                    if (setSelectedCountry) setSelectedCountry(null);
-                  }
-                }}
-                style={{
-                  background: 'var(--bg-card2)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '6px',
-                  padding: isScrolled ? '3px 8px' : '5px 10px',
-                  fontSize: '10px',
-                  fontWeight: '600',
-                  color: 'var(--text-primary)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseOver={(e) => { e.currentTarget.style.background = 'var(--bg-card3)'; e.currentTarget.style.borderColor = 'var(--blue)'; }}
-                onMouseOut={(e) => { e.currentTarget.style.background = 'var(--bg-card2)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
-              >
-                {selectedOperator ? `← Back to ${selectedCountry}` : '← Back to Global Map'}
-              </button>
-            ) : (
-              <button
-                onClick={() => {
-                  if (onCloseOverview) onCloseOverview();
-                }}
-                style={{
-                  background: 'var(--bg-card2)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '6px',
-                  padding: isScrolled ? '3px 8px' : '5px 10px',
-                  fontSize: '10px',
-                  fontWeight: '600',
-                  color: 'var(--text-primary)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.color = 'var(--red)'; e.currentTarget.style.borderColor = 'var(--red)'; }}
-                onMouseOut={(e) => { e.currentTarget.style.background = 'var(--bg-card2)'; e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
-              >
-                ✖ Close Overview
-              </button>
-            )}
-
-            {selectedCountry && (
-              <>
-                <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>/</span>
-                {selectedOperator ? (
-                  <span
-                    onClick={() => {
-                      if (setSelectedOperator) setSelectedOperator(null);
-                    }}
-                    style={{
-                      fontSize: '10px',
-                      fontWeight: '600',
-                      color: 'var(--blue)',
-                      cursor: 'pointer',
-                      textDecoration: 'underline'
-                    }}
-                    title={`Back to ${selectedCountry} details`}
-                  >
-                    {selectedCountry}
-                  </span>
-                ) : (
-                  <span style={{ fontSize: '10px', fontWeight: '600', color: 'var(--text-primary)' }}>{selectedCountry}</span>
-                )}
-              </>
-            )}
-            {selectedOperator && (
-              <>
-                <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>/</span>
-                <span style={{ fontSize: '10px', fontWeight: '600', color: 'var(--text-primary)' }}>{selectedOperator}</span>
-              </>
-            )}
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
-            <div>
-              <div id="panel-title" className="panel-title-text" style={{ fontSize: isScrolled ? '15px' : '20px', fontWeight: '800', marginTop: isScrolled ? '0' : '2px', transition: 'all 0.2s ease' }}>
-                {selectedCountry
-                  ? <>{getFlagEmoji(countryData.iso)} {selectedCountry} Operator Details</>
-                  : <>🌍 {activeRegion === 'all' ? 'Global Overview' : `${activeRegion} Regional Overview`}</>
-                }
-              </div>
-              {!isScrolled && (
-                <div id="panel-subtitle" className="panel-subtitle-text" style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  {selectedCountry
-                    ? 'Active intelligence, operator benchmarks, support service levels, and competitor analytics.'
-                    : 'Aggregated regional telecom statistics, operator distributions, and market benchmarks.'
-                  }
-                </div>
-              )}
-            </div>
-            {onExportReport && selectedCountry && (
-              <button
-                onClick={onExportReport}
-                style={{
-                  background: 'var(--blue)',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '6px',
-                  padding: isScrolled ? '4px 10px' : '6px 12px',
-                  fontSize: '10px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  boxShadow: '0 2px 8px rgba(37,99,235,0.2)',
-                  whiteSpace: 'nowrap',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
-                onMouseOut={(e) => e.currentTarget.style.transform = 'none'}
-              >
-                ↓ Export Report
-              </button>
-            )}
-          </div>
-        </div>
+        <DashboardHeader
+          selectedCountry={selectedCountry}
+          selectedOperator={selectedOperator}
+          countryData={countryData}
+          activeRegion={activeRegion}
+          isScrolled={isScrolled}
+          getFlagEmoji={getFlagEmoji}
+          setSelectedCountry={setSelectedCountry}
+          setSelectedOperator={setSelectedOperator}
+          onExportReport={onExportReport}
+          onCloseOverview={onCloseOverview}
+        />
       </div>
 
       {/* Scrollable Container for Tab Contents */}
@@ -1111,11 +991,15 @@ export default function DynamicCenterDashboard({
               </div>
             </div>
 
-            {/* Individual profiles displayed at the bottom */}
+            {/* Individual profiles displayed at the bottom (Task #8: Collapsible Top 4 + More pattern) */}
             <div className="section" style={{ marginTop: '20px' }}>
               <div className="section-title">Individual Operator Profiles (Click card for details)</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '15px' }}>
-                {(countryData.operators || []).map((op, idx) => {
+              <CollapsibleList
+                items={countryData.operators || []}
+                initialCount={4}
+                moreLabel="More operator profiles"
+                listStyle={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '15px' }}
+                renderItem={(op, idx) => {
                   const capexText = op.capex_investment !== 'nan' ? op.capex_investment : '—';
                   const isSelected = selectedOperator === op.operator;
                   return (
@@ -1168,8 +1052,8 @@ export default function DynamicCenterDashboard({
                       </div>
                     </div>
                   );
-                })}
-              </div>
+                }}
+              />
             </div>
           </div>
         )}
@@ -1179,46 +1063,6 @@ export default function DynamicCenterDashboard({
           <div className="tab-content active" style={{ padding: '0', display: 'block' }}>
             {accountData ? (
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-
-                {selectedOperator && (
-                  <div style={{
-                    background: 'rgba(37, 99, 235, 0.08)',
-                    border: '1px solid var(--blue)',
-                    borderRadius: '10px',
-                    padding: '12px 16px',
-                    margin: '0 20px 10px 20px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    animation: 'fadeIn 0.25s ease-out'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <div>
-                        <div style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-primary)' }}>
-                          Operator Specific View: <span style={{ color: 'var(--blue)' }}>{selectedOperator}</span>
-                        </div>
-                        <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                          Showing custom financial performance, renewals, and product fits for this operator.
-                        </div>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setSelectedOperator(null)}
-                      style={{
-                        background: 'var(--bg-card)',
-                        border: '1px solid var(--border)',
-                        borderRadius: '6px',
-                        color: 'var(--text-secondary)',
-                        cursor: 'pointer',
-                        padding: '4px 10px',
-                        fontSize: '11px',
-                        fontWeight: '600'
-                      }}
-                    >
-                      Clear Filter
-                    </button>
-                  </div>
-                )}
 
                 {/* Nested Sub-navigation Bar */}
                 <div id="sub-panel-tabs" style={{
@@ -2753,6 +2597,8 @@ export default function DynamicCenterDashboard({
           type={financialModalType}
           accountData={accountData}
           countryName={selectedCountry}
+          selectedOperator={selectedOperator}
+          operators={countryData?.operators}
           onNavigateToPlan={() => {
             setActiveTab('account');
             setActiveSubTab('plan2026');

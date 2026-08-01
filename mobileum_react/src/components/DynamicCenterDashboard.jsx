@@ -10,6 +10,7 @@ import PlanEditModal from './PlanEditModal';
 import FinancialAnalysisModal from './FinancialAnalysisModal';
 import CollapsibleList from './CollapsibleList';
 import DashboardHeader from './DashboardHeader';
+import CustomerContactsSection from './CustomerContactsSection';
 import FIN from '../data/operator_financials.json';
 
 const CLUSTER_COLORS = {
@@ -1119,6 +1120,7 @@ export default function DynamicCenterDashboard({
                           { id: 'product-section', label: 'Product Section' },
                           { id: 'financial-section', label: 'Financial Section' },
                           { id: 'renewal-section', label: 'Renewal Section' },
+                          { id: 'customer-contacts-section', label: 'Customer Contacts' },
                           { id: 'health-section', label: 'Health of Solution' }
                         ].map(sec => (
                           <button
@@ -1707,6 +1709,13 @@ export default function DynamicCenterDashboard({
                         </div>
                       </div>
                     </div>
+
+                    {/* Customer Contacts Section */}
+                    <CustomerContactsSection
+                      selectedOperator={selectedOperator}
+                      selectedCountry={selectedCountry}
+                      accountData={accountData}
+                    />
 
                     {/* Health of Solution Section */}
                     <div id="health-section" className="section" style={{ scrollMarginTop: '90px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px 16px', margin: '0 0 10px 0', boxShadow: '0 2px 4px rgba(0,0,0,0.03)' }}>

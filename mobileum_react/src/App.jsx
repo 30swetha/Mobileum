@@ -4,6 +4,8 @@ import StaticCountrySidebar from './components/StaticCountrySidebar';
 import DynamicCenterDashboard from './components/DynamicCenterDashboard';
 import ComparisonModal from './components/ComparisonModal';
 import { exportReport, getFlagEmoji } from './utils/exportReport';
+import { exportPPT } from './utils/exportPPT';
+import CountryFlag from './components/CountryFlag';
 import TELECOM_DATA from './data/master_telecom.json';
 
 // =====================================================================
@@ -1049,7 +1051,10 @@ export default function App() {
                   className="search-item"
                   onClick={() => handleSelectSearchItem(c)}
                 >
-                  {getFlagEmoji(countries[c].iso)} {c}{' '}
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    <CountryFlag iso={countries[c]?.iso} country={c} size="small" />
+                    <span>{c}</span>
+                  </span>{' '}
                   <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>
                     {countries[c].region}
                   </span>
@@ -1169,7 +1174,13 @@ export default function App() {
                   activeRegion={activeRegion}
                   setActiveRegion={setActiveRegion}
                   onCloseOverview={() => { }}
-                  onExportReport={() => exportReport(selectedCountry, countries[selectedCountry], metadata)}
+                  onExportReport={() => exportReport(selectedCountry, countries[selectedCountry], metadata, selectedOperator)}
+                  onExportPPT={() => exportPPT(selectedCountry, countries[selectedCountry], metadata, selectedOperator, {
+                    accountInsights: MOCK_ACCOUNT_INSIGHTS,
+                    amcData: MOCK_AMC[selectedCountry] || [],
+                    ticketData: MOCK_TICKETS[selectedCountry],
+                    competitors: MOCK_COMPETITORS
+                  })}
                 />
               </div>
             </>
@@ -1228,8 +1239,9 @@ export default function App() {
                                 }}
                               >
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                  <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)' }}>
-                                    {getFlagEmoji(c.iso)} {name}
+                                  <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                    <CountryFlag iso={c.iso} country={name} size="small" />
+                                    <span>{name}</span>
                                   </span>
                                   <span style={{
                                     fontSize: '9px',
@@ -1390,8 +1402,9 @@ export default function App() {
           </span>
           <div id="compare-pills" style={{ display: 'flex', gap: '8px' }}>
             {compareList.map(c => (
-              <div className="compare-pill" key={c}>
-                {getFlagEmoji(countries[c]?.iso)} {c}{' '}
+              <div className="compare-pill" key={c} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <CountryFlag iso={countries[c]?.iso} country={c} size="small" />
+                <span>{c}</span>
                 <span className="compare-remove" onClick={() => removeCompare(c)}>✕</span>
               </div>
             ))}

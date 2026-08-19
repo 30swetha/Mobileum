@@ -1,4 +1,5 @@
 import React from 'react';
+import CountryFlag from './CountryFlag';
 
 /**
  * DashboardHeader - Shared reusable header component for Country & Operator views.
@@ -18,10 +19,9 @@ export default function DashboardHeader({
   setSelectedCountry,
   setSelectedOperator,
   onExportReport,
+  onExportPPT,
   onCloseOverview
 }) {
-  const flag = getFlagEmoji ? getFlagEmoji(countryData?.iso) : '🌐';
-
   return (
     <div id="panel-header-container" style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
       
@@ -139,14 +139,17 @@ export default function DashboardHeader({
             textAlign: 'left',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
+            gap: '10px',
             transition: 'all 0.2s ease'
           }}
         >
+          {selectedCountry && countryData?.iso && (
+            <CountryFlag iso={countryData.iso} country={selectedCountry} size={isScrolled ? 'medium' : 'large'} />
+          )}
           {selectedOperator ? (
-            <>{flag} {selectedOperator} Operator Details</>
+            <>{selectedOperator} Operator Details</>
           ) : selectedCountry ? (
-            <>{flag} {selectedCountry} Market Intelligence</>
+            <>{selectedCountry} Market Intelligence</>
           ) : (
             <>🌍 {activeRegion === 'all' ? 'Global Overview' : `${activeRegion} Regional Overview`}</>
           )}
@@ -173,7 +176,7 @@ export default function DashboardHeader({
           </div>
         )}
 
-        {/* Top-Right Action Controls (Clear Filter & Export Report) */}
+        {/* Top-Right Action Controls (Clear Filter & Export Report / Export PPT) */}
         <div style={{ position: 'absolute', right: 0, top: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
           {selectedOperator && (
             <button
@@ -207,31 +210,60 @@ export default function DashboardHeader({
               <span style={{ fontWeight: 'bold' }}>✕</span>
             </button>
           )}
-          {onExportReport && selectedCountry && (
-            <button
-              onClick={onExportReport}
-              style={{
-                background: 'var(--blue)',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '6px',
-                padding: isScrolled ? '4px 10px' : '6px 12px',
-                fontSize: '10px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                boxShadow: '0 2px 8px rgba(37,99,235,0.2)',
-                whiteSpace: 'nowrap',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
-              onMouseOut={(e) => e.currentTarget.style.transform = 'none'}
-            >
-              ↓ Export Report
-            </button>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {onExportReport && selectedCountry && (
+              <button
+                onClick={onExportReport}
+                style={{
+                  background: 'var(--blue)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: isScrolled ? '4px 10px' : '6px 12px',
+                  fontSize: '10px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  boxShadow: '0 2px 8px rgba(37,99,235,0.2)',
+                  whiteSpace: 'nowrap',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
+                onMouseOut={(e) => e.currentTarget.style.transform = 'none'}
+                title="Export Report as PDF"
+              >
+                ↓ Export Report
+              </button>
+            )}
+            {onExportPPT && selectedCountry && (
+              <button
+                onClick={onExportPPT}
+                style={{
+                  background: 'var(--blue)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: isScrolled ? '4px 10px' : '6px 12px',
+                  fontSize: '10px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  boxShadow: '0 2px 8px rgba(37,99,235,0.2)',
+                  whiteSpace: 'nowrap',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
+                onMouseOut={(e) => e.currentTarget.style.transform = 'none'}
+                title="Export Report as PowerPoint Presentation (.pptx)"
+              >
+                ↓ Export as PPT
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

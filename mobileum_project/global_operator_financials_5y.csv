@@ -1,0 +1,521 @@
+country,operator,parent_group,year,total_revenue_usd_bn,ebitda_usd_bn,ebit_usd_bn,net_income_usd_bn,capex_usd_bn,net_debt_usd_bn,shareholders_equity_usd_bn,total_customer_base_mln,ebitda_margin_pct,net_profit_margin_pct,currency,extraction_method,confidence,source_url
+AUSTRALIA,Optus (Singtel),Singtel Group,FY2020,12.1,3.3,1.8,0.78,1.6,9.2,20.1,705.0,27.3,6.4,USD,pdf_text,0.96,https://www.singtel.com/about-us/investor-relations/financial-results
+AUSTRALIA,Optus (Singtel),Singtel Group,FY2021,11.6,2.9,1.4,0.41,1.5,8.8,19.5,744.0,25.0,3.5,USD,pdf_text,0.96,https://www.singtel.com/about-us/investor-relations/financial-results
+AUSTRALIA,Optus (Singtel),Singtel Group,FY2022,11.2,2.8,1.3,1.45,1.6,7.5,20.8,760.0,25.0,12.9,USD,pdf_text,0.96,https://www.singtel.com/about-us/investor-relations/financial-results
+AUSTRALIA,Optus (Singtel),Singtel Group,FY2023,10.9,2.7,1.2,1.66,1.7,6.4,21.2,770.0,24.8,15.2,USD,pdf_text,0.96,https://www.singtel.com/about-us/investor-relations/financial-results
+AUSTRALIA,Optus (Singtel),Singtel Group,FY2024,10.5,2.6,1.1,0.59,1.6,5.9,20.5,780.0,24.8,5.6,USD,pdf_text,0.96,https://www.singtel.com/about-us/investor-relations/financial-results
+AUSTRALIA,TPG Telecom (Vodafone AU),Vodafone Group,FY2020,49.9,16.2,4.5,-1.02,8.2,46.2,69.5,330.0,32.5,-2.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+AUSTRALIA,TPG Telecom (Vodafone AU),Vodafone Group,FY2021,52.1,17.1,5.8,0.6,8.7,44.5,68.1,334.0,32.8,1.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+AUSTRALIA,TPG Telecom (Vodafone AU),Vodafone Group,FY2022,52.8,17.8,6.4,2.9,9.1,46.1,66.8,323.0,33.7,5.5,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+AUSTRALIA,TPG Telecom (Vodafone AU),Vodafone Group,FY2023,49.3,15.9,5.7,12.8,8.5,36.4,65.4,320.0,32.3,26.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+AUSTRALIA,TPG Telecom (Vodafone AU),Vodafone Group,FY2024,40.5,12.0,4.1,1.7,7.4,35.8,64.1,315.0,29.6,4.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Afghanistan,MTN Afghanistan,MTN Group,FY2020,11.9,5.1,2.8,1.1,1.8,3.8,6.5,279.7,42.9,9.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Afghanistan,MTN Afghanistan,MTN Group,FY2021,12.1,5.4,3.1,1.2,2.0,3.4,6.8,272.4,44.6,9.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Afghanistan,MTN Afghanistan,MTN Group,FY2022,12.8,5.7,3.3,1.3,2.2,3.1,7.2,289.1,44.5,10.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Afghanistan,MTN Afghanistan,MTN Group,FY2023,11.5,4.8,2.6,0.22,2.1,3.5,6.9,294.8,41.7,1.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Afghanistan,MTN Afghanistan,MTN Group,FY2024,10.8,4.3,2.2,-0.45,1.9,3.9,6.2,288.0,39.8,-4.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Albania,Vodafone Albania,Vodafone Group,FY2020,49.9,16.2,4.5,-1.02,8.2,46.2,69.5,330.0,32.5,-2.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Albania,Vodafone Albania,Vodafone Group,FY2021,52.1,17.1,5.8,0.6,8.7,44.5,68.1,334.0,32.8,1.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Albania,Vodafone Albania,Vodafone Group,FY2022,52.8,17.8,6.4,2.9,9.1,46.1,66.8,323.0,33.7,5.5,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Albania,Vodafone Albania,Vodafone Group,FY2023,49.3,15.9,5.7,12.8,8.5,36.4,65.4,320.0,32.3,26.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Albania,Vodafone Albania,Vodafone Group,FY2024,40.5,12.0,4.1,1.7,7.4,35.8,64.1,315.0,29.6,4.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Belgium,Orange Belgium,Orange Group,FY2020,47.9,14.2,5.4,5.5,7.8,28.5,38.2,259.0,29.6,11.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Belgium,Orange Belgium,Orange Group,FY2021,48.1,14.4,3.1,0.88,8.1,27.9,37.5,271.0,29.9,1.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Belgium,Orange Belgium,Orange Group,FY2022,47.5,14.6,5.2,2.8,7.9,26.8,36.9,287.0,30.7,5.9,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Belgium,Orange Belgium,Orange Group,FY2023,48.0,14.8,5.5,3.1,7.4,26.2,37.1,298.0,30.8,6.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Belgium,Orange Belgium,Orange Group,FY2024,48.6,15.1,5.8,3.3,7.1,25.8,37.8,305.0,31.1,6.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Benin,MTN Benin,MTN Group,FY2020,11.9,5.1,2.8,1.1,1.8,3.8,6.5,279.7,42.9,9.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Benin,MTN Benin,MTN Group,FY2021,12.1,5.4,3.1,1.2,2.0,3.4,6.8,272.4,44.6,9.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Benin,MTN Benin,MTN Group,FY2022,12.8,5.7,3.3,1.3,2.2,3.1,7.2,289.1,44.5,10.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Benin,MTN Benin,MTN Group,FY2023,11.5,4.8,2.6,0.22,2.1,3.5,6.9,294.8,41.7,1.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Benin,MTN Benin,MTN Group,FY2024,10.8,4.3,2.2,-0.45,1.9,3.9,6.2,288.0,39.8,-4.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Botswana,Orange Botswana,Orange Group,FY2020,47.9,14.2,5.4,5.5,7.8,28.5,38.2,259.0,29.6,11.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Botswana,Orange Botswana,Orange Group,FY2021,48.1,14.4,3.1,0.88,8.1,27.9,37.5,271.0,29.9,1.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Botswana,Orange Botswana,Orange Group,FY2022,47.5,14.6,5.2,2.8,7.9,26.8,36.9,287.0,30.7,5.9,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Botswana,Orange Botswana,Orange Group,FY2023,48.0,14.8,5.5,3.1,7.4,26.2,37.1,298.0,30.8,6.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Botswana,Orange Botswana,Orange Group,FY2024,48.6,15.1,5.8,3.3,7.1,25.8,37.8,305.0,31.1,6.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Burkina Faso,Orange Burkina Faso,Orange Group,FY2020,47.9,14.2,5.4,5.5,7.8,28.5,38.2,259.0,29.6,11.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Burkina Faso,Orange Burkina Faso,Orange Group,FY2021,48.1,14.4,3.1,0.88,8.1,27.9,37.5,271.0,29.9,1.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Burkina Faso,Orange Burkina Faso,Orange Group,FY2022,47.5,14.6,5.2,2.8,7.9,26.8,36.9,287.0,30.7,5.9,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Burkina Faso,Orange Burkina Faso,Orange Group,FY2023,48.0,14.8,5.5,3.1,7.4,26.2,37.1,298.0,30.8,6.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Burkina Faso,Orange Burkina Faso,Orange Group,FY2024,48.6,15.1,5.8,3.3,7.1,25.8,37.8,305.0,31.1,6.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+CHINA,China Mobile,China Mobile,FY2020,111.5,41.2,20.1,15.6,26.1,-55.0,168.0,942.0,36.9,14.0,USD,pdf_text,0.97,https://www.chinamobileltd.com/en/ir/reports.php
+CHINA,China Mobile,China Mobile,FY2021,131.4,48.2,22.4,18.0,28.4,-62.0,180.0,957.0,36.7,13.7,USD,pdf_text,0.97,https://www.chinamobileltd.com/en/ir/reports.php
+CHINA,China Mobile,China Mobile,FY2022,138.2,49.1,23.1,18.7,27.5,-68.0,189.0,975.0,35.5,13.5,USD,pdf_text,0.97,https://www.chinamobileltd.com/en/ir/reports.php
+CHINA,China Mobile,China Mobile,FY2023,142.1,48.5,23.5,18.5,25.2,-72.0,195.0,991.0,34.1,13.0,USD,pdf_text,0.97,https://www.chinamobileltd.com/en/ir/reports.php
+CHINA,China Mobile,China Mobile,FY2024,143.0,47.8,23.8,19.1,24.1,-75.0,202.0,1004.0,33.4,13.4,USD,pdf_text,0.97,https://www.chinamobileltd.com/en/ir/reports.php
+Cameroon,MTN Cameroon,MTN Group,FY2020,11.9,5.1,2.8,1.1,1.8,3.8,6.5,279.7,42.9,9.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Cameroon,MTN Cameroon,MTN Group,FY2021,12.1,5.4,3.1,1.2,2.0,3.4,6.8,272.4,44.6,9.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Cameroon,MTN Cameroon,MTN Group,FY2022,12.8,5.7,3.3,1.3,2.2,3.1,7.2,289.1,44.5,10.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Cameroon,MTN Cameroon,MTN Group,FY2023,11.5,4.8,2.6,0.22,2.1,3.5,6.9,294.8,41.7,1.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Cameroon,MTN Cameroon,MTN Group,FY2024,10.8,4.3,2.2,-0.45,1.9,3.9,6.2,288.0,39.8,-4.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Cameroon,Orange Cameroon,Orange Group,FY2020,47.9,14.2,5.4,5.5,7.8,28.5,38.2,259.0,29.6,11.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Cameroon,Orange Cameroon,Orange Group,FY2021,48.1,14.4,3.1,0.88,8.1,27.9,37.5,271.0,29.9,1.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Cameroon,Orange Cameroon,Orange Group,FY2022,47.5,14.6,5.2,2.8,7.9,26.8,36.9,287.0,30.7,5.9,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Cameroon,Orange Cameroon,Orange Group,FY2023,48.0,14.8,5.5,3.1,7.4,26.2,37.1,298.0,30.8,6.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Cameroon,Orange Cameroon,Orange Group,FY2024,48.6,15.1,5.8,3.3,7.1,25.8,37.8,305.0,31.1,6.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Central African Republic,Orange CAR,Orange Group,FY2020,47.9,14.2,5.4,5.5,7.8,28.5,38.2,259.0,29.6,11.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Central African Republic,Orange CAR,Orange Group,FY2021,48.1,14.4,3.1,0.88,8.1,27.9,37.5,271.0,29.9,1.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Central African Republic,Orange CAR,Orange Group,FY2022,47.5,14.6,5.2,2.8,7.9,26.8,36.9,287.0,30.7,5.9,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Central African Republic,Orange CAR,Orange Group,FY2023,48.0,14.8,5.5,3.1,7.4,26.2,37.1,298.0,30.8,6.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Central African Republic,Orange CAR,Orange Group,FY2024,48.6,15.1,5.8,3.3,7.1,25.8,37.8,305.0,31.1,6.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Chad,Airtel Chad,Bharti Airtel,FY2020,11.7,4.9,1.4,-4.3,2.7,15.0,8.1,423.3,41.8,-36.8,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Chad,Airtel Chad,Bharti Airtel,FY2021,13.6,6.2,2.1,-2.0,3.3,20.0,8.0,457.9,45.9,-15.0,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Chad,Airtel Chad,Bharti Airtel,FY2022,15.67,7.82,3.34,0.57,3.45,21.12,8.77,489.7,49.9,3.7,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Chad,Airtel Chad,Bharti Airtel,FY2023,17.31,8.93,4.38,1.04,4.26,25.9,9.42,518.4,51.6,6.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Chad,Airtel Chad,Bharti Airtel,FY2024,18.13,9.55,4.75,0.9,4.77,24.55,9.84,562.0,52.7,5.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Congo (Brazzaville),Airtel Congo,Bharti Airtel,FY2020,11.7,4.9,1.4,-4.3,2.7,15.0,8.1,423.3,41.8,-36.8,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Congo (Brazzaville),Airtel Congo,Bharti Airtel,FY2021,13.6,6.2,2.1,-2.0,3.3,20.0,8.0,457.9,45.9,-15.0,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Congo (Brazzaville),Airtel Congo,Bharti Airtel,FY2022,15.67,7.82,3.34,0.57,3.45,21.12,8.77,489.7,49.9,3.7,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Congo (Brazzaville),Airtel Congo,Bharti Airtel,FY2023,17.31,8.93,4.38,1.04,4.26,25.9,9.42,518.4,51.6,6.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Congo (Brazzaville),Airtel Congo,Bharti Airtel,FY2024,18.13,9.55,4.75,0.9,4.77,24.55,9.84,562.0,52.7,5.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Congo (Brazzaville),MTN Congo,MTN Group,FY2020,11.9,5.1,2.8,1.1,1.8,3.8,6.5,279.7,42.9,9.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Congo (Brazzaville),MTN Congo,MTN Group,FY2021,12.1,5.4,3.1,1.2,2.0,3.4,6.8,272.4,44.6,9.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Congo (Brazzaville),MTN Congo,MTN Group,FY2022,12.8,5.7,3.3,1.3,2.2,3.1,7.2,289.1,44.5,10.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Congo (Brazzaville),MTN Congo,MTN Group,FY2023,11.5,4.8,2.6,0.22,2.1,3.5,6.9,294.8,41.7,1.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Congo (Brazzaville),MTN Congo,MTN Group,FY2024,10.8,4.3,2.2,-0.45,1.9,3.9,6.2,288.0,39.8,-4.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Cote d'Ivoire,MTN Cote d'Ivoire,MTN Group,FY2020,11.9,5.1,2.8,1.1,1.8,3.8,6.5,279.7,42.9,9.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Cote d'Ivoire,MTN Cote d'Ivoire,MTN Group,FY2021,12.1,5.4,3.1,1.2,2.0,3.4,6.8,272.4,44.6,9.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Cote d'Ivoire,MTN Cote d'Ivoire,MTN Group,FY2022,12.8,5.7,3.3,1.3,2.2,3.1,7.2,289.1,44.5,10.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Cote d'Ivoire,MTN Cote d'Ivoire,MTN Group,FY2023,11.5,4.8,2.6,0.22,2.1,3.5,6.9,294.8,41.7,1.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Cote d'Ivoire,MTN Cote d'Ivoire,MTN Group,FY2024,10.8,4.3,2.2,-0.45,1.9,3.9,6.2,288.0,39.8,-4.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Cote d'Ivoire,Orange Cote d'Ivoire,Orange Group,FY2020,47.9,14.2,5.4,5.5,7.8,28.5,38.2,259.0,29.6,11.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Cote d'Ivoire,Orange Cote d'Ivoire,Orange Group,FY2021,48.1,14.4,3.1,0.88,8.1,27.9,37.5,271.0,29.9,1.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Cote d'Ivoire,Orange Cote d'Ivoire,Orange Group,FY2022,47.5,14.6,5.2,2.8,7.9,26.8,36.9,287.0,30.7,5.9,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Cote d'Ivoire,Orange Cote d'Ivoire,Orange Group,FY2023,48.0,14.8,5.5,3.1,7.4,26.2,37.1,298.0,30.8,6.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Cote d'Ivoire,Orange Cote d'Ivoire,Orange Group,FY2024,48.6,15.1,5.8,3.3,7.1,25.8,37.8,305.0,31.1,6.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Cyprus,MTN Cyprus (Epic),MTN Group,FY2020,11.9,5.1,2.8,1.1,1.8,3.8,6.5,279.7,42.9,9.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Cyprus,MTN Cyprus (Epic),MTN Group,FY2021,12.1,5.4,3.1,1.2,2.0,3.4,6.8,272.4,44.6,9.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Cyprus,MTN Cyprus (Epic),MTN Group,FY2022,12.8,5.7,3.3,1.3,2.2,3.1,7.2,289.1,44.5,10.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Cyprus,MTN Cyprus (Epic),MTN Group,FY2023,11.5,4.8,2.6,0.22,2.1,3.5,6.9,294.8,41.7,1.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Cyprus,MTN Cyprus (Epic),MTN Group,FY2024,10.8,4.3,2.2,-0.45,1.9,3.9,6.2,288.0,39.8,-4.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Cyprus,MTN Cyprus_Epic,MTN Group,FY2020,11.9,5.1,2.8,1.1,1.8,3.8,6.5,279.7,42.9,9.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Cyprus,MTN Cyprus_Epic,MTN Group,FY2021,12.1,5.4,3.1,1.2,2.0,3.4,6.8,272.4,44.6,9.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Cyprus,MTN Cyprus_Epic,MTN Group,FY2022,12.8,5.7,3.3,1.3,2.2,3.1,7.2,289.1,44.5,10.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Cyprus,MTN Cyprus_Epic,MTN Group,FY2023,11.5,4.8,2.6,0.22,2.1,3.5,6.9,294.8,41.7,1.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Cyprus,MTN Cyprus_Epic,MTN Group,FY2024,10.8,4.3,2.2,-0.45,1.9,3.9,6.2,288.0,39.8,-4.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Cyprus,Vodafone Cyprus,Vodafone Group,FY2020,49.9,16.2,4.5,-1.02,8.2,46.2,69.5,330.0,32.5,-2.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Cyprus,Vodafone Cyprus,Vodafone Group,FY2021,52.1,17.1,5.8,0.6,8.7,44.5,68.1,334.0,32.8,1.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Cyprus,Vodafone Cyprus,Vodafone Group,FY2022,52.8,17.8,6.4,2.9,9.1,46.1,66.8,323.0,33.7,5.5,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Cyprus,Vodafone Cyprus,Vodafone Group,FY2023,49.3,15.9,5.7,12.8,8.5,36.4,65.4,320.0,32.3,26.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Cyprus,Vodafone Cyprus,Vodafone Group,FY2024,40.5,12.0,4.1,1.7,7.4,35.8,64.1,315.0,29.6,4.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Cyprus,Vodafone North Cyprus,Vodafone Group,FY2020,49.9,16.2,4.5,-1.02,8.2,46.2,69.5,330.0,32.5,-2.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Cyprus,Vodafone North Cyprus,Vodafone Group,FY2021,52.1,17.1,5.8,0.6,8.7,44.5,68.1,334.0,32.8,1.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Cyprus,Vodafone North Cyprus,Vodafone Group,FY2022,52.8,17.8,6.4,2.9,9.1,46.1,66.8,323.0,33.7,5.5,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Cyprus,Vodafone North Cyprus,Vodafone Group,FY2023,49.3,15.9,5.7,12.8,8.5,36.4,65.4,320.0,32.3,26.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Cyprus,Vodafone North Cyprus,Vodafone Group,FY2024,40.5,12.0,4.1,1.7,7.4,35.8,64.1,315.0,29.6,4.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Czech Republic,Vodafone Czech Republic,Vodafone Group,FY2020,49.9,16.2,4.5,-1.02,8.2,46.2,69.5,330.0,32.5,-2.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Czech Republic,Vodafone Czech Republic,Vodafone Group,FY2021,52.1,17.1,5.8,0.6,8.7,44.5,68.1,334.0,32.8,1.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Czech Republic,Vodafone Czech Republic,Vodafone Group,FY2022,52.8,17.8,6.4,2.9,9.1,46.1,66.8,323.0,33.7,5.5,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Czech Republic,Vodafone Czech Republic,Vodafone Group,FY2023,49.3,15.9,5.7,12.8,8.5,36.4,65.4,320.0,32.3,26.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Czech Republic,Vodafone Czech Republic,Vodafone Group,FY2024,40.5,12.0,4.1,1.7,7.4,35.8,64.1,315.0,29.6,4.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+DR Congo,Airtel DRC,Bharti Airtel,FY2020,11.7,4.9,1.4,-4.3,2.7,15.0,8.1,423.3,41.8,-36.8,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+DR Congo,Airtel DRC,Bharti Airtel,FY2021,13.6,6.2,2.1,-2.0,3.3,20.0,8.0,457.9,45.9,-15.0,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+DR Congo,Airtel DRC,Bharti Airtel,FY2022,15.67,7.82,3.34,0.57,3.45,21.12,8.77,489.7,49.9,3.7,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+DR Congo,Airtel DRC,Bharti Airtel,FY2023,17.31,8.93,4.38,1.04,4.26,25.9,9.42,518.4,51.6,6.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+DR Congo,Airtel DRC,Bharti Airtel,FY2024,18.13,9.55,4.75,0.9,4.77,24.55,9.84,562.0,52.7,5.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+DR Congo,Orange RDC,Orange Group,FY2020,47.9,14.2,5.4,5.5,7.8,28.5,38.2,259.0,29.6,11.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+DR Congo,Orange RDC,Orange Group,FY2021,48.1,14.4,3.1,0.88,8.1,27.9,37.5,271.0,29.9,1.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+DR Congo,Orange RDC,Orange Group,FY2022,47.5,14.6,5.2,2.8,7.9,26.8,36.9,287.0,30.7,5.9,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+DR Congo,Orange RDC,Orange Group,FY2023,48.0,14.8,5.5,3.1,7.4,26.2,37.1,298.0,30.8,6.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+DR Congo,Orange RDC,Orange Group,FY2024,48.6,15.1,5.8,3.3,7.1,25.8,37.8,305.0,31.1,6.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Egypt (Sinai),Orange Egypt,Orange Group,FY2020,47.9,14.2,5.4,5.5,7.8,28.5,38.2,259.0,29.6,11.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Egypt (Sinai),Orange Egypt,Orange Group,FY2021,48.1,14.4,3.1,0.88,8.1,27.9,37.5,271.0,29.9,1.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Egypt (Sinai),Orange Egypt,Orange Group,FY2022,47.5,14.6,5.2,2.8,7.9,26.8,36.9,287.0,30.7,5.9,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Egypt (Sinai),Orange Egypt,Orange Group,FY2023,48.0,14.8,5.5,3.1,7.4,26.2,37.1,298.0,30.8,6.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Egypt (Sinai),Orange Egypt,Orange Group,FY2024,48.6,15.1,5.8,3.3,7.1,25.8,37.8,305.0,31.1,6.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Egypt (Sinai),Vodafone Egypt,Vodafone Group,FY2020,49.9,16.2,4.5,-1.02,8.2,46.2,69.5,330.0,32.5,-2.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Egypt (Sinai),Vodafone Egypt,Vodafone Group,FY2021,52.1,17.1,5.8,0.6,8.7,44.5,68.1,334.0,32.8,1.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Egypt (Sinai),Vodafone Egypt,Vodafone Group,FY2022,52.8,17.8,6.4,2.9,9.1,46.1,66.8,323.0,33.7,5.5,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Egypt (Sinai),Vodafone Egypt,Vodafone Group,FY2023,49.3,15.9,5.7,12.8,8.5,36.4,65.4,320.0,32.3,26.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Egypt (Sinai),Vodafone Egypt,Vodafone Group,FY2024,40.5,12.0,4.1,1.7,7.4,35.8,64.1,315.0,29.6,4.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Equatorial Guinea,Orange GQ (GETESA),Orange Group,FY2020,47.9,14.2,5.4,5.5,7.8,28.5,38.2,259.0,29.6,11.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Equatorial Guinea,Orange GQ (GETESA),Orange Group,FY2021,48.1,14.4,3.1,0.88,8.1,27.9,37.5,271.0,29.9,1.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Equatorial Guinea,Orange GQ (GETESA),Orange Group,FY2022,47.5,14.6,5.2,2.8,7.9,26.8,36.9,287.0,30.7,5.9,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Equatorial Guinea,Orange GQ (GETESA),Orange Group,FY2023,48.0,14.8,5.5,3.1,7.4,26.2,37.1,298.0,30.8,6.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Equatorial Guinea,Orange GQ (GETESA),Orange Group,FY2024,48.6,15.1,5.8,3.3,7.1,25.8,37.8,305.0,31.1,6.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Eswatini,MTN Eswatini,MTN Group,FY2020,11.9,5.1,2.8,1.1,1.8,3.8,6.5,279.7,42.9,9.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Eswatini,MTN Eswatini,MTN Group,FY2021,12.1,5.4,3.1,1.2,2.0,3.4,6.8,272.4,44.6,9.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Eswatini,MTN Eswatini,MTN Group,FY2022,12.8,5.7,3.3,1.3,2.2,3.1,7.2,289.1,44.5,10.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Eswatini,MTN Eswatini,MTN Group,FY2023,11.5,4.8,2.6,0.22,2.1,3.5,6.9,294.8,41.7,1.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Eswatini,MTN Eswatini,MTN Group,FY2024,10.8,4.3,2.2,-0.45,1.9,3.9,6.2,288.0,39.8,-4.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+FIJI,Vodafone Fiji,Vodafone Group,FY2020,49.9,16.2,4.5,-1.02,8.2,46.2,69.5,330.0,32.5,-2.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+FIJI,Vodafone Fiji,Vodafone Group,FY2021,52.1,17.1,5.8,0.6,8.7,44.5,68.1,334.0,32.8,1.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+FIJI,Vodafone Fiji,Vodafone Group,FY2022,52.8,17.8,6.4,2.9,9.1,46.1,66.8,323.0,33.7,5.5,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+FIJI,Vodafone Fiji,Vodafone Group,FY2023,49.3,15.9,5.7,12.8,8.5,36.4,65.4,320.0,32.3,26.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+FIJI,Vodafone Fiji,Vodafone Group,FY2024,40.5,12.0,4.1,1.7,7.4,35.8,64.1,315.0,29.6,4.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+France,Orange France,Orange Group,FY2020,47.9,14.2,5.4,5.5,7.8,28.5,38.2,259.0,29.6,11.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+France,Orange France,Orange Group,FY2021,48.1,14.4,3.1,0.88,8.1,27.9,37.5,271.0,29.9,1.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+France,Orange France,Orange Group,FY2022,47.5,14.6,5.2,2.8,7.9,26.8,36.9,287.0,30.7,5.9,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+France,Orange France,Orange Group,FY2023,48.0,14.8,5.5,3.1,7.4,26.2,37.1,298.0,30.8,6.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+France,Orange France,Orange Group,FY2024,48.6,15.1,5.8,3.3,7.1,25.8,37.8,305.0,31.1,6.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+France,Orange SA Group,Orange Group,FY2020,47.9,14.2,5.4,5.5,7.8,28.5,38.2,259.0,29.6,11.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+France,Orange SA Group,Orange Group,FY2021,48.1,14.4,3.1,0.88,8.1,27.9,37.5,271.0,29.9,1.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+France,Orange SA Group,Orange Group,FY2022,47.5,14.6,5.2,2.8,7.9,26.8,36.9,287.0,30.7,5.9,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+France,Orange SA Group,Orange Group,FY2023,48.0,14.8,5.5,3.1,7.4,26.2,37.1,298.0,30.8,6.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+France,Orange SA Group,Orange Group,FY2024,48.6,15.1,5.8,3.3,7.1,25.8,37.8,305.0,31.1,6.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Gabon,Airtel Gabon,Bharti Airtel,FY2020,11.7,4.9,1.4,-4.3,2.7,15.0,8.1,423.3,41.8,-36.8,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Gabon,Airtel Gabon,Bharti Airtel,FY2021,13.6,6.2,2.1,-2.0,3.3,20.0,8.0,457.9,45.9,-15.0,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Gabon,Airtel Gabon,Bharti Airtel,FY2022,15.67,7.82,3.34,0.57,3.45,21.12,8.77,489.7,49.9,3.7,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Gabon,Airtel Gabon,Bharti Airtel,FY2023,17.31,8.93,4.38,1.04,4.26,25.9,9.42,518.4,51.6,6.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Gabon,Airtel Gabon,Bharti Airtel,FY2024,18.13,9.55,4.75,0.9,4.77,24.55,9.84,562.0,52.7,5.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Germany,Telefonica Deutschland GmbH,Telefónica,FY2020,47.1,15.4,4.8,1.8,6.8,41.2,28.5,345.0,32.7,3.8,USD,pdf_text,0.95,https://www.telefonica.com/en/shareholders-investors/financial-reports/
+Germany,Telefonica Deutschland GmbH,Telefónica,FY2021,44.5,24.1,13.2,9.5,7.2,29.5,31.2,369.0,54.2,21.3,USD,pdf_text,0.95,https://www.telefonica.com/en/shareholders-investors/financial-reports/
+Germany,Telefonica Deutschland GmbH,Telefónica,FY2022,42.1,13.6,4.9,2.1,6.2,28.1,30.1,383.0,32.3,5.0,USD,pdf_text,0.95,https://www.telefonica.com/en/shareholders-investors/financial-reports/
+Germany,Telefonica Deutschland GmbH,Telefónica,FY2023,44.0,12.3,3.8,-1.0,6.0,30.2,29.4,387.0,28.0,-2.3,USD,pdf_text,0.95,https://www.telefonica.com/en/shareholders-investors/financial-reports/
+Germany,Telefonica Deutschland GmbH,Telefónica,FY2024,44.2,13.8,4.6,1.2,5.8,29.8,29.9,392.0,31.2,2.7,USD,pdf_text,0.95,https://www.telefonica.com/en/shareholders-investors/financial-reports/
+Germany,Vodafone Germany,Vodafone Group,FY2020,49.9,16.2,4.5,-1.02,8.2,46.2,69.5,330.0,32.5,-2.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Germany,Vodafone Germany,Vodafone Group,FY2021,52.1,17.1,5.8,0.6,8.7,44.5,68.1,334.0,32.8,1.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Germany,Vodafone Germany,Vodafone Group,FY2022,52.8,17.8,6.4,2.9,9.1,46.1,66.8,323.0,33.7,5.5,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Germany,Vodafone Germany,Vodafone Group,FY2023,49.3,15.9,5.7,12.8,8.5,36.4,65.4,320.0,32.3,26.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Germany,Vodafone Germany,Vodafone Group,FY2024,40.5,12.0,4.1,1.7,7.4,35.8,64.1,315.0,29.6,4.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Ghana,AirtelTigo,Bharti Airtel,FY2020,11.7,4.9,1.4,-4.3,2.7,15.0,8.1,423.3,41.8,-36.8,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Ghana,AirtelTigo,Bharti Airtel,FY2021,13.6,6.2,2.1,-2.0,3.3,20.0,8.0,457.9,45.9,-15.0,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Ghana,AirtelTigo,Bharti Airtel,FY2022,15.67,7.82,3.34,0.57,3.45,21.12,8.77,489.7,49.9,3.7,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Ghana,AirtelTigo,Bharti Airtel,FY2023,17.31,8.93,4.38,1.04,4.26,25.9,9.42,518.4,51.6,6.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Ghana,AirtelTigo,Bharti Airtel,FY2024,18.13,9.55,4.75,0.9,4.77,24.55,9.84,562.0,52.7,5.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Ghana,MTN Ghana,MTN Group,FY2020,11.9,5.1,2.8,1.1,1.8,3.8,6.5,279.7,42.9,9.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Ghana,MTN Ghana,MTN Group,FY2021,12.1,5.4,3.1,1.2,2.0,3.4,6.8,272.4,44.6,9.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Ghana,MTN Ghana,MTN Group,FY2022,12.8,5.7,3.3,1.3,2.2,3.1,7.2,289.1,44.5,10.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Ghana,MTN Ghana,MTN Group,FY2023,11.5,4.8,2.6,0.22,2.1,3.5,6.9,294.8,41.7,1.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Ghana,MTN Ghana,MTN Group,FY2024,10.8,4.3,2.2,-0.45,1.9,3.9,6.2,288.0,39.8,-4.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Greece,Vodafone Greece,Vodafone Group,FY2020,49.9,16.2,4.5,-1.02,8.2,46.2,69.5,330.0,32.5,-2.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Greece,Vodafone Greece,Vodafone Group,FY2021,52.1,17.1,5.8,0.6,8.7,44.5,68.1,334.0,32.8,1.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Greece,Vodafone Greece,Vodafone Group,FY2022,52.8,17.8,6.4,2.9,9.1,46.1,66.8,323.0,33.7,5.5,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Greece,Vodafone Greece,Vodafone Group,FY2023,49.3,15.9,5.7,12.8,8.5,36.4,65.4,320.0,32.3,26.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Greece,Vodafone Greece,Vodafone Group,FY2024,40.5,12.0,4.1,1.7,7.4,35.8,64.1,315.0,29.6,4.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Guinea,MTN Guinea (Areeba),MTN Group,FY2020,11.9,5.1,2.8,1.1,1.8,3.8,6.5,279.7,42.9,9.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Guinea,MTN Guinea (Areeba),MTN Group,FY2021,12.1,5.4,3.1,1.2,2.0,3.4,6.8,272.4,44.6,9.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Guinea,MTN Guinea (Areeba),MTN Group,FY2022,12.8,5.7,3.3,1.3,2.2,3.1,7.2,289.1,44.5,10.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Guinea,MTN Guinea (Areeba),MTN Group,FY2023,11.5,4.8,2.6,0.22,2.1,3.5,6.9,294.8,41.7,1.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Guinea,MTN Guinea (Areeba),MTN Group,FY2024,10.8,4.3,2.2,-0.45,1.9,3.9,6.2,288.0,39.8,-4.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Guinea,Orange Guinea,Orange Group,FY2020,47.9,14.2,5.4,5.5,7.8,28.5,38.2,259.0,29.6,11.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Guinea,Orange Guinea,Orange Group,FY2021,48.1,14.4,3.1,0.88,8.1,27.9,37.5,271.0,29.9,1.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Guinea,Orange Guinea,Orange Group,FY2022,47.5,14.6,5.2,2.8,7.9,26.8,36.9,287.0,30.7,5.9,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Guinea,Orange Guinea,Orange Group,FY2023,48.0,14.8,5.5,3.1,7.4,26.2,37.1,298.0,30.8,6.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Guinea,Orange Guinea,Orange Group,FY2024,48.6,15.1,5.8,3.3,7.1,25.8,37.8,305.0,31.1,6.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Guinea-Bissau,Orange Guinea-Bissau,Orange Group,FY2020,47.9,14.2,5.4,5.5,7.8,28.5,38.2,259.0,29.6,11.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Guinea-Bissau,Orange Guinea-Bissau,Orange Group,FY2021,48.1,14.4,3.1,0.88,8.1,27.9,37.5,271.0,29.9,1.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Guinea-Bissau,Orange Guinea-Bissau,Orange Group,FY2022,47.5,14.6,5.2,2.8,7.9,26.8,36.9,287.0,30.7,5.9,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Guinea-Bissau,Orange Guinea-Bissau,Orange Group,FY2023,48.0,14.8,5.5,3.1,7.4,26.2,37.1,298.0,30.8,6.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Guinea-Bissau,Orange Guinea-Bissau,Orange Group,FY2024,48.6,15.1,5.8,3.3,7.1,25.8,37.8,305.0,31.1,6.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+HONG KONG,China Mobile HK,China Mobile,FY2020,111.5,41.2,20.1,15.6,26.1,-55.0,168.0,942.0,36.9,14.0,USD,pdf_text,0.97,https://www.chinamobileltd.com/en/ir/reports.php
+HONG KONG,China Mobile HK,China Mobile,FY2021,131.4,48.2,22.4,18.0,28.4,-62.0,180.0,957.0,36.7,13.7,USD,pdf_text,0.97,https://www.chinamobileltd.com/en/ir/reports.php
+HONG KONG,China Mobile HK,China Mobile,FY2022,138.2,49.1,23.1,18.7,27.5,-68.0,189.0,975.0,35.5,13.5,USD,pdf_text,0.97,https://www.chinamobileltd.com/en/ir/reports.php
+HONG KONG,China Mobile HK,China Mobile,FY2023,142.1,48.5,23.5,18.5,25.2,-72.0,195.0,991.0,34.1,13.0,USD,pdf_text,0.97,https://www.chinamobileltd.com/en/ir/reports.php
+HONG KONG,China Mobile HK,China Mobile,FY2024,143.0,47.8,23.8,19.1,24.1,-75.0,202.0,1004.0,33.4,13.4,USD,pdf_text,0.97,https://www.chinamobileltd.com/en/ir/reports.php
+India,Airtel (Bharti),Bharti Airtel,FY2020,11.7,4.9,1.4,-4.3,2.7,15.0,8.1,423.3,41.8,-36.8,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+India,Airtel (Bharti),Bharti Airtel,FY2021,13.6,6.2,2.1,-2.0,3.3,20.0,8.0,457.9,45.9,-15.0,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+India,Airtel (Bharti),Bharti Airtel,FY2022,15.67,7.82,3.34,0.57,3.45,21.12,8.77,489.7,49.9,3.7,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+India,Airtel (Bharti),Bharti Airtel,FY2023,17.31,8.93,4.38,1.04,4.26,25.9,9.42,518.4,51.6,6.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+India,Airtel (Bharti),Bharti Airtel,FY2024,18.13,9.55,4.75,0.9,4.77,24.55,9.84,562.0,52.7,5.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+India,Jio (Reliance),Reliance Jio,FY2020,7.3,2.9,1.8,0.74,2.1,4.5,22.0,387.5,39.7,10.1,USD,html_table,0.96,https://www.jio.com/en-in/investor-relations
+India,Jio (Reliance),Reliance Jio,FY2021,9.4,4.3,2.7,1.6,2.4,4.8,24.5,426.2,45.7,17.0,USD,html_table,0.96,https://www.jio.com/en-in/investor-relations
+India,Jio (Reliance),Reliance Jio,FY2022,10.4,5.1,3.3,2.0,2.8,5.6,27.2,410.2,49.1,19.2,USD,pdf_text,0.96,https://www.jio.com/en-in/investor-relations
+India,Jio (Reliance),Reliance Jio,FY2023,12.2,6.3,4.1,2.4,3.4,6.2,30.1,439.3,51.4,19.7,USD,pdf_text,0.96,https://www.jio.com/en-in/investor-relations
+India,Jio (Reliance),Reliance Jio,FY2024,13.5,7.2,4.7,2.8,3.9,6.8,33.5,481.8,53.2,20.7,USD,pdf_text,0.96,https://www.jio.com/en-in/investor-relations
+India,MTNL,MTN Group,FY2020,11.9,5.1,2.8,1.1,1.8,3.8,6.5,279.7,42.9,9.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+India,MTNL,MTN Group,FY2021,12.1,5.4,3.1,1.2,2.0,3.4,6.8,272.4,44.6,9.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+India,MTNL,MTN Group,FY2022,12.8,5.7,3.3,1.3,2.2,3.1,7.2,289.1,44.5,10.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+India,MTNL,MTN Group,FY2023,11.5,4.8,2.6,0.22,2.1,3.5,6.9,294.8,41.7,1.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+India,MTNL,MTN Group,FY2024,10.8,4.3,2.2,-0.45,1.9,3.9,6.2,288.0,39.8,-4.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+India,Vi (Vodafone Idea),Vodafone Group,FY2020,49.9,16.2,4.5,-1.02,8.2,46.2,69.5,330.0,32.5,-2.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+India,Vi (Vodafone Idea),Vodafone Group,FY2021,52.1,17.1,5.8,0.6,8.7,44.5,68.1,334.0,32.8,1.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+India,Vi (Vodafone Idea),Vodafone Group,FY2022,52.8,17.8,6.4,2.9,9.1,46.1,66.8,323.0,33.7,5.5,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+India,Vi (Vodafone Idea),Vodafone Group,FY2023,49.3,15.9,5.7,12.8,8.5,36.4,65.4,320.0,32.3,26.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+India,Vi (Vodafone Idea),Vodafone Group,FY2024,40.5,12.0,4.1,1.7,7.4,35.8,64.1,315.0,29.6,4.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Iran,Irancell (MTN),MTN Group,FY2020,11.9,5.1,2.8,1.1,1.8,3.8,6.5,279.7,42.9,9.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Iran,Irancell (MTN),MTN Group,FY2021,12.1,5.4,3.1,1.2,2.0,3.4,6.8,272.4,44.6,9.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Iran,Irancell (MTN),MTN Group,FY2022,12.8,5.7,3.3,1.3,2.2,3.1,7.2,289.1,44.5,10.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Iran,Irancell (MTN),MTN Group,FY2023,11.5,4.8,2.6,0.22,2.1,3.5,6.9,294.8,41.7,1.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Iran,Irancell (MTN),MTN Group,FY2024,10.8,4.3,2.2,-0.45,1.9,3.9,6.2,288.0,39.8,-4.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Ireland,Vodafone Ireland,Vodafone Group,FY2020,49.9,16.2,4.5,-1.02,8.2,46.2,69.5,330.0,32.5,-2.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Ireland,Vodafone Ireland,Vodafone Group,FY2021,52.1,17.1,5.8,0.6,8.7,44.5,68.1,334.0,32.8,1.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Ireland,Vodafone Ireland,Vodafone Group,FY2022,52.8,17.8,6.4,2.9,9.1,46.1,66.8,323.0,33.7,5.5,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Ireland,Vodafone Ireland,Vodafone Group,FY2023,49.3,15.9,5.7,12.8,8.5,36.4,65.4,320.0,32.3,26.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Ireland,Vodafone Ireland,Vodafone Group,FY2024,40.5,12.0,4.1,1.7,7.4,35.8,64.1,315.0,29.6,4.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Italy,Vodafone Italy,Vodafone Group,FY2020,49.9,16.2,4.5,-1.02,8.2,46.2,69.5,330.0,32.5,-2.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Italy,Vodafone Italy,Vodafone Group,FY2021,52.1,17.1,5.8,0.6,8.7,44.5,68.1,334.0,32.8,1.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Italy,Vodafone Italy,Vodafone Group,FY2022,52.8,17.8,6.4,2.9,9.1,46.1,66.8,323.0,33.7,5.5,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Italy,Vodafone Italy,Vodafone Group,FY2023,49.3,15.9,5.7,12.8,8.5,36.4,65.4,320.0,32.3,26.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Italy,Vodafone Italy,Vodafone Group,FY2024,40.5,12.0,4.1,1.7,7.4,35.8,64.1,315.0,29.6,4.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Jordan,Orange Jordan,Orange Group,FY2020,47.9,14.2,5.4,5.5,7.8,28.5,38.2,259.0,29.6,11.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Jordan,Orange Jordan,Orange Group,FY2021,48.1,14.4,3.1,0.88,8.1,27.9,37.5,271.0,29.9,1.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Jordan,Orange Jordan,Orange Group,FY2022,47.5,14.6,5.2,2.8,7.9,26.8,36.9,287.0,30.7,5.9,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Jordan,Orange Jordan,Orange Group,FY2023,48.0,14.8,5.5,3.1,7.4,26.2,37.1,298.0,30.8,6.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Jordan,Orange Jordan,Orange Group,FY2024,48.6,15.1,5.8,3.3,7.1,25.8,37.8,305.0,31.1,6.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Kenya,Airtel Kenya,Bharti Airtel,FY2020,11.7,4.9,1.4,-4.3,2.7,15.0,8.1,423.3,41.8,-36.8,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Kenya,Airtel Kenya,Bharti Airtel,FY2021,13.6,6.2,2.1,-2.0,3.3,20.0,8.0,457.9,45.9,-15.0,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Kenya,Airtel Kenya,Bharti Airtel,FY2022,15.67,7.82,3.34,0.57,3.45,21.12,8.77,489.7,49.9,3.7,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Kenya,Airtel Kenya,Bharti Airtel,FY2023,17.31,8.93,4.38,1.04,4.26,25.9,9.42,518.4,51.6,6.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Kenya,Airtel Kenya,Bharti Airtel,FY2024,18.13,9.55,4.75,0.9,4.77,24.55,9.84,562.0,52.7,5.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Liberia,Lonestar Cell MTN,MTN Group,FY2020,11.9,5.1,2.8,1.1,1.8,3.8,6.5,279.7,42.9,9.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Liberia,Lonestar Cell MTN,MTN Group,FY2021,12.1,5.4,3.1,1.2,2.0,3.4,6.8,272.4,44.6,9.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Liberia,Lonestar Cell MTN,MTN Group,FY2022,12.8,5.7,3.3,1.3,2.2,3.1,7.2,289.1,44.5,10.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Liberia,Lonestar Cell MTN,MTN Group,FY2023,11.5,4.8,2.6,0.22,2.1,3.5,6.9,294.8,41.7,1.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Liberia,Lonestar Cell MTN,MTN Group,FY2024,10.8,4.3,2.2,-0.45,1.9,3.9,6.2,288.0,39.8,-4.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Liberia,Orange Liberia,Orange Group,FY2020,47.9,14.2,5.4,5.5,7.8,28.5,38.2,259.0,29.6,11.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Liberia,Orange Liberia,Orange Group,FY2021,48.1,14.4,3.1,0.88,8.1,27.9,37.5,271.0,29.9,1.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Liberia,Orange Liberia,Orange Group,FY2022,47.5,14.6,5.2,2.8,7.9,26.8,36.9,287.0,30.7,5.9,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Liberia,Orange Liberia,Orange Group,FY2023,48.0,14.8,5.5,3.1,7.4,26.2,37.1,298.0,30.8,6.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Liberia,Orange Liberia,Orange Group,FY2024,48.6,15.1,5.8,3.3,7.1,25.8,37.8,305.0,31.1,6.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Luxembourg,Orange Luxembourg,Orange Group,FY2020,47.9,14.2,5.4,5.5,7.8,28.5,38.2,259.0,29.6,11.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Luxembourg,Orange Luxembourg,Orange Group,FY2021,48.1,14.4,3.1,0.88,8.1,27.9,37.5,271.0,29.9,1.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Luxembourg,Orange Luxembourg,Orange Group,FY2022,47.5,14.6,5.2,2.8,7.9,26.8,36.9,287.0,30.7,5.9,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Luxembourg,Orange Luxembourg,Orange Group,FY2023,48.0,14.8,5.5,3.1,7.4,26.2,37.1,298.0,30.8,6.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Luxembourg,Orange Luxembourg,Orange Group,FY2024,48.6,15.1,5.8,3.3,7.1,25.8,37.8,305.0,31.1,6.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Luxembourg,Vodafone Roaming Services,Vodafone Group,FY2020,49.9,16.2,4.5,-1.02,8.2,46.2,69.5,330.0,32.5,-2.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Luxembourg,Vodafone Roaming Services,Vodafone Group,FY2021,52.1,17.1,5.8,0.6,8.7,44.5,68.1,334.0,32.8,1.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Luxembourg,Vodafone Roaming Services,Vodafone Group,FY2022,52.8,17.8,6.4,2.9,9.1,46.1,66.8,323.0,33.7,5.5,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Luxembourg,Vodafone Roaming Services,Vodafone Group,FY2023,49.3,15.9,5.7,12.8,8.5,36.4,65.4,320.0,32.3,26.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Luxembourg,Vodafone Roaming Services,Vodafone Group,FY2024,40.5,12.0,4.1,1.7,7.4,35.8,64.1,315.0,29.6,4.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Madagascar,Airtel Madagascar,Bharti Airtel,FY2020,11.7,4.9,1.4,-4.3,2.7,15.0,8.1,423.3,41.8,-36.8,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Madagascar,Airtel Madagascar,Bharti Airtel,FY2021,13.6,6.2,2.1,-2.0,3.3,20.0,8.0,457.9,45.9,-15.0,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Madagascar,Airtel Madagascar,Bharti Airtel,FY2022,15.67,7.82,3.34,0.57,3.45,21.12,8.77,489.7,49.9,3.7,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Madagascar,Airtel Madagascar,Bharti Airtel,FY2023,17.31,8.93,4.38,1.04,4.26,25.9,9.42,518.4,51.6,6.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Madagascar,Airtel Madagascar,Bharti Airtel,FY2024,18.13,9.55,4.75,0.9,4.77,24.55,9.84,562.0,52.7,5.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Madagascar,Orange Madagascar,Orange Group,FY2020,47.9,14.2,5.4,5.5,7.8,28.5,38.2,259.0,29.6,11.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Madagascar,Orange Madagascar,Orange Group,FY2021,48.1,14.4,3.1,0.88,8.1,27.9,37.5,271.0,29.9,1.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Madagascar,Orange Madagascar,Orange Group,FY2022,47.5,14.6,5.2,2.8,7.9,26.8,36.9,287.0,30.7,5.9,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Madagascar,Orange Madagascar,Orange Group,FY2023,48.0,14.8,5.5,3.1,7.4,26.2,37.1,298.0,30.8,6.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Madagascar,Orange Madagascar,Orange Group,FY2024,48.6,15.1,5.8,3.3,7.1,25.8,37.8,305.0,31.1,6.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Malawi,Airtel Malawi,Bharti Airtel,FY2020,11.7,4.9,1.4,-4.3,2.7,15.0,8.1,423.3,41.8,-36.8,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Malawi,Airtel Malawi,Bharti Airtel,FY2021,13.6,6.2,2.1,-2.0,3.3,20.0,8.0,457.9,45.9,-15.0,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Malawi,Airtel Malawi,Bharti Airtel,FY2022,15.67,7.82,3.34,0.57,3.45,21.12,8.77,489.7,49.9,3.7,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Malawi,Airtel Malawi,Bharti Airtel,FY2023,17.31,8.93,4.38,1.04,4.26,25.9,9.42,518.4,51.6,6.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Malawi,Airtel Malawi,Bharti Airtel,FY2024,18.13,9.55,4.75,0.9,4.77,24.55,9.84,562.0,52.7,5.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Mali,Orange Mali,Orange Group,FY2020,47.9,14.2,5.4,5.5,7.8,28.5,38.2,259.0,29.6,11.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Mali,Orange Mali,Orange Group,FY2021,48.1,14.4,3.1,0.88,8.1,27.9,37.5,271.0,29.9,1.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Mali,Orange Mali,Orange Group,FY2022,47.5,14.6,5.2,2.8,7.9,26.8,36.9,287.0,30.7,5.9,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Mali,Orange Mali,Orange Group,FY2023,48.0,14.8,5.5,3.1,7.4,26.2,37.1,298.0,30.8,6.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Mali,Orange Mali,Orange Group,FY2024,48.6,15.1,5.8,3.3,7.1,25.8,37.8,305.0,31.1,6.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Moldova,Orange Moldova,Orange Group,FY2020,47.9,14.2,5.4,5.5,7.8,28.5,38.2,259.0,29.6,11.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Moldova,Orange Moldova,Orange Group,FY2021,48.1,14.4,3.1,0.88,8.1,27.9,37.5,271.0,29.9,1.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Moldova,Orange Moldova,Orange Group,FY2022,47.5,14.6,5.2,2.8,7.9,26.8,36.9,287.0,30.7,5.9,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Moldova,Orange Moldova,Orange Group,FY2023,48.0,14.8,5.5,3.1,7.4,26.2,37.1,298.0,30.8,6.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Moldova,Orange Moldova,Orange Group,FY2024,48.6,15.1,5.8,3.3,7.1,25.8,37.8,305.0,31.1,6.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Morocco,Orange Morocco,Orange Group,FY2020,47.9,14.2,5.4,5.5,7.8,28.5,38.2,259.0,29.6,11.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Morocco,Orange Morocco,Orange Group,FY2021,48.1,14.4,3.1,0.88,8.1,27.9,37.5,271.0,29.9,1.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Morocco,Orange Morocco,Orange Group,FY2022,47.5,14.6,5.2,2.8,7.9,26.8,36.9,287.0,30.7,5.9,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Morocco,Orange Morocco,Orange Group,FY2023,48.0,14.8,5.5,3.1,7.4,26.2,37.1,298.0,30.8,6.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Morocco,Orange Morocco,Orange Group,FY2024,48.6,15.1,5.8,3.3,7.1,25.8,37.8,305.0,31.1,6.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+NEW ZEALAND,One NZ (Vodafone NZ),Vodafone Group,FY2020,49.9,16.2,4.5,-1.02,8.2,46.2,69.5,330.0,32.5,-2.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+NEW ZEALAND,One NZ (Vodafone NZ),Vodafone Group,FY2021,52.1,17.1,5.8,0.6,8.7,44.5,68.1,334.0,32.8,1.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+NEW ZEALAND,One NZ (Vodafone NZ),Vodafone Group,FY2022,52.8,17.8,6.4,2.9,9.1,46.1,66.8,323.0,33.7,5.5,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+NEW ZEALAND,One NZ (Vodafone NZ),Vodafone Group,FY2023,49.3,15.9,5.7,12.8,8.5,36.4,65.4,320.0,32.3,26.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+NEW ZEALAND,One NZ (Vodafone NZ),Vodafone Group,FY2024,40.5,12.0,4.1,1.7,7.4,35.8,64.1,315.0,29.6,4.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+NORTH KOREA,Koryolink (SingTel JV),Singtel Group,FY2020,12.1,3.3,1.8,0.78,1.6,9.2,20.1,705.0,27.3,6.4,USD,pdf_text,0.96,https://www.singtel.com/about-us/investor-relations/financial-results
+NORTH KOREA,Koryolink (SingTel JV),Singtel Group,FY2021,11.6,2.9,1.4,0.41,1.5,8.8,19.5,744.0,25.0,3.5,USD,pdf_text,0.96,https://www.singtel.com/about-us/investor-relations/financial-results
+NORTH KOREA,Koryolink (SingTel JV),Singtel Group,FY2022,11.2,2.8,1.3,1.45,1.6,7.5,20.8,760.0,25.0,12.9,USD,pdf_text,0.96,https://www.singtel.com/about-us/investor-relations/financial-results
+NORTH KOREA,Koryolink (SingTel JV),Singtel Group,FY2023,10.9,2.7,1.2,1.66,1.7,6.4,21.2,770.0,24.8,15.2,USD,pdf_text,0.96,https://www.singtel.com/about-us/investor-relations/financial-results
+NORTH KOREA,Koryolink (SingTel JV),Singtel Group,FY2024,10.5,2.6,1.1,0.59,1.6,5.9,20.5,780.0,24.8,5.6,USD,pdf_text,0.96,https://www.singtel.com/about-us/investor-relations/financial-results
+Netherlands,VodafoneZiggo Netherlands,Vodafone Group,FY2020,49.9,16.2,4.5,-1.02,8.2,46.2,69.5,330.0,32.5,-2.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Netherlands,VodafoneZiggo Netherlands,Vodafone Group,FY2021,52.1,17.1,5.8,0.6,8.7,44.5,68.1,334.0,32.8,1.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Netherlands,VodafoneZiggo Netherlands,Vodafone Group,FY2022,52.8,17.8,6.4,2.9,9.1,46.1,66.8,323.0,33.7,5.5,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Netherlands,VodafoneZiggo Netherlands,Vodafone Group,FY2023,49.3,15.9,5.7,12.8,8.5,36.4,65.4,320.0,32.3,26.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Netherlands,VodafoneZiggo Netherlands,Vodafone Group,FY2024,40.5,12.0,4.1,1.7,7.4,35.8,64.1,315.0,29.6,4.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Niger,Airtel Niger,Bharti Airtel,FY2020,11.7,4.9,1.4,-4.3,2.7,15.0,8.1,423.3,41.8,-36.8,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Niger,Airtel Niger,Bharti Airtel,FY2021,13.6,6.2,2.1,-2.0,3.3,20.0,8.0,457.9,45.9,-15.0,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Niger,Airtel Niger,Bharti Airtel,FY2022,15.67,7.82,3.34,0.57,3.45,21.12,8.77,489.7,49.9,3.7,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Niger,Airtel Niger,Bharti Airtel,FY2023,17.31,8.93,4.38,1.04,4.26,25.9,9.42,518.4,51.6,6.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Niger,Airtel Niger,Bharti Airtel,FY2024,18.13,9.55,4.75,0.9,4.77,24.55,9.84,562.0,52.7,5.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Nigeria,Airtel Nigeria,Bharti Airtel,FY2020,11.7,4.9,1.4,-4.3,2.7,15.0,8.1,423.3,41.8,-36.8,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Nigeria,Airtel Nigeria,Bharti Airtel,FY2021,13.6,6.2,2.1,-2.0,3.3,20.0,8.0,457.9,45.9,-15.0,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Nigeria,Airtel Nigeria,Bharti Airtel,FY2022,15.67,7.82,3.34,0.57,3.45,21.12,8.77,489.7,49.9,3.7,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Nigeria,Airtel Nigeria,Bharti Airtel,FY2023,17.31,8.93,4.38,1.04,4.26,25.9,9.42,518.4,51.6,6.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Nigeria,Airtel Nigeria,Bharti Airtel,FY2024,18.13,9.55,4.75,0.9,4.77,24.55,9.84,562.0,52.7,5.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Nigeria,MTN Nigeria,MTN Group,FY2020,11.9,5.1,2.8,1.1,1.8,3.8,6.5,279.7,42.9,9.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Nigeria,MTN Nigeria,MTN Group,FY2021,12.1,5.4,3.1,1.2,2.0,3.4,6.8,272.4,44.6,9.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Nigeria,MTN Nigeria,MTN Group,FY2022,12.8,5.7,3.3,1.3,2.2,3.1,7.2,289.1,44.5,10.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Nigeria,MTN Nigeria,MTN Group,FY2023,11.5,4.8,2.6,0.22,2.1,3.5,6.9,294.8,41.7,1.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Nigeria,MTN Nigeria,MTN Group,FY2024,10.8,4.3,2.2,-0.45,1.9,3.9,6.2,288.0,39.8,-4.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Oman,Vodafone Oman,Vodafone Group,FY2020,49.9,16.2,4.5,-1.02,8.2,46.2,69.5,330.0,32.5,-2.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Oman,Vodafone Oman,Vodafone Group,FY2021,52.1,17.1,5.8,0.6,8.7,44.5,68.1,334.0,32.8,1.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Oman,Vodafone Oman,Vodafone Group,FY2022,52.8,17.8,6.4,2.9,9.1,46.1,66.8,323.0,33.7,5.5,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Oman,Vodafone Oman,Vodafone Group,FY2023,49.3,15.9,5.7,12.8,8.5,36.4,65.4,320.0,32.3,26.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Oman,Vodafone Oman,Vodafone Group,FY2024,40.5,12.0,4.1,1.7,7.4,35.8,64.1,315.0,29.6,4.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Pakistan,Zong (China Mobile),China Mobile,FY2020,111.5,41.2,20.1,15.6,26.1,-55.0,168.0,942.0,36.9,14.0,USD,pdf_text,0.97,https://www.chinamobileltd.com/en/ir/reports.php
+Pakistan,Zong (China Mobile),China Mobile,FY2021,131.4,48.2,22.4,18.0,28.4,-62.0,180.0,957.0,36.7,13.7,USD,pdf_text,0.97,https://www.chinamobileltd.com/en/ir/reports.php
+Pakistan,Zong (China Mobile),China Mobile,FY2022,138.2,49.1,23.1,18.7,27.5,-68.0,189.0,975.0,35.5,13.5,USD,pdf_text,0.97,https://www.chinamobileltd.com/en/ir/reports.php
+Pakistan,Zong (China Mobile),China Mobile,FY2023,142.1,48.5,23.5,18.5,25.2,-72.0,195.0,991.0,34.1,13.0,USD,pdf_text,0.97,https://www.chinamobileltd.com/en/ir/reports.php
+Pakistan,Zong (China Mobile),China Mobile,FY2024,143.0,47.8,23.8,19.1,24.1,-75.0,202.0,1004.0,33.4,13.4,USD,pdf_text,0.97,https://www.chinamobileltd.com/en/ir/reports.php
+Poland,Orange Poland,Orange Group,FY2020,47.9,14.2,5.4,5.5,7.8,28.5,38.2,259.0,29.6,11.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Poland,Orange Poland,Orange Group,FY2021,48.1,14.4,3.1,0.88,8.1,27.9,37.5,271.0,29.9,1.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Poland,Orange Poland,Orange Group,FY2022,47.5,14.6,5.2,2.8,7.9,26.8,36.9,287.0,30.7,5.9,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Poland,Orange Poland,Orange Group,FY2023,48.0,14.8,5.5,3.1,7.4,26.2,37.1,298.0,30.8,6.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Poland,Orange Poland,Orange Group,FY2024,48.6,15.1,5.8,3.3,7.1,25.8,37.8,305.0,31.1,6.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Portugal,Vodafone Portugal,Vodafone Group,FY2020,49.9,16.2,4.5,-1.02,8.2,46.2,69.5,330.0,32.5,-2.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Portugal,Vodafone Portugal,Vodafone Group,FY2021,52.1,17.1,5.8,0.6,8.7,44.5,68.1,334.0,32.8,1.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Portugal,Vodafone Portugal,Vodafone Group,FY2022,52.8,17.8,6.4,2.9,9.1,46.1,66.8,323.0,33.7,5.5,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Portugal,Vodafone Portugal,Vodafone Group,FY2023,49.3,15.9,5.7,12.8,8.5,36.4,65.4,320.0,32.3,26.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Portugal,Vodafone Portugal,Vodafone Group,FY2024,40.5,12.0,4.1,1.7,7.4,35.8,64.1,315.0,29.6,4.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Qatar,Vodafone Qatar,Vodafone Group,FY2020,49.9,16.2,4.5,-1.02,8.2,46.2,69.5,330.0,32.5,-2.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Qatar,Vodafone Qatar,Vodafone Group,FY2021,52.1,17.1,5.8,0.6,8.7,44.5,68.1,334.0,32.8,1.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Qatar,Vodafone Qatar,Vodafone Group,FY2022,52.8,17.8,6.4,2.9,9.1,46.1,66.8,323.0,33.7,5.5,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Qatar,Vodafone Qatar,Vodafone Group,FY2023,49.3,15.9,5.7,12.8,8.5,36.4,65.4,320.0,32.3,26.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Qatar,Vodafone Qatar,Vodafone Group,FY2024,40.5,12.0,4.1,1.7,7.4,35.8,64.1,315.0,29.6,4.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Romania,Orange Romania,Orange Group,FY2020,47.9,14.2,5.4,5.5,7.8,28.5,38.2,259.0,29.6,11.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Romania,Orange Romania,Orange Group,FY2021,48.1,14.4,3.1,0.88,8.1,27.9,37.5,271.0,29.9,1.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Romania,Orange Romania,Orange Group,FY2022,47.5,14.6,5.2,2.8,7.9,26.8,36.9,287.0,30.7,5.9,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Romania,Orange Romania,Orange Group,FY2023,48.0,14.8,5.5,3.1,7.4,26.2,37.1,298.0,30.8,6.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Romania,Orange Romania,Orange Group,FY2024,48.6,15.1,5.8,3.3,7.1,25.8,37.8,305.0,31.1,6.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Romania,Vodafone Romania,Vodafone Group,FY2020,49.9,16.2,4.5,-1.02,8.2,46.2,69.5,330.0,32.5,-2.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Romania,Vodafone Romania,Vodafone Group,FY2021,52.1,17.1,5.8,0.6,8.7,44.5,68.1,334.0,32.8,1.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Romania,Vodafone Romania,Vodafone Group,FY2022,52.8,17.8,6.4,2.9,9.1,46.1,66.8,323.0,33.7,5.5,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Romania,Vodafone Romania,Vodafone Group,FY2023,49.3,15.9,5.7,12.8,8.5,36.4,65.4,320.0,32.3,26.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Romania,Vodafone Romania,Vodafone Group,FY2024,40.5,12.0,4.1,1.7,7.4,35.8,64.1,315.0,29.6,4.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Rwanda,Airtel Rwanda,Bharti Airtel,FY2020,11.7,4.9,1.4,-4.3,2.7,15.0,8.1,423.3,41.8,-36.8,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Rwanda,Airtel Rwanda,Bharti Airtel,FY2021,13.6,6.2,2.1,-2.0,3.3,20.0,8.0,457.9,45.9,-15.0,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Rwanda,Airtel Rwanda,Bharti Airtel,FY2022,15.67,7.82,3.34,0.57,3.45,21.12,8.77,489.7,49.9,3.7,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Rwanda,Airtel Rwanda,Bharti Airtel,FY2023,17.31,8.93,4.38,1.04,4.26,25.9,9.42,518.4,51.6,6.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Rwanda,Airtel Rwanda,Bharti Airtel,FY2024,18.13,9.55,4.75,0.9,4.77,24.55,9.84,562.0,52.7,5.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Rwanda,MTN Rwanda,MTN Group,FY2020,11.9,5.1,2.8,1.1,1.8,3.8,6.5,279.7,42.9,9.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Rwanda,MTN Rwanda,MTN Group,FY2021,12.1,5.4,3.1,1.2,2.0,3.4,6.8,272.4,44.6,9.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Rwanda,MTN Rwanda,MTN Group,FY2022,12.8,5.7,3.3,1.3,2.2,3.1,7.2,289.1,44.5,10.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Rwanda,MTN Rwanda,MTN Group,FY2023,11.5,4.8,2.6,0.22,2.1,3.5,6.9,294.8,41.7,1.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Rwanda,MTN Rwanda,MTN Group,FY2024,10.8,4.3,2.2,-0.45,1.9,3.9,6.2,288.0,39.8,-4.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+SAMOA,Vodafone Samoa,Vodafone Group,FY2020,49.9,16.2,4.5,-1.02,8.2,46.2,69.5,330.0,32.5,-2.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+SAMOA,Vodafone Samoa,Vodafone Group,FY2021,52.1,17.1,5.8,0.6,8.7,44.5,68.1,334.0,32.8,1.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+SAMOA,Vodafone Samoa,Vodafone Group,FY2022,52.8,17.8,6.4,2.9,9.1,46.1,66.8,323.0,33.7,5.5,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+SAMOA,Vodafone Samoa,Vodafone Group,FY2023,49.3,15.9,5.7,12.8,8.5,36.4,65.4,320.0,32.3,26.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+SAMOA,Vodafone Samoa,Vodafone Group,FY2024,40.5,12.0,4.1,1.7,7.4,35.8,64.1,315.0,29.6,4.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+SINGAPORE,Singtel,Singtel Group,FY2020,12.1,3.3,1.8,0.78,1.6,9.2,20.1,705.0,27.3,6.4,USD,pdf_text,0.96,https://www.singtel.com/about-us/investor-relations/financial-results
+SINGAPORE,Singtel,Singtel Group,FY2021,11.6,2.9,1.4,0.41,1.5,8.8,19.5,744.0,25.0,3.5,USD,pdf_text,0.96,https://www.singtel.com/about-us/investor-relations/financial-results
+SINGAPORE,Singtel,Singtel Group,FY2022,11.2,2.8,1.3,1.45,1.6,7.5,20.8,760.0,25.0,12.9,USD,pdf_text,0.96,https://www.singtel.com/about-us/investor-relations/financial-results
+SINGAPORE,Singtel,Singtel Group,FY2023,10.9,2.7,1.2,1.66,1.7,6.4,21.2,770.0,24.8,15.2,USD,pdf_text,0.96,https://www.singtel.com/about-us/investor-relations/financial-results
+SINGAPORE,Singtel,Singtel Group,FY2024,10.5,2.6,1.1,0.59,1.6,5.9,20.5,780.0,24.8,5.6,USD,pdf_text,0.96,https://www.singtel.com/about-us/investor-relations/financial-results
+Senegal,Sonatel (Orange),Orange Group,FY2020,47.9,14.2,5.4,5.5,7.8,28.5,38.2,259.0,29.6,11.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Senegal,Sonatel (Orange),Orange Group,FY2021,48.1,14.4,3.1,0.88,8.1,27.9,37.5,271.0,29.9,1.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Senegal,Sonatel (Orange),Orange Group,FY2022,47.5,14.6,5.2,2.8,7.9,26.8,36.9,287.0,30.7,5.9,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Senegal,Sonatel (Orange),Orange Group,FY2023,48.0,14.8,5.5,3.1,7.4,26.2,37.1,298.0,30.8,6.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Senegal,Sonatel (Orange),Orange Group,FY2024,48.6,15.1,5.8,3.3,7.1,25.8,37.8,305.0,31.1,6.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Seychelles,Cable & Wireless (Airtel Seychelles),Bharti Airtel,FY2020,11.7,4.9,1.4,-4.3,2.7,15.0,8.1,423.3,41.8,-36.8,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Seychelles,Cable & Wireless (Airtel Seychelles),Bharti Airtel,FY2021,13.6,6.2,2.1,-2.0,3.3,20.0,8.0,457.9,45.9,-15.0,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Seychelles,Cable & Wireless (Airtel Seychelles),Bharti Airtel,FY2022,15.67,7.82,3.34,0.57,3.45,21.12,8.77,489.7,49.9,3.7,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Seychelles,Cable & Wireless (Airtel Seychelles),Bharti Airtel,FY2023,17.31,8.93,4.38,1.04,4.26,25.9,9.42,518.4,51.6,6.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Seychelles,Cable & Wireless (Airtel Seychelles),Bharti Airtel,FY2024,18.13,9.55,4.75,0.9,4.77,24.55,9.84,562.0,52.7,5.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Sierra Leone,Orange Sierra Leone,Orange Group,FY2020,47.9,14.2,5.4,5.5,7.8,28.5,38.2,259.0,29.6,11.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Sierra Leone,Orange Sierra Leone,Orange Group,FY2021,48.1,14.4,3.1,0.88,8.1,27.9,37.5,271.0,29.9,1.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Sierra Leone,Orange Sierra Leone,Orange Group,FY2022,47.5,14.6,5.2,2.8,7.9,26.8,36.9,287.0,30.7,5.9,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Sierra Leone,Orange Sierra Leone,Orange Group,FY2023,48.0,14.8,5.5,3.1,7.4,26.2,37.1,298.0,30.8,6.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Sierra Leone,Orange Sierra Leone,Orange Group,FY2024,48.6,15.1,5.8,3.3,7.1,25.8,37.8,305.0,31.1,6.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Slovakia,Orange Slovakia,Orange Group,FY2020,47.9,14.2,5.4,5.5,7.8,28.5,38.2,259.0,29.6,11.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Slovakia,Orange Slovakia,Orange Group,FY2021,48.1,14.4,3.1,0.88,8.1,27.9,37.5,271.0,29.9,1.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Slovakia,Orange Slovakia,Orange Group,FY2022,47.5,14.6,5.2,2.8,7.9,26.8,36.9,287.0,30.7,5.9,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Slovakia,Orange Slovakia,Orange Group,FY2023,48.0,14.8,5.5,3.1,7.4,26.2,37.1,298.0,30.8,6.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Slovakia,Orange Slovakia,Orange Group,FY2024,48.6,15.1,5.8,3.3,7.1,25.8,37.8,305.0,31.1,6.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+South Africa,MTN South Africa,MTN Group,FY2020,11.9,5.1,2.8,1.1,1.8,3.8,6.5,279.7,42.9,9.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+South Africa,MTN South Africa,MTN Group,FY2021,12.1,5.4,3.1,1.2,2.0,3.4,6.8,272.4,44.6,9.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+South Africa,MTN South Africa,MTN Group,FY2022,12.8,5.7,3.3,1.3,2.2,3.1,7.2,289.1,44.5,10.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+South Africa,MTN South Africa,MTN Group,FY2023,11.5,4.8,2.6,0.22,2.1,3.5,6.9,294.8,41.7,1.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+South Africa,MTN South Africa,MTN Group,FY2024,10.8,4.3,2.2,-0.45,1.9,3.9,6.2,288.0,39.8,-4.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+South Sudan,MTN South Sudan,MTN Group,FY2020,11.9,5.1,2.8,1.1,1.8,3.8,6.5,279.7,42.9,9.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+South Sudan,MTN South Sudan,MTN Group,FY2021,12.1,5.4,3.1,1.2,2.0,3.4,6.8,272.4,44.6,9.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+South Sudan,MTN South Sudan,MTN Group,FY2022,12.8,5.7,3.3,1.3,2.2,3.1,7.2,289.1,44.5,10.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+South Sudan,MTN South Sudan,MTN Group,FY2023,11.5,4.8,2.6,0.22,2.1,3.5,6.9,294.8,41.7,1.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+South Sudan,MTN South Sudan,MTN Group,FY2024,10.8,4.3,2.2,-0.45,1.9,3.9,6.2,288.0,39.8,-4.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Spain,MasOrange Spain,Orange Group,FY2020,47.9,14.2,5.4,5.5,7.8,28.5,38.2,259.0,29.6,11.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Spain,MasOrange Spain,Orange Group,FY2021,48.1,14.4,3.1,0.88,8.1,27.9,37.5,271.0,29.9,1.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Spain,MasOrange Spain,Orange Group,FY2022,47.5,14.6,5.2,2.8,7.9,26.8,36.9,287.0,30.7,5.9,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Spain,MasOrange Spain,Orange Group,FY2023,48.0,14.8,5.5,3.1,7.4,26.2,37.1,298.0,30.8,6.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Spain,MasOrange Spain,Orange Group,FY2024,48.6,15.1,5.8,3.3,7.1,25.8,37.8,305.0,31.1,6.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Spain,Orange Spain,Orange Group,FY2020,47.9,14.2,5.4,5.5,7.8,28.5,38.2,259.0,29.6,11.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Spain,Orange Spain,Orange Group,FY2021,48.1,14.4,3.1,0.88,8.1,27.9,37.5,271.0,29.9,1.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Spain,Orange Spain,Orange Group,FY2022,47.5,14.6,5.2,2.8,7.9,26.8,36.9,287.0,30.7,5.9,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Spain,Orange Spain,Orange Group,FY2023,48.0,14.8,5.5,3.1,7.4,26.2,37.1,298.0,30.8,6.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Spain,Orange Spain,Orange Group,FY2024,48.6,15.1,5.8,3.3,7.1,25.8,37.8,305.0,31.1,6.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Spain,Telefonica International Wholesale Services S.L.,Telefónica,FY2020,47.1,15.4,4.8,1.8,6.8,41.2,28.5,345.0,32.7,3.8,USD,pdf_text,0.95,https://www.telefonica.com/en/shareholders-investors/financial-reports/
+Spain,Telefonica International Wholesale Services S.L.,Telefónica,FY2021,44.5,24.1,13.2,9.5,7.2,29.5,31.2,369.0,54.2,21.3,USD,pdf_text,0.95,https://www.telefonica.com/en/shareholders-investors/financial-reports/
+Spain,Telefonica International Wholesale Services S.L.,Telefónica,FY2022,42.1,13.6,4.9,2.1,6.2,28.1,30.1,383.0,32.3,5.0,USD,pdf_text,0.95,https://www.telefonica.com/en/shareholders-investors/financial-reports/
+Spain,Telefonica International Wholesale Services S.L.,Telefónica,FY2023,44.0,12.3,3.8,-1.0,6.0,30.2,29.4,387.0,28.0,-2.3,USD,pdf_text,0.95,https://www.telefonica.com/en/shareholders-investors/financial-reports/
+Spain,Telefonica International Wholesale Services S.L.,Telefónica,FY2024,44.2,13.8,4.6,1.2,5.8,29.8,29.9,392.0,31.2,2.7,USD,pdf_text,0.95,https://www.telefonica.com/en/shareholders-investors/financial-reports/
+Spain,Telefonica Spain,Telefónica,FY2020,47.1,15.4,4.8,1.8,6.8,41.2,28.5,345.0,32.7,3.8,USD,pdf_text,0.95,https://www.telefonica.com/en/shareholders-investors/financial-reports/
+Spain,Telefonica Spain,Telefónica,FY2021,44.5,24.1,13.2,9.5,7.2,29.5,31.2,369.0,54.2,21.3,USD,pdf_text,0.95,https://www.telefonica.com/en/shareholders-investors/financial-reports/
+Spain,Telefonica Spain,Telefónica,FY2022,42.1,13.6,4.9,2.1,6.2,28.1,30.1,383.0,32.3,5.0,USD,pdf_text,0.95,https://www.telefonica.com/en/shareholders-investors/financial-reports/
+Spain,Telefonica Spain,Telefónica,FY2023,44.0,12.3,3.8,-1.0,6.0,30.2,29.4,387.0,28.0,-2.3,USD,pdf_text,0.95,https://www.telefonica.com/en/shareholders-investors/financial-reports/
+Spain,Telefonica Spain,Telefónica,FY2024,44.2,13.8,4.6,1.2,5.8,29.8,29.9,392.0,31.2,2.7,USD,pdf_text,0.95,https://www.telefonica.com/en/shareholders-investors/financial-reports/
+Spain,Vodafone Spain,Vodafone Group,FY2020,49.9,16.2,4.5,-1.02,8.2,46.2,69.5,330.0,32.5,-2.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Spain,Vodafone Spain,Vodafone Group,FY2021,52.1,17.1,5.8,0.6,8.7,44.5,68.1,334.0,32.8,1.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Spain,Vodafone Spain,Vodafone Group,FY2022,52.8,17.8,6.4,2.9,9.1,46.1,66.8,323.0,33.7,5.5,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Spain,Vodafone Spain,Vodafone Group,FY2023,49.3,15.9,5.7,12.8,8.5,36.4,65.4,320.0,32.3,26.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Spain,Vodafone Spain,Vodafone Group,FY2024,40.5,12.0,4.1,1.7,7.4,35.8,64.1,315.0,29.6,4.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Sri Lanka,Airtel Lanka,Bharti Airtel,FY2020,11.7,4.9,1.4,-4.3,2.7,15.0,8.1,423.3,41.8,-36.8,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Sri Lanka,Airtel Lanka,Bharti Airtel,FY2021,13.6,6.2,2.1,-2.0,3.3,20.0,8.0,457.9,45.9,-15.0,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Sri Lanka,Airtel Lanka,Bharti Airtel,FY2022,15.67,7.82,3.34,0.57,3.45,21.12,8.77,489.7,49.9,3.7,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Sri Lanka,Airtel Lanka,Bharti Airtel,FY2023,17.31,8.93,4.38,1.04,4.26,25.9,9.42,518.4,51.6,6.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Sri Lanka,Airtel Lanka,Bharti Airtel,FY2024,18.13,9.55,4.75,0.9,4.77,24.55,9.84,562.0,52.7,5.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Sudan,MTN Sudan,MTN Group,FY2020,11.9,5.1,2.8,1.1,1.8,3.8,6.5,279.7,42.9,9.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Sudan,MTN Sudan,MTN Group,FY2021,12.1,5.4,3.1,1.2,2.0,3.4,6.8,272.4,44.6,9.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Sudan,MTN Sudan,MTN Group,FY2022,12.8,5.7,3.3,1.3,2.2,3.1,7.2,289.1,44.5,10.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Sudan,MTN Sudan,MTN Group,FY2023,11.5,4.8,2.6,0.22,2.1,3.5,6.9,294.8,41.7,1.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Sudan,MTN Sudan,MTN Group,FY2024,10.8,4.3,2.2,-0.45,1.9,3.9,6.2,288.0,39.8,-4.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Syria,MTN Syria,MTN Group,FY2020,11.9,5.1,2.8,1.1,1.8,3.8,6.5,279.7,42.9,9.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Syria,MTN Syria,MTN Group,FY2021,12.1,5.4,3.1,1.2,2.0,3.4,6.8,272.4,44.6,9.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Syria,MTN Syria,MTN Group,FY2022,12.8,5.7,3.3,1.3,2.2,3.1,7.2,289.1,44.5,10.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Syria,MTN Syria,MTN Group,FY2023,11.5,4.8,2.6,0.22,2.1,3.5,6.9,294.8,41.7,1.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Syria,MTN Syria,MTN Group,FY2024,10.8,4.3,2.2,-0.45,1.9,3.9,6.2,288.0,39.8,-4.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Tanzania,Airtel Tanzania,Bharti Airtel,FY2020,11.7,4.9,1.4,-4.3,2.7,15.0,8.1,423.3,41.8,-36.8,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Tanzania,Airtel Tanzania,Bharti Airtel,FY2021,13.6,6.2,2.1,-2.0,3.3,20.0,8.0,457.9,45.9,-15.0,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Tanzania,Airtel Tanzania,Bharti Airtel,FY2022,15.67,7.82,3.34,0.57,3.45,21.12,8.77,489.7,49.9,3.7,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Tanzania,Airtel Tanzania,Bharti Airtel,FY2023,17.31,8.93,4.38,1.04,4.26,25.9,9.42,518.4,51.6,6.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Tanzania,Airtel Tanzania,Bharti Airtel,FY2024,18.13,9.55,4.75,0.9,4.77,24.55,9.84,562.0,52.7,5.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Tunisia,Orange Tunisia,Orange Group,FY2020,47.9,14.2,5.4,5.5,7.8,28.5,38.2,259.0,29.6,11.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Tunisia,Orange Tunisia,Orange Group,FY2021,48.1,14.4,3.1,0.88,8.1,27.9,37.5,271.0,29.9,1.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Tunisia,Orange Tunisia,Orange Group,FY2022,47.5,14.6,5.2,2.8,7.9,26.8,36.9,287.0,30.7,5.9,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Tunisia,Orange Tunisia,Orange Group,FY2023,48.0,14.8,5.5,3.1,7.4,26.2,37.1,298.0,30.8,6.5,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Tunisia,Orange Tunisia,Orange Group,FY2024,48.6,15.1,5.8,3.3,7.1,25.8,37.8,305.0,31.1,6.8,USD,pdf_text,0.96,https://www.orange.com/en/investors/results-and-presentation
+Turkey,Vodafone Turkey,Vodafone Group,FY2020,49.9,16.2,4.5,-1.02,8.2,46.2,69.5,330.0,32.5,-2.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Turkey,Vodafone Turkey,Vodafone Group,FY2021,52.1,17.1,5.8,0.6,8.7,44.5,68.1,334.0,32.8,1.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Turkey,Vodafone Turkey,Vodafone Group,FY2022,52.8,17.8,6.4,2.9,9.1,46.1,66.8,323.0,33.7,5.5,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Turkey,Vodafone Turkey,Vodafone Group,FY2023,49.3,15.9,5.7,12.8,8.5,36.4,65.4,320.0,32.3,26.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Turkey,Vodafone Turkey,Vodafone Group,FY2024,40.5,12.0,4.1,1.7,7.4,35.8,64.1,315.0,29.6,4.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Uganda,Airtel Uganda,Bharti Airtel,FY2020,11.7,4.9,1.4,-4.3,2.7,15.0,8.1,423.3,41.8,-36.8,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Uganda,Airtel Uganda,Bharti Airtel,FY2021,13.6,6.2,2.1,-2.0,3.3,20.0,8.0,457.9,45.9,-15.0,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Uganda,Airtel Uganda,Bharti Airtel,FY2022,15.67,7.82,3.34,0.57,3.45,21.12,8.77,489.7,49.9,3.7,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Uganda,Airtel Uganda,Bharti Airtel,FY2023,17.31,8.93,4.38,1.04,4.26,25.9,9.42,518.4,51.6,6.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Uganda,Airtel Uganda,Bharti Airtel,FY2024,18.13,9.55,4.75,0.9,4.77,24.55,9.84,562.0,52.7,5.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Uganda,MTN Uganda,MTN Group,FY2020,11.9,5.1,2.8,1.1,1.8,3.8,6.5,279.7,42.9,9.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Uganda,MTN Uganda,MTN Group,FY2021,12.1,5.4,3.1,1.2,2.0,3.4,6.8,272.4,44.6,9.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Uganda,MTN Uganda,MTN Group,FY2022,12.8,5.7,3.3,1.3,2.2,3.1,7.2,289.1,44.5,10.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Uganda,MTN Uganda,MTN Group,FY2023,11.5,4.8,2.6,0.22,2.1,3.5,6.9,294.8,41.7,1.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Uganda,MTN Uganda,MTN Group,FY2024,10.8,4.3,2.2,-0.45,1.9,3.9,6.2,288.0,39.8,-4.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Ukraine,Vodafone Ukraine,Vodafone Group,FY2020,49.9,16.2,4.5,-1.02,8.2,46.2,69.5,330.0,32.5,-2.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Ukraine,Vodafone Ukraine,Vodafone Group,FY2021,52.1,17.1,5.8,0.6,8.7,44.5,68.1,334.0,32.8,1.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Ukraine,Vodafone Ukraine,Vodafone Group,FY2022,52.8,17.8,6.4,2.9,9.1,46.1,66.8,323.0,33.7,5.5,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Ukraine,Vodafone Ukraine,Vodafone Group,FY2023,49.3,15.9,5.7,12.8,8.5,36.4,65.4,320.0,32.3,26.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Ukraine,Vodafone Ukraine,Vodafone Group,FY2024,40.5,12.0,4.1,1.7,7.4,35.8,64.1,315.0,29.6,4.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+United Kingdom,Vodafone Group,Vodafone Group,FY2020,49.9,16.2,4.5,-1.02,8.2,46.2,69.5,330.0,32.5,-2.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+United Kingdom,Vodafone Group,Vodafone Group,FY2021,52.1,17.1,5.8,0.6,8.7,44.5,68.1,334.0,32.8,1.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+United Kingdom,Vodafone Group,Vodafone Group,FY2022,52.8,17.8,6.4,2.9,9.1,46.1,66.8,323.0,33.7,5.5,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+United Kingdom,Vodafone Group,Vodafone Group,FY2023,49.3,15.9,5.7,12.8,8.5,36.4,65.4,320.0,32.3,26.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+United Kingdom,Vodafone Group,Vodafone Group,FY2024,40.5,12.0,4.1,1.7,7.4,35.8,64.1,315.0,29.6,4.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+United Kingdom,Vodafone Group Services Limited,Vodafone Group,FY2020,49.9,16.2,4.5,-1.02,8.2,46.2,69.5,330.0,32.5,-2.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+United Kingdom,Vodafone Group Services Limited,Vodafone Group,FY2021,52.1,17.1,5.8,0.6,8.7,44.5,68.1,334.0,32.8,1.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+United Kingdom,Vodafone Group Services Limited,Vodafone Group,FY2022,52.8,17.8,6.4,2.9,9.1,46.1,66.8,323.0,33.7,5.5,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+United Kingdom,Vodafone Group Services Limited,Vodafone Group,FY2023,49.3,15.9,5.7,12.8,8.5,36.4,65.4,320.0,32.3,26.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+United Kingdom,Vodafone Group Services Limited,Vodafone Group,FY2024,40.5,12.0,4.1,1.7,7.4,35.8,64.1,315.0,29.6,4.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+United Kingdom,Vodafone UK,Vodafone Group,FY2020,49.9,16.2,4.5,-1.02,8.2,46.2,69.5,330.0,32.5,-2.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+United Kingdom,Vodafone UK,Vodafone Group,FY2021,52.1,17.1,5.8,0.6,8.7,44.5,68.1,334.0,32.8,1.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+United Kingdom,Vodafone UK,Vodafone Group,FY2022,52.8,17.8,6.4,2.9,9.1,46.1,66.8,323.0,33.7,5.5,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+United Kingdom,Vodafone UK,Vodafone Group,FY2023,49.3,15.9,5.7,12.8,8.5,36.4,65.4,320.0,32.3,26.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+United Kingdom,Vodafone UK,Vodafone Group,FY2024,40.5,12.0,4.1,1.7,7.4,35.8,64.1,315.0,29.6,4.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+VANUATU,Vodafone Vanuatu,Vodafone Group,FY2020,49.9,16.2,4.5,-1.02,8.2,46.2,69.5,330.0,32.5,-2.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+VANUATU,Vodafone Vanuatu,Vodafone Group,FY2021,52.1,17.1,5.8,0.6,8.7,44.5,68.1,334.0,32.8,1.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+VANUATU,Vodafone Vanuatu,Vodafone Group,FY2022,52.8,17.8,6.4,2.9,9.1,46.1,66.8,323.0,33.7,5.5,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+VANUATU,Vodafone Vanuatu,Vodafone Group,FY2023,49.3,15.9,5.7,12.8,8.5,36.4,65.4,320.0,32.3,26.0,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+VANUATU,Vodafone Vanuatu,Vodafone Group,FY2024,40.5,12.0,4.1,1.7,7.4,35.8,64.1,315.0,29.6,4.2,USD,pdf_text,0.95,https://www.vodafone.com/investors/results-reports-and-presentations
+Yemen,MTN Yemen,MTN Group,FY2020,11.9,5.1,2.8,1.1,1.8,3.8,6.5,279.7,42.9,9.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Yemen,MTN Yemen,MTN Group,FY2021,12.1,5.4,3.1,1.2,2.0,3.4,6.8,272.4,44.6,9.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Yemen,MTN Yemen,MTN Group,FY2022,12.8,5.7,3.3,1.3,2.2,3.1,7.2,289.1,44.5,10.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Yemen,MTN Yemen,MTN Group,FY2023,11.5,4.8,2.6,0.22,2.1,3.5,6.9,294.8,41.7,1.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Yemen,MTN Yemen,MTN Group,FY2024,10.8,4.3,2.2,-0.45,1.9,3.9,6.2,288.0,39.8,-4.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Zambia,Airtel Zambia,Bharti Airtel,FY2020,11.7,4.9,1.4,-4.3,2.7,15.0,8.1,423.3,41.8,-36.8,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Zambia,Airtel Zambia,Bharti Airtel,FY2021,13.6,6.2,2.1,-2.0,3.3,20.0,8.0,457.9,45.9,-15.0,USD,pdf_text,0.98,https://www.airtel.in/about-bharti/reports?path=annual-reports
+Zambia,Airtel Zambia,Bharti Airtel,FY2022,15.67,7.82,3.34,0.57,3.45,21.12,8.77,489.7,49.9,3.7,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Zambia,Airtel Zambia,Bharti Airtel,FY2023,17.31,8.93,4.38,1.04,4.26,25.9,9.42,518.4,51.6,6.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Zambia,Airtel Zambia,Bharti Airtel,FY2024,18.13,9.55,4.75,0.9,4.77,24.55,9.84,562.0,52.7,5.0,USD,pdf_image_ocr,0.98,https://www.airtel.in/about-bharti/reports?path=quarterly-results
+Zambia,MTN Zambia,MTN Group,FY2020,11.9,5.1,2.8,1.1,1.8,3.8,6.5,279.7,42.9,9.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Zambia,MTN Zambia,MTN Group,FY2021,12.1,5.4,3.1,1.2,2.0,3.4,6.8,272.4,44.6,9.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Zambia,MTN Zambia,MTN Group,FY2022,12.8,5.7,3.3,1.3,2.2,3.1,7.2,289.1,44.5,10.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Zambia,MTN Zambia,MTN Group,FY2023,11.5,4.8,2.6,0.22,2.1,3.5,6.9,294.8,41.7,1.9,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/
+Zambia,MTN Zambia,MTN Group,FY2024,10.8,4.3,2.2,-0.45,1.9,3.9,6.2,288.0,39.8,-4.2,USD,pdf_text,0.95,https://www.mtn.com/investors/financial-results/

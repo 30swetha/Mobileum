@@ -88,6 +88,7 @@ export default function DynamicCenterDashboard({
   submissions = [],
   onAddSubmission,
   onExportReport,
+  onExportPPT,
   onUpdateAccountData
 }) {
   const chartRefs = useRef({});
@@ -692,6 +693,7 @@ export default function DynamicCenterDashboard({
           setSelectedCountry={setSelectedCountry}
           setSelectedOperator={setSelectedOperator}
           onExportReport={onExportReport}
+          onExportPPT={onExportPPT}
           onCloseOverview={onCloseOverview}
         />
       </div>

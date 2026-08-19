@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Chart from 'chart.js/auto';
+import CountryFlag from './CountryFlag';
 
 const CLUSTER_COLORS = {
   'Ultra-Premium Roaming Hub': '#9B59B6',
@@ -436,8 +437,9 @@ export default function SidePanel({
     <div id="panel" className="open">
       <div id="panel-inner">
         <div id="panel-header">
-          <div id="panel-title">
-            {getFlagEmoji(countryData.iso)} {selectedCountry}
+          <div id="panel-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <CountryFlag iso={countryData.iso} country={selectedCountry} size="medium" />
+            <span>{selectedCountry}</span>
           </div>
           <div id="panel-subtitle">
             {countryData.region}

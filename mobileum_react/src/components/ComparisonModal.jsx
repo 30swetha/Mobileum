@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import Chart from 'chart.js/auto';
+import CountryFlag from './CountryFlag';
 
 export default function ComparisonModal({
   isOpen,
@@ -175,7 +176,10 @@ export default function ComparisonModal({
                         transition: 'all 0.15s ease'
                       }}
                     >
-                      {getFlagEmoji(countries[c].iso)} {c}
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                        <CountryFlag iso={countries[c]?.iso} country={c} size="small" />
+                        <span>{c}</span>
+                      </span>
                     </button>
                   );
                 })}
@@ -199,7 +203,10 @@ export default function ComparisonModal({
                             color: 'var(--text-primary)'
                           }}
                         >
-                          {getFlagEmoji(c.data.iso)} {c.name}
+                          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                            <CountryFlag iso={c.data?.iso} country={c.name} size="small" />
+                            <span>{c.name}</span>
+                          </div>
                           <div style={{ fontSize: '9px', fontWeight: '400', color: 'var(--text-muted)', marginTop: '2px' }}>
                             {c.data.region}
                           </div>

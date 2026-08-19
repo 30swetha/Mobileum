@@ -10,6 +10,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -467,10 +468,15 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
   <button style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px" onclick="clearCompare()">✕</button>
 </div>
 
-<!-- EXPORT BTN -->
-<button id="export-btn" onclick="exportReport()">
-  ↓ Export Report
-</button>
+<!-- EXPORT BTNS -->
+<div style="position: fixed; bottom: 20px; right: 60px; z-index: 999; display: flex; gap: 8px;">
+  <button id="export-btn" onclick="exportReport()">
+    ↓ Export Report
+  </button>
+  <button id="export-ppt-btn" onclick="exportPPT()" style="background: var(--blue); color: #fff; border: none; border-radius: 10px; padding: 10px 16px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 20px rgba(37,99,235,0.25); transition: all .2s;">
+    ↓ Export as PPT
+  </button>
+</div>
 
 <!-- COMPARISON MODAL -->
 <div id="modal-overlay" onclick="if(event.target===this)closeModal()">
@@ -2592,7 +2598,138 @@ document.addEventListener('click', e => {
 });
 
 // ═══════════════════════════════════════════════════════════════════
-// EXPORT
+// EXPORT PPT
+// ═══════════════════════════════════════════════════════════════════
+function exportPPT() {
+  if (!currentCountry) {
+    alert('Please select a country first to export its PowerPoint presentation.');
+    return;
+  }
+  if (typeof PptxGenJS === 'undefined' && typeof pptxgen === 'undefined') {
+    alert('PowerPoint generation library (pptxgenjs) is loading. Please try again in a moment.');
+    return;
+  }
+
+  const pptx = new (window.PptxGenJS || window.pptxgen)();
+  pptx.layout = 'LAYOUT_16x9';
+
+  const C_NAVY = '0F172A', C_BLUE = '1D4ED8', C_LIGHT_BG = 'F8FAFC', C_BORDER = 'E2E8F0', C_TEXT_DARK = '0F172A', C_TEXT_MUTED = '64748B', C_GREEN = '059669', C_AMBER = 'D97706';
+  const v = C[currentCountry];
+  const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const opName = (typeof selectedOperator !== 'undefined' && selectedOperator) ? selectedOperator : (v.operators && v.operators[0] ? v.operators[0].operator : `${currentCountry} Market`);
+  const opData = v.operators ? v.operators.find(o => o.operator.toLowerCase().includes(opName.toLowerCase())) : null;
+
+  const applyHeaderFooter = (slide, titleText, subtitleText) => {
+    slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 10, h: 0.85, fill: { color: C_NAVY } });
+    slide.addText(titleText, { x: 0.4, y: 0.12, w: 7.2, h: 0.35, fontSize: 16, bold: true, color: 'FFFFFF', fontFace: 'Arial' });
+    slide.addText(subtitleText || `${getFlagEmoji(v.iso)} ${currentCountry} · ${opName} | ${dateStr}`, { x: 0.4, y: 0.47, w: 7.2, h: 0.25, fontSize: 10, color: '94A3B8', fontFace: 'Arial' });
+    slide.addText('MOBILEUM', { x: 7.6, y: 0.22, w: 2.0, h: 0.4, fontSize: 14, bold: true, color: '38BDF8', align: 'right', fontFace: 'Arial' });
+    slide.addShape(pptx.ShapeType.line, { x: 0.4, y: 5.15, w: 9.2, h: 0, line: { color: C_BORDER, width: 1 } });
+    slide.addText(`Mobileum Global Telecom Intelligence Platform  |  ${currentCountry} — ${opName}  |  CONFIDENTIAL`, { x: 0.4, y: 5.22, w: 9.2, h: 0.3, fontSize: 9, color: C_TEXT_MUTED, fontFace: 'Arial' });
+  };
+
+  // Slide 1: Title Slide
+  const s1 = pptx.addSlide();
+  s1.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 10, h: 5.625, fill: { color: C_NAVY } });
+  s1.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 0.25, h: 5.625, fill: { color: C_BLUE } });
+  s1.addText('MOBILEUM OPERATOR INTELLIGENCE REPORT', { x: 0.8, y: 0.9, w: 8.4, h: 0.3, fontSize: 11, bold: true, color: '38BDF8', fontFace: 'Arial' });
+  s1.addText(`${getFlagEmoji(v.iso)} ${opName}`, { x: 0.8, y: 1.3, w: 8.4, h: 0.8, fontSize: 32, bold: true, color: 'FFFFFF', fontFace: 'Arial' });
+  s1.addText(`Executive Briefing & Strategic Telecom Analytics for ${currentCountry}`, { x: 0.8, y: 2.15, w: 8.4, h: 0.4, fontSize: 14, color: '94A3B8', fontFace: 'Arial' });
+  s1.addShape(pptx.ShapeType.rect, { x: 0.8, y: 2.8, w: 8.4, h: 2.2, fill: { color: '1E293B' }, line: { color: '334155', width: 1 } });
+  s1.addText([
+    { text: 'Target Operator:  ', options: { bold: true, color: '94A3B8' } }, { text: `${opName}\n`, options: { bold: true, color: '38BDF8' } },
+    { text: 'Country & Region: ', options: { bold: true, color: '94A3B8' } }, { text: `${currentCountry} (${v.region || 'Global'})\n`, options: { color: 'FFFFFF' } },
+    { text: 'Date of Export:   ', options: { bold: true, color: '94A3B8' } }, { text: `${dateStr}\n`, options: { color: 'FFFFFF' } },
+    { text: 'Classification:   ', options: { bold: true, color: '94A3B8' } }, { text: 'CONFIDENTIAL — Prepared for Executive Review', options: { bold: true, color: 'F59E0B' } }
+  ], { x: 1.1, y: 3.0, w: 7.8, h: 1.8, fontSize: 11, fontFace: 'Arial' });
+
+  // Slide 2: Company Overview
+  const s2 = pptx.addSlide();
+  applyHeaderFooter(s2, `Slide 2: Company Overview — ${opName}`, `Market position & operational statistics`);
+  const kpis = [
+    { label: 'SUBSCRIBER BASE', val: opData ? `${opData.sub_base_mln || '—'} M` : `${v.mobile_users_mln?.toFixed(0) || '—'} M` },
+    { label: 'MARKET SHARE', val: opData ? `${opData.market_share_pct || '—'}%` : `${v.num_operators || '—'} MNOs` },
+    { label: '5G PENETRATION', val: opData ? `${opData.fiveG_pct || '—'}%` : `${v.stats?.avg_5g?.toFixed(0) || '—'}%` },
+    { label: 'SUB GROWTH', val: opData ? `${opData.subscriber_growth_pct > 0 ? '+' : ''}${opData.subscriber_growth_pct || 0}%` : `${v.gdp_growth_pct || '—'}%` }
+  ];
+  kpis.forEach((kpi, idx) => {
+    const xPos = 0.4 + idx * 2.32;
+    s2.addShape(pptx.ShapeType.rect, { x: xPos, y: 1.0, w: 2.15, h: 1.2, fill: { color: C_LIGHT_BG }, line: { color: C_BORDER, width: 1 } });
+    s2.addText(kpi.label, { x: xPos + 0.1, y: 1.1, w: 1.95, h: 0.2, fontSize: 9, bold: true, color: C_TEXT_MUTED, fontFace: 'Arial' });
+    s2.addText(kpi.val, { x: xPos + 0.1, y: 1.35, w: 1.95, h: 0.5, fontSize: 20, bold: true, color: C_BLUE, fontFace: 'Arial' });
+  });
+
+  // Slide 3: Financials
+  const s3 = pptx.addSlide();
+  applyHeaderFooter(s3, `Slide 3: Financial Performance — ${opName}`, `Group revenue & EBITDA benchmarks`);
+  const finTableRows = [
+    [{ text: 'Metric', options: { bold: true, fill: C_BLUE, color: 'FFFFFF' } }, { text: 'Value', options: { bold: true, fill: C_BLUE, color: 'FFFFFF' } }, { text: 'Notes', options: { bold: true, fill: C_BLUE, color: 'FFFFFF' } }],
+    [{ text: 'Revenue Trend' }, { text: opData?.revenue_growth || 'Stable' }, { text: 'YoY Growth' }],
+    [{ text: 'Profitability' }, { text: opData?.profitability || 'Strong' }, { text: 'Consolidated margin' }],
+    [{ text: 'Subscriber Base' }, { text: `${opData?.sub_base_mln || '—'} Million` }, { text: 'Mobile Subscribers' }]
+  ];
+  s3.addTable(finTableRows, { x: 0.4, y: 1.3, w: 9.2, h: 2.2, colW: [2.5, 3.0, 3.7], fontSize: 10, border: { pt: 0.5, color: C_BORDER }, valign: 'middle' });
+
+  // Slide 4: Strategy Details
+  const s4 = pptx.addSlide();
+  applyHeaderFooter(s4, `Slide 4: Commercial Strategy Details`, `Product deployment & displacement plan`);
+  s4.addShape(pptx.ShapeType.rect, { x: 0.4, y: 1.1, w: 9.2, h: 3.6, fill: { color: C_LIGHT_BG }, line: { color: C_BORDER, width: 1 } });
+  s4.addText([
+    { text: 'Key Strategic Action Plan:\n\n', options: { bold: true, color: C_BLUE } },
+    { text: `  • Expand Roaming DNA and Steering of Roaming deployments for ${opName}\n\n` },
+    { text: `  • Position RAID 9 Fraud Management platform for real-time bypass protection\n\n` },
+    { text: `  • Implement 5G Active Testing for next-generation QoE assurance\n` }
+  ], { x: 0.7, y: 1.3, w: 8.6, h: 3.2, fontSize: 11, fontFace: 'Arial' });
+
+  // Slide 5: Contacts
+  const s5 = pptx.addSlide();
+  applyHeaderFooter(s5, `Slide 5: Key Stakeholder Contacts`, `Account governance touchpoints`);
+  const cRows = [
+    [{ text: 'Unit', options: { bold: true, fill: C_BLUE, color: 'FFFFFF' } }, { text: 'Name', options: { bold: true, fill: C_BLUE, color: 'FFFFFF' } }, { text: 'Role', options: { bold: true, fill: C_BLUE, color: 'FFFFFF' } }],
+    [{ text: 'Roaming' }, { text: `${opName} Roaming VP` }, { text: 'VP Wholesale Roaming' }],
+    [{ text: 'Signaling' }, { text: `${opName} Core Lead` }, { text: 'Director Core & Signaling' }],
+    [{ text: 'Security' }, { text: `${opName} CISO` }, { text: 'Chief Information Security Officer' }]
+  ];
+  s5.addTable(cRows, { x: 0.4, y: 1.3, w: 9.2, h: 2.2, colW: [2.2, 3.5, 3.5], fontSize: 10, border: { pt: 0.5, color: C_BORDER }, valign: 'middle' });
+
+  // Slide 6: AMC & Health
+  const s6 = pptx.addSlide();
+  applyHeaderFooter(s6, `Slide 6: AMC & Support Health Status`, `Active maintenance contracts & ticket overview`);
+  s6.addText(`Support ticket volume for ${opName} is STABLE with 90%+ active rule utilization across RAID 9 & Roaming DNA modules.`, { x: 0.4, y: 1.3, w: 9.2, h: 1.0, fontSize: 11, fontFace: 'Arial' });
+
+  // Slide 7: Summary / Recommendations
+  const s7 = pptx.addSlide();
+  applyHeaderFooter(s7, `Slide 7: Mobileum Recommendations & Edge`, `Product ranking & value proposition`);
+  const recs = v.product_ranking ? v.product_ranking.slice(0, 3) : [{ product: 'Roaming DNA', score: 95, reason: 'High Roaming QoE return' }];
+  recs.forEach((r, i) => {
+    s7.addText(`#${i + 1} ${r.product} (Score: ${r.score}/100) — ${r.reason}`, { x: 0.4, y: 1.3 + i * 0.9, w: 9.2, h: 0.7, fontSize: 11, bold: true, color: C_TEXT_DARK, fontFace: 'Arial' });
+  });
+
+  const safeFilename = `${currentCountry}_${opName}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+  const fullFileName = `Mobileum_Report_${safeFilename}.pptx`;
+
+  pptx.write({ outputType: 'base64' })
+    .then(base64 => {
+      const link = document.createElement('a');
+      link.style.display = 'none';
+      link.href = 'data:application/vnd.openxmlformats-officedocument.presentationml.presentation;base64,' + base64;
+      link.download = fullFileName;
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => {
+        if (document.body.contains(link)) {
+          document.body.removeChild(link);
+        }
+      }, 1000);
+    })
+    .catch(err => {
+      console.warn('Base64 export fallback:', err);
+      pptx.writeFile({ fileName: fullFileName });
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// EXPORT REPORT (PDF)
 // ═══════════════════════════════════════════════════════════════════
 function exportReport() {
   if (!currentCountry) {

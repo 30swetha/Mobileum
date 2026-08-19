@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import CollapsibleList from './CollapsibleList';
+import CountryFlag from './CountryFlag';
 
 export default function StaticCountrySidebar({
   selectedCountry,
@@ -110,7 +111,8 @@ export default function StaticCountrySidebar({
       {/* Sidebar Header */}
       <div className="sidebar-header" style={{ position: 'relative', marginTop: '5px' }}>
         <div className="sidebar-title" style={{ fontSize: '20px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {getFlagEmoji(countryData.iso)} {selectedCountry}
+          <CountryFlag iso={countryData.iso} country={selectedCountry} size="medium" />
+          <span>{selectedCountry}</span>
         </div>
         <div className="sidebar-subtitle" style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
           {countryData.region} {countryData.sub_region ? ' · ' + countryData.sub_region : ''}

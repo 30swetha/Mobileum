@@ -45,7 +45,7 @@ function resolveGroup(operator) {
   return null;
 }
 
-const card = {
+const _card = {
   background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px',
   padding: '24px', boxShadow: '0 4px 12px -2px rgba(0,0,0,0.08)',
 };

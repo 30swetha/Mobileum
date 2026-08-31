@@ -21,7 +21,7 @@ const vercelApiMock = () => {
               
               req.on('end', async () => {
                 if (body) {
-                  try { req.body = JSON.parse(body); } catch(e) { req.body = body; }
+                  try { req.body = JSON.parse(body); } catch(_e) { req.body = body; }
                 }
                 
                 const query = {};

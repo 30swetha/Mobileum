@@ -29,10 +29,11 @@ export default function SidePanel({
   const [activeTab, setActiveTab] = useState('overview');
   const chartRefs = useRef({});
 
-  // Reset tab on country change
-  useEffect(() => {
+  const [prevSelectedCountry, setPrevSelectedCountry] = useState(selectedCountry);
+  if (prevSelectedCountry !== selectedCountry) {
+    setPrevSelectedCountry(selectedCountry);
     setActiveTab('overview');
-  }, [selectedCountry]);
+  }
 
   // Handle Chart rendering when activeTab or selectedCountry changes
   useEffect(() => {

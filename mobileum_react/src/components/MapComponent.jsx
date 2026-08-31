@@ -12,8 +12,22 @@ const CLUSTER_COLORS = {
   'High Growth Exposed': '#F39C12',
   'Roaming Hub': '#1ABC9C',
   'Emerging Opportunity': '#2ECC71',
-  'Regulatory Transition': '#7F8C8D',
-  'Unknown': '#7F8C8D'
+  'Regulatory Transition': '#64748B',
+  'Unknown': '#64748B'
+};
+
+const getTileLayers = (theme) => {
+  // Base map without labels (watermark-free Esri Canvas Base)
+  const tileUrl = theme === 'light'
+    ? 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'
+    : 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}';
+
+  // Crisp, professional Carto reference labels overlay (country names & place labels)
+  const labelsUrl = theme === 'light'
+    ? 'https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png'
+    : 'https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png';
+
+  return { tileUrl, labelsUrl, options: { subdomains: 'abcd', maxZoom: 16 } };
 };
 
 export default function MapComponent({
@@ -175,14 +189,9 @@ export default function MapComponent({
     mapInstanceRef.current = map;
 
     // Load initial tile layer based on current theme
-    const tileUrl = theme === 'light'
-      ? 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png'
-      : 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png';
+    const { tileUrl, labelsUrl, options } = getTileLayers(theme);
 
-    const tileLayer = L.tileLayer(tileUrl, {
-      subdomains: 'abcd',
-      maxZoom: 19
-    }).addTo(map);
+    const tileLayer = L.tileLayer(tileUrl, options).addTo(map);
 
     tileLayerRef.current = tileLayer;
 
@@ -191,13 +200,8 @@ export default function MapComponent({
     map.getPane('labels').style.pointerEvents = 'none';
 
     // Add labels layer
-    const labelsUrl = theme === 'light'
-      ? 'https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png'
-      : 'https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png';
-
     const labelsLayer = L.tileLayer(labelsUrl, {
-      subdomains: 'abcd',
-      maxZoom: 19,
+      ...options,
       pane: 'labels'
     }).addTo(map);
 
@@ -310,25 +314,15 @@ export default function MapComponent({
       mapInstanceRef.current.removeLayer(labelsLayerRef.current);
     }
 
-    const tileUrl = theme === 'light'
-      ? 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png'
-      : 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png';
+    const { tileUrl, labelsUrl, options } = getTileLayers(theme);
 
-    const tileLayer = L.tileLayer(tileUrl, {
-      subdomains: 'abcd',
-      maxZoom: 19
-    }).addTo(mapInstanceRef.current);
+    const tileLayer = L.tileLayer(tileUrl, options).addTo(mapInstanceRef.current);
 
     tileLayerRef.current = tileLayer;
 
     // Add updated labels layer
-    const labelsUrl = theme === 'light'
-      ? 'https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png'
-      : 'https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png';
-
     const labelsLayer = L.tileLayer(labelsUrl, {
-      subdomains: 'abcd',
-      maxZoom: 19,
+      ...options,
       pane: 'labels'
     }).addTo(mapInstanceRef.current);
 

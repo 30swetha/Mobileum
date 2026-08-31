@@ -1,45 +1,34 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
+
+const parseCompetitionItem = (item) => {
+  if (typeof item === 'object' && item !== null) {
+    return { name: item.name || item.text || '', selected: item.selected !== false };
+  }
+  return { name: String(item || ''), selected: true };
+};
+
+const getInitialForm = (accountData) => {
+  if (accountData?.productSection) {
+    return {
+      mobileumProducts: [...(accountData.productSection.mobileumProducts || [])],
+      productGaps: [...(accountData.productSection.productGaps || [])],
+      competitionProducts: (accountData.productSection.competitionProducts || []).map(parseCompetitionItem),
+      replaceableCompetitors: [...(accountData.productSection.replaceableCompetitors || [])],
+      managedServicesPossibility: [...(accountData.productSection.managedServicesPossibility || [])],
+      finalStrategies: (accountData.productSection.finalStrategies || []).map(s => typeof s === 'string' ? { text: s, rtpStatus: 'Not Requested', engagementType: 'Product' } : { ...s })
+    };
+  }
+  return null;
+};
 
 export default function ProductEditModal({ isOpen, onClose, accountData, countryName, onSave }) {
-  const parseCompetitionItem = (item) => {
-    if (typeof item === 'object' && item !== null) {
-      return { name: item.name || item.text || '', selected: item.selected !== false };
-    }
-    return { name: String(item || ''), selected: true };
-  };
+  const [prevAccountData, setPrevAccountData] = useState(accountData);
+  const [formData, setFormData] = useState(() => getInitialForm(accountData));
 
-  const [formData, setFormData] = useState(() => {
-    if (accountData?.productSection) {
-      return {
-        mobileumProducts: [...(accountData.productSection.mobileumProducts || [])],
-        productGaps: [...(accountData.productSection.productGaps || [])],
-        competitionProducts: (accountData.productSection.competitionProducts || []).map(parseCompetitionItem),
-        replaceableCompetitors: [...(accountData.productSection.replaceableCompetitors || [])],
-        managedServicesPossibility: [...(accountData.productSection.managedServicesPossibility || [])],
-        finalStrategies: (accountData.productSection.finalStrategies || []).map(s => typeof s === 'string' ? { text: s, rtpStatus: 'Not Requested', engagementType: 'Product' } : { ...s })
-      };
-    }
-    return null;
-  });
-
-  const isFirstRender = useRef(true);
-
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-    if (accountData?.productSection) {
-      setFormData({
-        mobileumProducts: [...(accountData.productSection.mobileumProducts || [])],
-        productGaps: [...(accountData.productSection.productGaps || [])],
-        competitionProducts: (accountData.productSection.competitionProducts || []).map(parseCompetitionItem),
-        replaceableCompetitors: [...(accountData.productSection.replaceableCompetitors || [])],
-        managedServicesPossibility: [...(accountData.productSection.managedServicesPossibility || [])],
-        finalStrategies: (accountData.productSection.finalStrategies || []).map(s => typeof s === 'string' ? { text: s, rtpStatus: 'Not Requested', engagementType: 'Product' } : { ...s })
-      });
-    }
-  }, [accountData]);
+  if (prevAccountData !== accountData) {
+    setPrevAccountData(accountData);
+    setFormData(getInitialForm(accountData));
+  }
 
   if (!isOpen || !formData) return null;
 

@@ -11,6 +11,7 @@ import FinancialAnalysisModal from './FinancialAnalysisModal';
 import CollapsibleList from './CollapsibleList';
 import DashboardHeader from './DashboardHeader';
 import CustomerContactsSection from './CustomerContactsSection';
+import HistoryModal from './HistoryModal';
 import FIN from '../data/operator_financials.json';
 
 const CLUSTER_COLORS = {
@@ -668,7 +669,7 @@ export default function DynamicCenterDashboard({
     return { border: '#10b981', bg: 'rgba(16, 185, 129, 0.25)', text: '#059669' };
   };
 
-  const trendToScore = (val) => {
+  function trendToScore(val) {
     if (!val || val === 'nan') return 3;
     const v = val.toLowerCase();
     if (v.includes('very high') || v.includes('major') || v.includes('strongly')) return 5;
@@ -1596,7 +1597,7 @@ export default function DynamicCenterDashboard({
                           }
                           const opLabel = gObj?.group || targetName;
                           const rawTrendLabel = gObj?.performance_trend_3yr?.label || 'PERFORMANCE GOING UP';
-                          const trendLabel = rawTrendLabel.replace(/[📈📉📊🟢]/g, '').trim();
+                          const trendLabel = rawTrendLabel.replace(/[📈📉📊🟢]/gu, '').trim();
                           const summaryText = gObj?.performance_trend_3yr?.summary || `Integrates direct web-scraped investor reports & quarterly disclosures for ${opLabel}.`;
 
                           return (

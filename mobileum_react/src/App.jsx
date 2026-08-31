@@ -326,12 +326,9 @@ export default function App() {
     }
     const capexVal = Math.max(0.2, parseFloat(((op.sub_base_mln || 1.0) * 0.08 + (op.market_share_pct || 20.0) * 0.02).toFixed(1)));
 
-    let note = "";
-    if (op.financial_comments && op.financial_comments !== 'nan') {
-      note = op.financial_comments;
-    } else {
-      note = `Financial metrics indicate ${op.profitability || 'stable'} profitability with a ${op.revenue_growth || 'stable'} revenue trend in ${countryName}.`;
-    }
+    const note = (op.financial_comments && op.financial_comments !== 'nan')
+      ? op.financial_comments
+      : `Financial metrics indicate ${op.profitability || 'stable'} profitability with a ${op.revenue_growth || 'stable'} revenue trend in ${countryName}.`;
 
     const amcList = [];
     const amcBase = Math.max(40, Math.round((op.sub_base_mln || 1.0) * 30 + (op.market_share_pct || 20.0) * 1.5));

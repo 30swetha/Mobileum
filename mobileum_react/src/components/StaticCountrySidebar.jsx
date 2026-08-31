@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import CollapsibleList from './CollapsibleList';
 import CountryFlag from './CountryFlag';
 
@@ -6,7 +6,7 @@ export default function StaticCountrySidebar({
   selectedCountry,
   countryData,
   onClose,
-  getFlagEmoji,
+  _getFlagEmoji,
   selectedOperator,
   onSelectOperator,
   activeTab,

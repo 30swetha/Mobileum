@@ -1,42 +1,29 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
+
+const getInitialForm = (accountData) => {
+  if (accountData?.plan2026) {
+    return {
+      productsFocusedOn: [...(accountData.plan2026.productsFocusedOn || [])],
+      valueOfOpportunities: accountData.plan2026.valueOfOpportunities || '',
+      pocOrDemoGiven: accountData.plan2026.pocOrDemoGiven || '',
+      consultingTrialsGiven: accountData.plan2026.consultingTrialsGiven || '',
+      winProbability: accountData.plan2026.winProbability || '',
+      weightedPipelineValue: accountData.plan2026.weightedPipelineValue || '',
+      quarterlyMilestoneBreakdown: accountData.plan2026.quarterlyMilestoneBreakdown || '',
+      topTargetAccounts: [...(accountData.plan2026.topTargetAccounts || [])]
+    };
+  }
+  return null;
+};
 
 export default function PlanEditModal({ isOpen, onClose, accountData, countryName, onSave }) {
-  const [formData, setFormData] = useState(() => {
-    if (accountData?.plan2026) {
-      return {
-        productsFocusedOn: [...(accountData.plan2026.productsFocusedOn || [])],
-        valueOfOpportunities: accountData.plan2026.valueOfOpportunities || '',
-        pocOrDemoGiven: accountData.plan2026.pocOrDemoGiven || '',
-        consultingTrialsGiven: accountData.plan2026.consultingTrialsGiven || '',
-        winProbability: accountData.plan2026.winProbability || '',
-        weightedPipelineValue: accountData.plan2026.weightedPipelineValue || '',
-        quarterlyMilestoneBreakdown: accountData.plan2026.quarterlyMilestoneBreakdown || '',
-        topTargetAccounts: [...(accountData.plan2026.topTargetAccounts || [])]
-      };
-    }
-    return null;
-  });
+  const [prevAccountData, setPrevAccountData] = useState(accountData);
+  const [formData, setFormData] = useState(() => getInitialForm(accountData));
 
-  const isFirstRender = useRef(true);
-
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-    if (accountData?.plan2026) {
-      setFormData({
-        productsFocusedOn: [...(accountData.plan2026.productsFocusedOn || [])],
-        valueOfOpportunities: accountData.plan2026.valueOfOpportunities || '',
-        pocOrDemoGiven: accountData.plan2026.pocOrDemoGiven || '',
-        consultingTrialsGiven: accountData.plan2026.consultingTrialsGiven || '',
-        winProbability: accountData.plan2026.winProbability || '',
-        weightedPipelineValue: accountData.plan2026.weightedPipelineValue || '',
-        quarterlyMilestoneBreakdown: accountData.plan2026.quarterlyMilestoneBreakdown || '',
-        topTargetAccounts: [...(accountData.plan2026.topTargetAccounts || [])]
-      });
-    }
-  }, [accountData]);
+  if (prevAccountData !== accountData) {
+    setPrevAccountData(accountData);
+    setFormData(getInitialForm(accountData));
+  }
 
   if (!isOpen || !formData) return null;
 

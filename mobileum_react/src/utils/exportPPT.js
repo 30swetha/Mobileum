@@ -24,9 +24,9 @@ export function exportPPT(currentCountry, countryData, metadata, selectedOperato
   const C_NAVY = '0F172A';       // Slate 900
   const C_BLUE = '1D4ED8';       // Blue 700
   const C_ACCENT = '2563EB';     // Blue 600
-  const C_CYAN = '0284C7';       // Sky 600
+  const _C_CYAN = '0284C7';       // Sky 600
   const C_LIGHT_BG = 'F8FAFC';   // Slate 50
-  const C_CARD_BG = 'FFFFFF';    // White
+  const _C_CARD_BG = 'FFFFFF';    // White
   const C_BORDER = 'E2E8F0';     // Slate 200
   const C_TEXT_DARK = '0F172A';  // Primary text
   const C_TEXT_MUTED = '64748B'; // Muted text
